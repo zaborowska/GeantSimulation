@@ -42,9 +42,7 @@ CalorimeterSD::CalorimeterSD(G4String name, G4int aCellNoInAxis): G4VSensitiveDe
                                                                   fHitsCollection(0),
                                                                   fHCID(-1),
                                                                   fCellNo(aCellNoInAxis) {
-  // event_id = G4EventManager::GetEventManager()->GetConstCurrentEvent()->GetEventID();
-  // std::string nameOfTTree = "t_";
-  // nameOfTTree += std::to_string(event_id);
+ 
   collectionName.insert("ECalorimeterColl");
 
   f = new TFile("trialWithName.root","recreate");
@@ -66,7 +64,9 @@ f->Close();
 void CalorimeterSD::Initialize(G4HCofThisEvent* hce) {
 
  
-
+  event_id = G4EventManager::GetEventManager()->GetConstCurrentEvent()->GetEventID();
+  std::string nameOfTTree = "t_";
+  nameOfTTree += std::to_string(event_id);
   t2 = new TTree(nameOfTTree.c_str(),"a Tree with one generated event");
   
   t2->Branch("x", &temp_hit.fxID,"fxID/I");
@@ -152,7 +152,7 @@ void CalorimeterSD::EndOfEvent(G4HCofThisEvent* hce) {
         }
       }
 
-  f->Write();
+  t2->Write();
   std::cout << "EVENT ID PRINT:" << event_id << std::endl;
   }
 }
