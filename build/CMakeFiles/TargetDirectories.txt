@@ -1,0 +1,7 @@
+/Users/ioana/Documents/geant4/geant4.10.04.p02/examples/basic/GeantStandaloneMinimalExample/build/CMakeFiles/install/$
+/Users/ioana/Documents/geant4/geant4.10.04.p02/examples/basic/GeantStandaloneMinimalExample/build/CMakeFiles/install/$
+/Users/ioana/Documents/geant4/geant4.10.04.p02/examples/basic/GeantStandaloneMinimalExample/build/CMakeFiles/install.$
+/Users/ioana/Documents/geant4/geant4.10.04.p02/examples/basic/GeantStandaloneMinimalExample/build/CMakeFiles/list_ins$
+/Users/ioana/Documents/geant4/geant4.10.04.p02/examples/basic/GeantStandaloneMinimalExample/build/CMakeFiles/rebuild_$
+/Users/ioana/Documents/geant4/geant4.10.04.p02/examples/basic/GeantStandaloneMinimalExample/build/CMakeFiles/edit_cac$
+/Users/ioana/Documents/geant4/geant4.10.04.p02/examples/basic/GeantStandaloneMinimalExample/build/CMakeFiles/geantDD4$
