@@ -37,6 +37,7 @@ private:
   double primary_energy;
   int hitId;
   int event_id;
+  G4double pointOfEntryX, pointOfEntryY, pointOfEntryZ;
 };
 }
 

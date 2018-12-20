@@ -90,7 +90,10 @@ void CalorimeterSD::Initialize(G4HCofThisEvent* hce) {
         CalorimeterHit* hit = new CalorimeterHit();
         fHitsCollection->insert(hit);
       }
-
+     pointOfEntryX = G4EventManager::GetEventManager()->GetConstCurrentEvent()->GetPrimaryVertex()->GetPrimary(0)->GetPolX();
+     pointOfEntryY = G4EventManager::GetEventManager()->GetConstCurrentEvent()->GetPrimaryVertex()->GetY0();
+     pointOfEntryZ = G4EventManager::GetEventManager()->GetConstCurrentEvent()->GetPrimaryVertex()->GetZ0();
+     std::cout << "The point of entry on x, y, z is: " << pointOfEntryX << ", " << pointOfEntryY << " , " << pointOfEntryZ << std::endl;
      primary_energy = G4EventManager::GetEventManager()->GetConstCurrentEvent()->GetPrimaryVertex()->GetPrimary(0)->GetTotalEnergy();
      
 }
@@ -142,7 +145,7 @@ void CalorimeterSD::EndOfEvent(G4HCofThisEvent* hce) {
         hitId = fCellNo*fCellNo*ix+fCellNo*iy+iz;
         CalorimeterHit* hit = (*fHitsCollection)[hitId];
         G4double eDep = hit->GetEdep();
-        if (eDep) {
+        if (eDep > 0.1) {
           temp_hit.SetXid(ix);
           temp_hit.SetYid(iy);
           temp_hit.SetZid(iz);
