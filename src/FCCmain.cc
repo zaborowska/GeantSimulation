@@ -5,6 +5,8 @@
 #include "GdmlDetectorConstruction.h"
 #include "FullSimActions.h"
 
+#include <G4MTRunManager.hh>
+
 #include "G4UImanager.hh"
 #include "G4RunManager.hh"
 #ifdef G4VIS_USE
@@ -26,7 +28,8 @@ int main(int argc, char** argv)
       G4cout << G4endl;
       return -1;
    }
-   G4RunManager * runManager = new G4RunManager;
+   G4MTRunManager * runManager = new G4MTRunManager;
+   runManager->SetNumberOfThreads(1);
    G4VModularPhysicsList* physicsList = new FTFP_BERT();
    runManager->SetUserInitialization(physicsList);
    // Load geometry (from GDML)

@@ -16,6 +16,7 @@ set(CMAKE_CXX_COMPILER_ID "Clang")
 
 # Preprocessor definitions for this target.
 set(CMAKE_TARGET_DEFINITIONS_CXX
+  "G4MULTITHREADED"
   "G4UI_USE"
   "G4VERBOSE"
   "G4VIS_USE"

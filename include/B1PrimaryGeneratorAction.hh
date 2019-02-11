@@ -4,6 +4,7 @@
 #include "G4VUserPrimaryGeneratorAction.hh"
 #include "G4ParticleGun.hh"
 #include "globals.hh"
+#include <fstream>
 
 class G4ParticleGun;
 class G4Event;
@@ -25,6 +26,8 @@ class B1PrimaryGeneratorAction : public G4VUserPrimaryGeneratorAction
 
     // method to access particle gun
     const G4ParticleGun* GetParticleGun() const { return fParticleGun; }
+    
+    std::ifstream in;
 
   private:
     G4ParticleGun*  fParticleGun; // pointer a to G4 gun class

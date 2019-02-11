@@ -18,6 +18,7 @@
 #include "TCanvas.h"
 #include "TMath.h"
 #include "TROOT.h"
+#include <sstream>
 
 namespace test {
 CalorimeterSD::CalorimeterSD(G4String name): G4VSensitiveDetector(name),
@@ -26,7 +27,7 @@ CalorimeterSD::CalorimeterSD(G4String name): G4VSensitiveDetector(name),
                                              fCellNo(1) {
   collectionName.insert("ECalorimeterColl");
   
-  f = new TFile("trialWithName.root","recreate");
+  f = new TFile("trialWith1-10000.root","recreate");
 
   // t2 = new TTree("t","a Tree with data from an example ");
 
@@ -45,7 +46,7 @@ CalorimeterSD::CalorimeterSD(G4String name, G4int aCellNoInAxis): G4VSensitiveDe
  
   collectionName.insert("ECalorimeterColl");
 
-  f = new TFile("trialWithName.root","recreate");
+  f = new TFile("trialWith1-10000.root","recreate");
   // t2 = new TTree("t","a Tree with data from an example");
   
   // t2->Branch("x", &temp_hit.fxID,"fxID/I");
@@ -65,16 +66,26 @@ void CalorimeterSD::Initialize(G4HCofThisEvent* hce) {
 
  
   event_id = G4EventManager::GetEventManager()->GetConstCurrentEvent()->GetEventID();
+  std::cout << "EVENT ID PRINT:" << event_id << std::endl;
+
+  primary_energy = G4EventManager::GetEventManager()->GetConstCurrentEvent()->GetPrimaryVertex()->GetPrimary(0)->GetTotalEnergy();
+  std::cout << "The primary energy is: "<< primary_energy << std::endl;
+
   std::string nameOfTTree = "t_";
-  nameOfTTree += std::to_string(event_id);
+  std::ostringstream primaryEnergyString1;
+  primaryEnergyString1 << primary_energy;
+  std::string primaryEnergyString = primaryEnergyString1.str();
+  nameOfTTree += primaryEnergyString;
+  //nameOfTTree += std::to_string(event_id);
+
   t2 = new TTree(nameOfTTree.c_str(),"a Tree with one generated event");
   
   t2->Branch("x", &temp_hit.fxID,"fxID/I");
   t2->Branch("y", &temp_hit.fyID,"fyID/I");
   t2->Branch("z", &temp_hit.fzID,"fzID/I");
   t2->Branch("eDep", &temp_hit.fEdep,"fEdep/D");
-  t2->Branch("primaryE", &primary_energy, "primary_energy/D");
-  t2->Branch("hitId", &hitId, "hitId/I");
+  // t2->Branch("primaryE", &primary_energy, "primary_energy/D");
+  // t2->Branch("hitId", &hitId, "hitId/I");
 
   fHitsCollection = new CalorimeterHitsCollection(SensitiveDetectorName,collectionName[0]);
   if (fHCID<0) {
@@ -94,7 +105,6 @@ void CalorimeterSD::Initialize(G4HCofThisEvent* hce) {
      pointOfEntryY = G4EventManager::GetEventManager()->GetConstCurrentEvent()->GetPrimaryVertex()->GetY0();
      pointOfEntryZ = G4EventManager::GetEventManager()->GetConstCurrentEvent()->GetPrimaryVertex()->GetZ0();
      std::cout << "The point of entry on x, y, z is: " << pointOfEntryX << ", " << pointOfEntryY << " , " << pointOfEntryZ << std::endl;
-     primary_energy = G4EventManager::GetEventManager()->GetConstCurrentEvent()->GetPrimaryVertex()->GetPrimary(0)->GetTotalEnergy();
      
 }
 
@@ -156,6 +166,5 @@ void CalorimeterSD::EndOfEvent(G4HCofThisEvent* hce) {
       }
 
   t2->Write();
-  std::cout << "EVENT ID PRINT:" << event_id << std::endl;
   }
 }

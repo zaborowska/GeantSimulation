@@ -10,6 +10,7 @@
 #include "G4SystemOfUnits.hh"
 #include "Randomize.hh"
 
+
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 B1PrimaryGeneratorAction::B1PrimaryGeneratorAction()
@@ -28,6 +29,10 @@ B1PrimaryGeneratorAction::B1PrimaryGeneratorAction()
   fParticleGun->SetParticleDefinition(particle);
   fParticleGun->SetParticleMomentumDirection(G4ThreeVector(0.,0.,1.));
   fParticleGun->SetParticleEnergy(100.*GeV);
+
+  
+  in.open("/Users/ioana/Desktop/testEnergyLabels.out");
+  //open file 
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -41,6 +46,13 @@ B1PrimaryGeneratorAction::~B1PrimaryGeneratorAction()
 
 void B1PrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
 {
+
+     //read one value 
+     //send to next 
+      float a;
+      in >> a;
+      std::cout << "This is the file value " << a<<std::endl;
+      fParticleGun->SetParticleEnergy(a*GeV); 
       fParticleGun->GeneratePrimaryVertex(anEvent);
 }
 
