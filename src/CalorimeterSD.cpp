@@ -46,7 +46,7 @@ CalorimeterSD::CalorimeterSD(G4String name, G4int aCellNoInAxis): G4VSensitiveDe
  
   collectionName.insert("ECalorimeterColl");
 
-  f = new TFile("trialWith10k-20k.root","recreate");
+  f = new TFile("trialWithcut32Window.root","recreate");
   // t2 = new TTree("t","a Tree with data from an example");
   
   // t2->Branch("x", &temp_hit.fxID,"fxID/I");
@@ -148,16 +148,16 @@ G4bool CalorimeterSD::ProcessHits(G4Step* step, G4TouchableHistory*)
 void CalorimeterSD::EndOfEvent(G4HCofThisEvent* hce) {
 
 
-  for (G4int ix=0;ix<fCellNo;ix++)
-    for (G4int iy=0;iy<fCellNo;iy++)
-      for (G4int iz=0;iz<fCellNo;iz++)
+  for (G4int ix=84;ix<117;ix++)
+    for (G4int iy=84;iy<117;iy++)
+      for (G4int iz=0;iz<33;iz++)
       {
         hitId = fCellNo*fCellNo*ix+fCellNo*iy+iz;
         CalorimeterHit* hit = (*fHitsCollection)[hitId];
         G4double eDep = hit->GetEdep();
         if (eDep > 0.1) {
-          temp_hit.SetXid(ix);
-          temp_hit.SetYid(iy);
+          temp_hit.SetXid(ix-84);
+          temp_hit.SetYid(iy-84);
           temp_hit.SetZid(iz);
           temp_hit.SetEdep(eDep);
 
