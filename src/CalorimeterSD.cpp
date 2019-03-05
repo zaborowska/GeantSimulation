@@ -46,7 +46,7 @@ CalorimeterSD::CalorimeterSD(G4String name, G4int aCellNoInAxis): G4VSensitiveDe
  
   collectionName.insert("ECalorimeterColl");
 
-  f = new TFile("trialWith1-10000.root","recreate");
+  f = new TFile("trialWith10k-20k.root","recreate");
   // t2 = new TTree("t","a Tree with data from an example");
   
   // t2->Branch("x", &temp_hit.fxID,"fxID/I");

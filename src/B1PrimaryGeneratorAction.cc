@@ -31,7 +31,7 @@ B1PrimaryGeneratorAction::B1PrimaryGeneratorAction()
   fParticleGun->SetParticleEnergy(100.*GeV);
 
   
-  in.open("/Users/ioana/Desktop/testEnergyLabels.out");
+  in.open("/Users/ioana/Desktop/testEnergyLabels10k-20k.out");
   //open file 
 }
 
