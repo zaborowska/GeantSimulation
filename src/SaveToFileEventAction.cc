@@ -13,7 +13,7 @@
 SaveToFileEventAction::SaveToFileEventAction()
 : G4UserEventAction(),
   fHID(-1),
-  fCellNo(201),
+  fCellNo(32),
   fOutput(nullptr)
 {
   // set printing per each event
@@ -96,9 +96,9 @@ void SaveToFileEventAction::EndOfEventAction(const G4Event* event)
   // t2->Branch("hitId", &hitId, "hitId/I");
 
 
-  for (G4int ix=0;ix<201;ix++)
-    for (G4int iy=0;iy<201;iy++)
-      for (G4int iz=0;iz<201;iz++)
+  for (G4int ix=0;ix<32;ix++)
+    for (G4int iy=0;iy<32;iy++)
+      for (G4int iz=0;iz<32;iz++)
         {
           hitId = fCellNo*fCellNo*ix+fCellNo*iy+iz;
           test::CalorimeterHit* hit = (*hcHC)[hitId];

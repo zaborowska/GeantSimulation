@@ -8,7 +8,7 @@ FullSimActions::FullSimActions():
   G4VUserActionInitialization() {
   std::cout << "INITIALIZE FULL SIM ACTIONS" << std::endl;
   TThread::Initialize();
-  f = new TFile("trialWithcut201Window.root","recreate");
+  f = new TFile("trialWithcut32Window.root","recreate");
 }
 
 FullSimActions::~FullSimActions()
@@ -20,7 +20,7 @@ FullSimActions::~FullSimActions()
 
 void FullSimActions::Build() const {
   SetUserAction(new PrimaryGeneratorAction());
-  SetUserAction(new SaveToFileEventAction(f, 201));
+  SetUserAction(new SaveToFileEventAction(f, 32));
   std::cout << "BUILD ACTIONS" << std::endl;
 }
 }

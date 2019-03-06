@@ -113,10 +113,10 @@
 
   <solids>
     <box lunit="mm" name="HadCalLayerBox0xe3b460" x="10" y="10" z="10"/>
-    <box lunit="mm" name="HadCalCellBox0xe3b1f0" x="10" y="10" z="2010"/>
-    <box lunit="mm" name="HadCalColumnBox0xe3a740" x="10" y="2010" z="2010"/>
-    <box lunit="mm" name="HadCalorimeterBox0xe3a560" x="2010" y="2010" z="2010"/>
-    <box lunit="mm" name="worldBox0xe2ee50" x="4020" y="4020" z="4020"/>
+    <box lunit="mm" name="HadCalCellBox0xe3b1f0" x="10" y="10" z="320"/>
+    <box lunit="mm" name="HadCalColumnBox0xe3a740" x="10" y="320" z="320"/>
+    <box lunit="mm" name="HadCalorimeterBox0xe3a560" x="320" y="320" z="320"/>
+    <box lunit="mm" name="worldBox0xe2ee50" x="640" y="640" z="640"/>
   </solids>
 
   <structure>
@@ -128,7 +128,7 @@
     <volume name="HadCalCellLogical0xe3b290">
       <materialref ref="G4_PbWO40xe2e650"/>
       <solidref ref="HadCalCellBox0xe3b1f0"/>
-      <replicavol number="201">
+      <replicavol number="32">
         <volumeref ref="HadCalLayerLogical0xe3b500"/>
         <replicate_along_axis>
           <direction z="1"/>
@@ -140,7 +140,7 @@
     <volume name="HadCalColumnLogical0xe3a810">
       <materialref ref="G4_PbWO40xe2e650"/>
       <solidref ref="HadCalColumnBox0xe3a740"/>
-      <replicavol number="201">
+      <replicavol number="32">
         <volumeref ref="HadCalCellLogical0xe3b290"/>
         <replicate_along_axis>
           <direction y="1"/>
@@ -152,7 +152,7 @@
     <volume name="HadCalorimeterLogical0xe3a5c0">
       <materialref ref="G4_PbWO40xe2e650"/>
       <solidref ref="HadCalorimeterBox0xe3a560"/>
-      <replicavol number="201">
+      <replicavol number="32">
         <volumeref ref="HadCalColumnLogical0xe3a810"/>
         <replicate_along_axis>
           <direction x="1"/>
@@ -166,6 +166,7 @@
       <solidref ref="worldBox0xe2ee50"/>
       <physvol name="HadCalorimeterPhysical0xe3a6d0">
         <volumeref ref="HadCalorimeterLogical0xe3a5c0"/>
+        <position name="HadCalorimeterLogical0xe3a5c0_pos" unit="mm" x="0" y="0" z="160"/>
       </physvol>
     </volume>
   </structure>

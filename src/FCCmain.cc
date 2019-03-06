@@ -45,12 +45,15 @@ int main(int argc, char** argv)
   G4VisManager* visManager = new G4VisExecutive;
   visManager -> Initialize ();
 
+  G4UImanager* UImanager = G4UImanager::GetUIpointer();
 
   if(ui)
     {
       //--------------------------
       // Define (G)UI
       //--------------------------
+      UImanager->ApplyCommand("/control/execute ../init_vis.mac");
+      UImanager->SetMacroSearchPath("..");
       ui->SessionStart();
       delete ui;
     }
@@ -58,7 +61,6 @@ int main(int argc, char** argv)
     {
       // UI
 
-      G4UImanager* UImanager = G4UImanager::GetUIpointer();
       G4String command = "/control/execute ";
       G4String fileName = argv[2];
       G4cout << "/control/execute "<<argv[2]<<G4endl;

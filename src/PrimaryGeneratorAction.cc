@@ -26,9 +26,7 @@ PrimaryGeneratorAction::PrimaryGeneratorAction()
   fParticleGun->SetParticleDefinition(particle);
   fParticleGun->SetParticleMomentumDirection(G4ThreeVector(0.,0.,1.));
   fParticleGun->SetParticleEnergy(100.*GeV);
-  G4double world_size = 640 * mm;
-  std::cout << "START PARTICLE AT: " << - world_size / 2. << std::endl;
-  fParticleGun->SetParticlePosition(G4ThreeVector(0.,0., - world_size / 2.));
+  fParticleGun->SetParticlePosition(G4ThreeVector(0.,0.,0.));
 
   in.open("../testEnergyLabels.out");
 
@@ -46,7 +44,7 @@ void PrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
   float a;
   in >> a;
   std::cout << "This is the file value " << a<<std::endl;
-  fParticleGun->SetParticleEnergy(a*GeV);
+//  fParticleGun->SetParticleEnergy(a*GeV);
   fParticleGun->GeneratePrimaryVertex(anEvent);
 }
 
