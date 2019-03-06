@@ -26,8 +26,6 @@ CalorimeterSD::CalorimeterSD(G4String name): G4VSensitiveDetector(name),
                                              fHCID(-1),
                                              fCellNo(1) {
   collectionName.insert("ECalorimeterColl");
-  
-  f = new TFile("trialWith1-10000.root","recreate");
 
   // t2 = new TTree("t","a Tree with data from an example ");
 
@@ -46,7 +44,6 @@ CalorimeterSD::CalorimeterSD(G4String name, G4int aCellNoInAxis): G4VSensitiveDe
  
   collectionName.insert("ECalorimeterColl");
 
-  f = new TFile("trialWithcut32Window.root","recreate");
   // t2 = new TTree("t","a Tree with data from an example");
   
   // t2->Branch("x", &temp_hit.fxID,"fxID/I");
@@ -59,33 +56,9 @@ CalorimeterSD::CalorimeterSD(G4String name, G4int aCellNoInAxis): G4VSensitiveDe
 }
 
 CalorimeterSD::~CalorimeterSD() {
-f->Close();
 }
 
 void CalorimeterSD::Initialize(G4HCofThisEvent* hce) {
-
- 
-  event_id = G4EventManager::GetEventManager()->GetConstCurrentEvent()->GetEventID();
-  std::cout << "EVENT ID PRINT:" << event_id << std::endl;
-
-  primary_energy = G4EventManager::GetEventManager()->GetConstCurrentEvent()->GetPrimaryVertex()->GetPrimary(0)->GetTotalEnergy();
-  std::cout << "The primary energy is: "<< primary_energy << std::endl;
-
-  std::string nameOfTTree = "t_";
-  std::ostringstream primaryEnergyString1;
-  primaryEnergyString1 << primary_energy;
-  std::string primaryEnergyString = primaryEnergyString1.str();
-  nameOfTTree += primaryEnergyString;
-  //nameOfTTree += std::to_string(event_id);
-
-  t2 = new TTree(nameOfTTree.c_str(),"a Tree with one generated event");
-  
-  t2->Branch("x", &temp_hit.fxID,"fxID/I");
-  t2->Branch("y", &temp_hit.fyID,"fyID/I");
-  t2->Branch("z", &temp_hit.fzID,"fzID/I");
-  t2->Branch("eDep", &temp_hit.fEdep,"fEdep/D");
-  // t2->Branch("primaryE", &primary_energy, "primary_energy/D");
-  // t2->Branch("hitId", &hitId, "hitId/I");
 
   fHitsCollection = new CalorimeterHitsCollection(SensitiveDetectorName,collectionName[0]);
   if (fHCID<0) {
@@ -101,10 +74,6 @@ void CalorimeterSD::Initialize(G4HCofThisEvent* hce) {
         CalorimeterHit* hit = new CalorimeterHit();
         fHitsCollection->insert(hit);
       }
-     pointOfEntryX = G4EventManager::GetEventManager()->GetConstCurrentEvent()->GetPrimaryVertex()->GetPrimary(0)->GetPolX();
-     pointOfEntryY = G4EventManager::GetEventManager()->GetConstCurrentEvent()->GetPrimaryVertex()->GetY0();
-     pointOfEntryZ = G4EventManager::GetEventManager()->GetConstCurrentEvent()->GetPrimaryVertex()->GetZ0();
-     std::cout << "The point of entry on x, y, z is: " << pointOfEntryX << ", " << pointOfEntryY << " , " << pointOfEntryZ << std::endl;
      
 }
 
@@ -145,26 +114,5 @@ G4bool CalorimeterSD::ProcessHits(G4Step* step, G4TouchableHistory*)
 }
 
 
-void CalorimeterSD::EndOfEvent(G4HCofThisEvent* hce) {
-
-
-  for (G4int ix=84;ix<117;ix++)
-    for (G4int iy=84;iy<117;iy++)
-      for (G4int iz=0;iz<33;iz++)
-      {
-        hitId = fCellNo*fCellNo*ix+fCellNo*iy+iz;
-        CalorimeterHit* hit = (*fHitsCollection)[hitId];
-        G4double eDep = hit->GetEdep();
-        if (eDep > 0.1) {
-          temp_hit.SetXid(ix-84);
-          temp_hit.SetYid(iy-84);
-          temp_hit.SetZid(iz);
-          temp_hit.SetEdep(eDep);
-
-          t2->Fill();
-        }
-      }
-
-  t2->Write();
-  }
+void CalorimeterSD::EndOfEvent(G4HCofThisEvent* hce) {}
 }

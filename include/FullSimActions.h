@@ -3,6 +3,8 @@
 
 #include "G4VUserActionInitialization.hh"
 
+#include "TFile.h"
+
 /** @class FullSimActions SimG4Full/SimG4Full/FullSimActions.h FullSimActions.h
  *
  *  User action initialization for full simulation.
@@ -17,6 +19,8 @@ public:
    ~FullSimActions();
    /// Create all user actions.
    virtual void Build() const final;
+  private:
+   TFile* f;
 };
 }
 
