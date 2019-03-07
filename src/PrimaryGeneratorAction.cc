@@ -12,8 +12,7 @@
 
 PrimaryGeneratorAction::PrimaryGeneratorAction()
 : G4VUserPrimaryGeneratorAction(),
-  fParticleGun(0),
-  fEnvelopeBox(0)
+  fParticleGun(nullptr)
 {
   G4int n_particle = 1;
   fParticleGun  = new G4ParticleGun(n_particle);
@@ -28,8 +27,6 @@ PrimaryGeneratorAction::PrimaryGeneratorAction()
   fParticleGun->SetParticleEnergy(100.*GeV);
   fParticleGun->SetParticlePosition(G4ThreeVector(0.,0.,0.));
 
-  in.open("../testEnergyLabels.out");
-
 }
 
 PrimaryGeneratorAction::~PrimaryGeneratorAction()
@@ -39,12 +36,8 @@ PrimaryGeneratorAction::~PrimaryGeneratorAction()
 
 void PrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
 {
-  //read one value
-  //send to next
-  float a;
-  in >> a;
-  std::cout << "This is the file value " << a<<std::endl;
-//  fParticleGun->SetParticleEnergy(a*GeV);
+  G4double u = G4UniformRand();
+  fParticleGun->SetParticleEnergy((1. + (u * 499.)) * GeV); // get random number from 1 to 500 GeV
   fParticleGun->GeneratePrimaryVertex(anEvent);
 }
 

@@ -1,7 +1,11 @@
 #include "FTFP_BERT.hh"
 #include "GdmlDetectorConstruction.h"
 #include "FullSimActions.h"
+#ifdef G4MULTITHREADED
 #include "G4MTRunManager.hh"
+#else
+#include "G4RunManager.hh"
+#endif
 #include "G4UImanager.hh"
 #include "G4UIExecutive.hh"
 #include "G4VisManager.hh"
@@ -25,8 +29,12 @@ int main(int argc, char** argv)
       G4cout << G4endl;
       return -1;
    }
-   G4MTRunManager * runManager = new G4MTRunManager;
+#ifdef G4MULTITHREADED
+  G4MTRunManager* runManager = new G4MTRunManager;
    runManager->SetNumberOfThreads(4);
+#else
+  G4RunManager* runManager = new G4RunManager;
+#endif
    G4VModularPhysicsList* physicsList = new FTFP_BERT();
    runManager->SetUserInitialization(physicsList);
    // Load geometry (from GDML)
@@ -35,7 +43,7 @@ int main(int argc, char** argv)
    runManager->SetUserInitialization(detector);
    runManager->SetUserInitialization( new sim::FullSimActions );
    runManager->Initialize();
-   std::cout << "after initialize" << std::endl;   
+   std::cout << "after initialize" << std::endl;
 
 
   //----------------
