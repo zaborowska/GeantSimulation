@@ -19,8 +19,7 @@ public:
    ~FullSimActions();
    /// Create all user actions.
    virtual void Build() const final;
-  private:
-   TFile* f;
+   virtual void BuildForMaster() const final;
 };
 }
 

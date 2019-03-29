@@ -1,26 +1,28 @@
 #include "FullSimActions.h"
 #include "PrimaryGeneratorAction.hh"
 #include "SaveToFileEventAction.hh"
+#include "RunAction.hh"
 #include "TThread.h"
+#include "Randomize.hh"
+#include <ctime>
 
 namespace sim {
 FullSimActions::FullSimActions():
-  G4VUserActionInitialization() {
-  std::cout << "INITIALIZE FULL SIM ACTIONS" << std::endl;
-  TThread::Initialize();
-  f = new TFile("trialWithcut32Window.root","recreate");
-}
+  G4VUserActionInitialization() {}
 
-FullSimActions::~FullSimActions()
+FullSimActions::~FullSimActions() {}
+
+void FullSimActions::BuildForMaster() const
 {
-  f->Write();
-  f->Close();
-  delete f;
+  // if merging of files enabled
+  // SaveToFileEventAction* eventAction = new SaveToFileEventAction;
+  // SetUserAction(new RunAction(eventAction));
 }
 
 void FullSimActions::Build() const {
   SetUserAction(new PrimaryGeneratorAction());
-  SetUserAction(new SaveToFileEventAction(f, 32));
-  std::cout << "BUILD ACTIONS" << std::endl;
+  auto eventAction = new SaveToFileEventAction(25);
+  SetUserAction(eventAction);
+  SetUserAction(new RunAction(eventAction));
 }
 }

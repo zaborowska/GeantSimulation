@@ -22,7 +22,7 @@ void GdmlDetectorConstruction::ConstructSDandField() {
   // Example from Geant4 examples/extended/persistency/gdml/G04
   // First create and register sensitive detectors:
   std::string caloSDname = "ECal";
-  CalorimeterSD* caloSD = new CalorimeterSD(caloSDname,32);
+  CalorimeterSD* caloSD = new CalorimeterSD(caloSDname,25);
   G4SDManager* SDman = G4SDManager::GetSDMpointer();
   SDman->AddNewDetector( caloSD );
   const G4GDMLAuxMapType* auxMap = m_parser.GetAuxMap();
