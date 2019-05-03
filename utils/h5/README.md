@@ -15,3 +15,23 @@ ROOT -> H5
 h5c++ root2h5.cpp -o root2h5 `root-config --cflags --glibs`
 ./root2h5 <INPUT_FILE>
 ```
+
+
+H5 -> ROOT
+==
+
+```
+make
+```
+
+Executable `h52root` is created together with ROOT dictionary `libH52RootDict.so`. To translate `.h5` file:
+
+```
+  ./h52root <INPUT_FILE> <OUTPUT_FILE>(optional: DEFAULT .h5->.root)
+```
+
+or
+
+```
+python h52root.py <LIST_OF_INPUT_FILES>
+```
