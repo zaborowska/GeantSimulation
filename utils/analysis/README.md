@@ -18,7 +18,7 @@ To compile analysis tool:
 make
 ```
 
-Executable `createHistograms` s created together with ROOT dictionary `libCreateHistogramsDict.so`. To create histograms:
+Executable `createHistograms` is created together with ROOT dictionary `libCreateHistogramsDict.so`. To create histograms:
 
 ```
 ./createHistograms <INPUT_FILE> <OUTPUT_FILE>(optional: DEFAULT "validation_<INPUT_FILE>")
