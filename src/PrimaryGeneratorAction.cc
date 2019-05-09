@@ -1,4 +1,5 @@
 #include "PrimaryGeneratorAction.hh"
+#include "PrimaryGeneratorMessenger.hh"
 
 #include "G4LogicalVolumeStore.hh"
 #include "G4LogicalVolume.hh"
@@ -16,7 +17,7 @@ PrimaryGeneratorAction::PrimaryGeneratorAction()
 {
   G4int n_particle = 1;
   fParticleGun  = new G4ParticleGun(n_particle);
-
+  fMessenger= new PrimaryGeneratorMessenger(this);
   // default particle kinematic
   G4ParticleTable* particleTable = G4ParticleTable::GetParticleTable();
   G4String particleName;
@@ -32,12 +33,15 @@ PrimaryGeneratorAction::PrimaryGeneratorAction()
 PrimaryGeneratorAction::~PrimaryGeneratorAction()
 {
   delete fParticleGun;
+  delete fMessenger;
 }
 
 void PrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
 {
-  G4double u = G4UniformRand();
-  fParticleGun->SetParticleEnergy((1. + (u * 499.)) * GeV); // get random number from 1 to 500 GeV
+  if (!fSingleEnergy) {
+    G4double u = G4UniformRand();
+    fParticleGun->SetParticleEnergy((1. + (u * 499.)) * GeV); // get random number from 1 to 500 GeV
+  }
   fParticleGun->GeneratePrimaryVertex(anEvent);
 }
 
