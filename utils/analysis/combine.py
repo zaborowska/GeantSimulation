@@ -181,7 +181,6 @@ def main(input_names, output_name):
         canvases[len(to_plot) + iGraph].cd()
         prepare_graph(graphs[graph_name], "g_"+graph_name, graphs[graph_name].GetTitle())
         graphs[graph_name].Draw("aep")
-        canvases[len(to_plot) + iGraph].SaveAs(graph_name + "_graph.png")
 
     # store everything in a file
     out_root = ROOT.TFile(output_name, "RECREATE")
