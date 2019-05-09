@@ -1,6 +1,7 @@
 #include <iostream>
 #include "TH1.h"
 #include "TH1F.h"
+#include "TH2F.h"
 #include "TH3F.h"
 #include "TFile.h"
 #include "TTree.h"
@@ -28,44 +29,22 @@ void validationPlots(const std::string& aInput, const std::string& aOutput) {
   }
   auto mesh = new TH3F("mesh", "mesh", netSize, -0.5, netSize - 0.5, netSize, -0.5, netSize - 0.5, netSize, -0.5, netSize - 0.5);
   mesh->SetTitle(";z;x;y");
-  auto enMC = new TH1D("enMC", "MC energy (GeV)", 1000, 0, 1.2 * maxEnergy);
-  enMC->SetTitle("MC energy;E_{MC} (GeV); Normalised entries");
-  auto enTotal = new TH1D("enTotal", "total energy (GeV)", 1000, 0, 1.2 * maxEnergy);
-  enTotal->SetTitle("total deposited energy;E_{dep} (GeV); Normalised entries");
-  auto enFractionTotal = new TH1D("enFractionTotal", "fraction of deposited energy", 1000, 0, 1);
-  enFractionTotal->SetTitle("fraction of deposited energy;E_{dep} /  E_{MC}; Normalised entries");
-  auto numCells = new TH1D("numCells", "number of cells per event", 100, 0, pow(netSize,3) );
-  numCells->SetTitle("number of cells per event;## cells; Normalised entries");
-  auto enCell = new TH1D("enCell", "cell energy distribution", 1000, 0, 1.2 * maxEnergy);
-  enCell->SetTitle("cell energy distribution;E_{cell} (MeV); Normalised entries");
-  auto longProfile = new TH1D("longProfile", "longitudinal profile", netSize, -0.5, netSize - 0.5);
-  longProfile->SetTitle("longitudinal profile;t (layer);#LTE#GT (MeV)");
-  auto transProfile = new TH1D("transProfile", "transverse profile", netMidCell, - 0.5, netMidCell - 0.5);
-  transProfile->SetTitle("transverse profile;r (layer);#LTE#GT (MeV)");
-  auto enFractionCell = new TH1D("enFractionCell", "cell energy fraction distribution", 1000, 0, 1);
-  enFractionCell->SetTitle("cell energy fraction distribution;E_{cell}/E_{MC}; Normalised entries");
-  auto longFirstMoment = new TH1D("longFirstMoment", "longitudinal first moment", netSize*cellSizeMm, 0, netSize * cellSizeMm);
-  longFirstMoment->SetTitle("longitudinal first moment;#LT#lambda#GT;Normalised entries");
-  auto longSecondMoment = new TH1D("longSecondMoment", "longitudinal second moment", netSize*cellSizeMm, 0, pow(netSize * cellSizeMm, 2));
-  longSecondMoment->SetTitle("longitudinal second moment;#LT#lambda^{2}#GT;Normalised entries");
-  auto transFirstMoment = new TH1D("transFirstMoment", "transverse first moment", netSize*cellSizeMm, 0, netSize * cellSizeMm / scaleFactorProfile );
-  transFirstMoment->SetTitle("transverse first moment;#LT#lambda#GT;Normalised entries");
-  auto transSecondMoment = new TH1D("transSecondMoment", "transverse second moment", netSize*cellSizeMm, 0, pow(netSize * cellSizeMm, 2) / pow(scaleFactorProfile, 2));
-  transSecondMoment->SetTitle("transverse second moment;#LT#lambda^{2}#GT;Normalised entries");
+  auto enMC = new TH1F("enMC", "MC energy (GeV);E_{MC} (GeV); Normalised entries", 1000, 0, 1.2 * maxEnergy);
+  auto enTotal = new TH1F("enTotal", "total deposited energy (GeV);E_{dep} (GeV); Normalised entries", 1000, 0, 1.2 * maxEnergy);
+  auto enFractionTotal = new TH1F("enFractionTotal", "fraction of deposited energy;E_{dep} /  E_{MC}; Normalised entries", 1000, 0, 1);
+  auto numCells = new TH1F("numCells", "number of cells per event;## cells; Normalised entries", 100, 0, pow(netSize,3) );
+  auto enCell = new TH1F("enCell", "cell energy distribution;E_{cell} (MeV); Normalised entries", 1000, 0, 1.2 * maxEnergy);
+  auto longProfile = new TH1F("longProfile", "longitudinal profilee;t (layer);#LTE#GT (MeV)", netSize, -0.5, netSize - 0.5);
+  auto transProfile = new TH1F("transProfile", "transverse profile;r (layer);#LTE#GT (MeV)", netMidCell, - 0.5, netMidCell - 0.5);
+  auto enFractionCell = new TH1F("enFractionCell", "cell energy fraction distribution;E_{cell}/E_{MC}; Normalised entries", 1000, 0, 1);
+  auto longFirstMoment = new TH1F("longFirstMoment", "longitudinal first moment;#LT#lambda#GT;Normalised entries", netSize*cellSizeMm, 0, netSize * cellSizeMm);
+  auto longSecondMoment = new TH1F("longSecondMoment", "longitudinal second moment;#LT#lambda^{2}#GT;Normalised entries", netSize*cellSizeMm, 0, pow(netSize * cellSizeMm, 2));
+  auto transFirstMoment = new TH1F("transFirstMoment", "transverse first moment;#LT#lambda#GT;Normalised entries", netSize*cellSizeMm, 0, netSize * cellSizeMm / scaleFactorProfile );
+  auto transSecondMoment = new TH1F("transSecondMoment", "transverse second moment;#LT#lambda^{2}#GT;Normalised entries", netSize*cellSizeMm, 0, pow(netSize * cellSizeMm, 2) / pow(scaleFactorProfile, 2));
+  auto enLayers = new TH2F("enLayers", "energy distribution per layer;E_{cell} (MeV); layer; Entries", 100, 0, 1000, netSize, -0.5, netSize - 0.5);
+  auto enFractionLayers = new TH2F("enFractionLayers", "energy fraction distribution per layer;E_{cell}/E_{MC}; layer; Entries", 1000, 0, 1., netSize, -0.5, netSize - 0.5);
+  auto transProfileLayers = new TH2F("transProfileLayers", "transverse profile per layer ;r (layer); layer;#LTE#GT (MeV)", netMidCell, - 0.5, netMidCell - 0.5, netSize, -0.5, netSize - 0.5);
 
-  TH1D* enLayers[netSize];
-  TH1D* enFractionLayers[netSize];
-  TH1D* transProfileLayers[netSize];
-  for(uint iLayer = 0; iLayer < netSize; ++iLayer) {
-    enLayers[iLayer] = new TH1D(("enLayer"+std::to_string(iLayer)).c_str(), ("energy distribution for layer "+std::to_string(iLayer)).c_str(), 100, 0, 1000);
-    enLayers[iLayer]->SetTitle(("energy distribution for layer " +std::to_string(iLayer)+";E_{cell} (MeV); Entries").c_str());
-    enFractionLayers[iLayer] = new TH1D(("enFractionLayer"+std::to_string(iLayer)).c_str(), ("energy fraction distribution for layer "+std::to_string(iLayer)).c_str(), 1000, 0, 1);
-    enFractionLayers[iLayer]->SetTitle(("energy fraction distribution for layer " +std::to_string(iLayer)+";E_{cell}/E_{MC}; Entries").c_str());
-    transProfileLayers[iLayer] = new TH1D(("transProfileLayer"+std::to_string(iLayer)).c_str(), ("transverse profile for layer "+std::to_string(iLayer)).c_str(), netMidCell, - 0.5, netMidCell - 0.5);
-    transProfileLayers[iLayer]->SetTitle(("transverse profile for layer " +std::to_string(iLayer)+";r (layer);#LTE#GT (MeV)").c_str());
-  }
-
-  TTree* events = nullptr;
   TTreeReader eventsReader("events",&f);
   TTreeReaderValue<double> energyMC(eventsReader, "EnergyMC");
   TTreeReaderValue<std::vector<double>> energyCellV(eventsReader, "EnergyCell");
@@ -107,12 +86,12 @@ void validationPlots(const std::string& aInput, const std::string& aOutput) {
       // fill histograms
       mesh->Fill(zCell, xCell, yCell, eCell);
       enCell->Fill(eCell);
-      enLayers[tDistance]->Fill(eCell);
+      enLayers->Fill(eCell, tDistance);
       longProfile->Fill(tDistance, eCell);
       transProfile->Fill(rDistance, eCell);
-      transProfileLayers[tDistance]->Fill(rDistance, eCell);
+      transProfileLayers->Fill(rDistance, tDistance, eCell);
       enFractionCell->Fill(eCellFraction);
-      enFractionLayers[tDistance]->Fill(eCellFraction);
+      enFractionLayers->Fill(eCellFraction, tDistance);
       sumEnergyDeposited += eCell;
     }
     enMC->Fill(*(energyMC) / 1.e3);  // convert to GeV
@@ -143,11 +122,9 @@ void validationPlots(const std::string& aInput, const std::string& aOutput) {
   longSecondMoment->Scale(1./iterEvents);
   transFirstMoment->Scale(1./iterEvents);
   transSecondMoment->Scale(1./iterEvents);
-  for(uint iLayer = 0; iLayer < netSize; ++iLayer) {
-    enLayers[iLayer]->Scale(1./iterEvents);
-    enFractionLayers[iLayer]->Scale(1./iterEvents);
-    transProfileLayers[iLayer]->Scale(1./iterEvents);
-  }
+  enLayers->Scale(1./iterEvents);
+  enFractionLayers->Scale(1./iterEvents);
+  transProfileLayers->Scale(1./iterEvents);
   // Store histograms
   std::cout << "Saving output histograms to \"" << aOutput << "\"" << std::endl;
   TFile out(aOutput.c_str(), "RECREATE");
@@ -165,11 +142,9 @@ void validationPlots(const std::string& aInput, const std::string& aOutput) {
   longSecondMoment->Write();
   transFirstMoment->Write();
   transSecondMoment->Write();
-  for(uint iLayer = 0; iLayer < netSize; ++iLayer) {
-    enLayers[iLayer]->Write();
-    enFractionLayers[iLayer]->Write();
-    transProfileLayers[iLayer]->Write();
-  }
+  enLayers->Write();
+  enFractionLayers->Write();
+  transProfileLayers->Write();
   out.Close();
   f.Close();
 return;
