@@ -1,16 +1,15 @@
 Analysis tool
-===
+==
+
+1. Analyse showers
 
 Input: ROOT file that is the output of G4 simulation
 
-TODO: read also h5 (or provide translation interface)
-
 Output: ROOT file with histograms
 
-TODO: [WIP] plot histograms in a more friendly way, combine different energies, compare baseline (full sim) with fast sim
 
 How to run
-==
+====
 
 To compile analysis tool:
 
@@ -28,4 +27,30 @@ or
 
 ```
 python createHistograms.py <LIST_OF_INPUT_FILES>
+```
+
+2. Combine results
+
+
+Combine results from several files (each file per one single energy value)
+
+TODO: Implement merging of files if more than one file per energy value is provided
+
+TODO: Allow also for flat energy spectrum to be combined
+
+How to run
+====
+
+```
+python combine.py <LIST_OF_INPUT_FILES> -o <OUTPUT_FILE>
+```
+
+3. Compare results
+
+
+How to run
+====
+
+```
+python compare.py <LIST_OF_INPUT_FILES> -o <OUTPUT_FILE>
 ```
