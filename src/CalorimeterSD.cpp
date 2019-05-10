@@ -1,7 +1,6 @@
 #include "CalorimeterSD.h"
 #include "CalorimeterHit.h"
 
-
 #include "G4EventManager.hh"
 #include "G4Event.hh"
 #include "G4HCofThisEvent.hh"
@@ -50,12 +49,10 @@ void CalorimeterSD::Initialize(G4HCofThisEvent* hce) {
   // fill calorimeter hits with zero energy deposition
   for (G4int ix=0;ix<fCellNo;ix++)
     for (G4int iy=0;iy<fCellNo;iy++)
-      for (G4int iz=0;iz<fCellNo;iz++)
-      {
+      for (G4int iz=0;iz<fCellNo;iz++) {
         CalorimeterHit* hit = new CalorimeterHit();
         fHitsCollection->insert(hit);
       }
-
 }
 
 G4bool CalorimeterSD::ProcessHits(G4Step* step, G4TouchableHistory*)
@@ -65,9 +62,12 @@ G4bool CalorimeterSD::ProcessHits(G4Step* step, G4TouchableHistory*)
 
   G4TouchableHistory* touchable = (G4TouchableHistory*)(step->GetPreStepPoint()->GetTouchable());
 
-  G4int yNo = touchable->GetCopyNumber(1);
-  G4int xNo = touchable->GetCopyNumber(2);
-  G4int zNo = touchable->GetCopyNumber(0);
+  G4int yNo = touchable->GetCopyNumber(1); // cell
+  G4int xNo = touchable->GetCopyNumber(2); // row
+  // G4int materialNo = touchable->GetCopyNumber(0); // which absorber within cell
+  G4int zNo = touchable->GetCopyNumber(3); // layer
+  // G4int envelopeNo = touchable->GetCopyNumber(4); // calorimeter envelope
+  // G4int worldNo = touchable->GetCopyNumber(5); // world volume
 
   G4int hitID = fCellNo*fCellNo*xNo+fCellNo*yNo+zNo;
   CalorimeterHit* hit = (*fHitsCollection)[hitID];
@@ -86,9 +86,8 @@ G4bool CalorimeterSD::ProcessHits(G4Step* step, G4TouchableHistory*)
 
   }
   hit->AddEdep(edep);
-
-//  std::cout << "Hit: energy " << edep << " x " << xNo << " y " << yNo << " z " << zNo << "total / event : "
-//            << totalEn << std::endl;
+//  std::cout << "Hit: energy " << edep << " x " << xNo << " y " << yNo << " z " << zNo << " z3 " << zNo3 << " z4 " << zNo4 << " z5 " << zNo5 << "total / event : "
+//            << std::endl;
   return true;
 }
 

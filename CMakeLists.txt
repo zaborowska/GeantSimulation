@@ -30,6 +30,7 @@ include(${Geant4_USE_FILE})
 # Find ROOT (required package)
 #
 find_package(ROOT REQUIRED)
+message(STATUS "Found ROOT: ${ROOT_DIR}")
 
 # find_package( Boost REQUIRED)
  # include_directories( ${Boost_INCLUDE_DIRS} )
