@@ -120,7 +120,6 @@ int main(int argc, char** argv){
   std::string inputName = argv[1];
   std::string outputName = "";
   if (argc < 3) {
-    std::string inputName = argv[1];
     outputName = inputName.substr(inputName.find_last_of("/") + 1,
                                   inputName.find(".root") - inputName.find_last_of("/") - 1) + ".h5" ;
     std::cout << "Using default output path: \"./" << outputName << "\"" << std::endl;
