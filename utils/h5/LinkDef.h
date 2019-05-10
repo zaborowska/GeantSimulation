@@ -5,5 +5,6 @@
 #pragma link C++ nestedclasses;
 
 #pragma link C++ function h52root;
+#pragma link C++ function root2h5;
 
 #endif

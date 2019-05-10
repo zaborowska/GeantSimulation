@@ -6,20 +6,10 @@
 #include "H5File.h"
 #include "H5DataSet.h"
 
-int main(int argc, char** argv){
-  if (argc < 2) {
-    std::cout << "Please specify path to the input file." << std::endl;
-    return -1;
-  }
-  TFile f(argv[1], "READ");
-  std::string outputName = "";
-  if (argc < 3) {
-    std::string inputName = argv[1];
-    outputName = inputName.substr(inputName.find_last_of("/") + 1,
-                                  inputName.find(".root") - inputName.find_last_of("/") - 1) + ".h5" ;
-    std::cout << "Using default output path: \"./" << outputName << "\"" << std::endl;
-  } else {
-    outputName = argv[2];
+void root2h5(const std::string& aInput, const std::string& aOutput) {
+  TFile f(aInput.c_str(), "READ");
+  if (f.IsZombie()) {
+    return;
   }
   const hsize_t netSize = 25;
   const int rank = 4;
@@ -46,7 +36,7 @@ int main(int argc, char** argv){
   TTreeReaderValue<std::vector<int>> zCellV(eventsReader, "zCell");
   double sum = 0;
 
-  const H5std_string h5OutputName( outputName );
+  const H5std_string h5OutputName( aOutput );
   const H5std_string h5DataName_cells( "events_cells" );
   const H5std_string h5DataName_particles( "events_particles" );
   hsize_t h5Dim_cells[4] = {storeMax, netSize, netSize, netSize};
@@ -86,12 +76,12 @@ int main(int argc, char** argv){
         data[iEvent][xCell][yCell][zCell] = eCell;
       } else {
         std::cout << " ERROR, attempting to acces [" << xCell << "][" << yCell << "][" << zCell << std::endl;
-        return -1;
+        return;
       }
     }
     if ( sum > *energyMC ) {
       std::cout << " ERROR, unphysical sum of cells: " << sum << " > " << *energyMC << std::endl;
-      return -2;
+      return;
     }
     iEvent++;
     if (iEvent == storeMax) {
@@ -114,10 +104,31 @@ int main(int argc, char** argv){
       iFile ++;
       if (iFile == storeMax ) {
         std::cout << "Drop remaining " << numEvents - numFiles * storeMax << " events." << std::endl;
-        return 0;
+        return;
       }
     }
   }
   h5OutFile.close();
+  return;
+}
+
+int main(int argc, char** argv){
+  if (argc < 2) {
+    std::cout << "Please specify path to the input file." << std::endl;
+    return -1;
+  }
+  std::string inputName = argv[1];
+  std::string outputName = "";
+  if (argc < 3) {
+    std::string inputName = argv[1];
+    outputName = inputName.substr(inputName.find_last_of("/") + 1,
+                                  inputName.find(".root") - inputName.find_last_of("/") - 1) + ".h5" ;
+    std::cout << "Using default output path: \"./" << outputName << "\"" << std::endl;
+  } else {
+    outputName = argv[2];
+  }
+  root2h5(inputName, outputName);
+
+
   return 0;
 }
