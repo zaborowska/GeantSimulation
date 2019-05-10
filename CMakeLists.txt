@@ -49,3 +49,5 @@ target_link_libraries(sampleSimulation ${Geant4_LIBRARIES} ${ROOT_LIBRARIES})
 # Install the executable to 'bin' directory under CMAKE_INSTALL_PREFIX
 #
 install(TARGETS sampleSimulation DESTINATION bin)
+
+add_subdirectory(utils)

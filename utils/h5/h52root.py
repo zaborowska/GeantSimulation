@@ -1,15 +1,11 @@
 import os
 import sys
 
-# first check if dictionary exists
-if not os.path.isfile("libH5Dict.so"):
-    sys.exit("======= \nRun \"make\" to create ROOT dictionary.\n=======")
-
 if len(sys.argv) < 2:
     sys.exit("======= \nDefine list of input files as arguments.\n=======")
 
 from ROOT import gSystem
-gSystem.Load("libH5Dict.so")
+gSystem.Load("libh52rootDictionary.so")
 
 from ROOT import h52root
 for in_file in sys.argv[1:]:

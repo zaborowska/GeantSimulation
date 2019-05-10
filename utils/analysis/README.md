@@ -1,56 +1,64 @@
-Analysis tool
-==
+#Analysis tool
 
-1. Analyse showers
+## 1. Analyse showers
+
+Create control histograms for shower map (if stored in h5 file first [translate it](../h5/README.md#h5---root)).
 
 Input: ROOT file that is the output of G4 simulation
 
 Output: ROOT file with histograms
 
-
-How to run
-====
-
-To compile analysis tool:
-
-```
-make
-```
-
 Executable `createHistograms` is created together with ROOT dictionary `libCreateHistogramsDict.so`. To create histograms:
 
 ```
-./createHistograms <INPUT_FILE> <OUTPUT_FILE>(optional: DEFAULT "validation_<INPUT_FILE>")
+${PROJECT_DIR}/install/bin/createHistograms <INPUT_FILE> [<OUTPUT_FILE> optional]
 ```
 
 or
 
 ```
-python createHistograms.py <LIST_OF_INPUT_FILES>
+LD_LIBRARY_PATH=$LD_LIBRARY_PATH:${PROJECT_DIR}/install/lib/ python ${PROJECT_DIR}/utils/analysis/createHistograms.py <LIST_OF_INPUT_FILES>
 ```
 
-2. Combine results
+## 2. Combine results
 
-
-Combine results from several files (each file per one single energy value)
+Combine results (histograms) from several files (each file per one single energy value)
 
 TODO: Implement merging of files if more than one file per energy value is provided
 
 TODO: Allow also for flat energy spectrum to be combined
 
-How to run
-====
 
 ```
-python combine.py <LIST_OF_INPUT_FILES> -o <OUTPUT_FILE>
+python ${PROJECT_DIR}/utils/analysis/combine.py <LIST_OF_INPUT_FILES> [-o <OUTPUT_FILE> optional] [--visual optional]
+
+
+positional arguments:
+  inputs                name of the input files
+
+optional arguments:
+  --output OUTPUT, -o OUTPUT
+                        name of the output file
+  --visual, -v          If plots should be also displayed.
+
 ```
 
 3. Compare results
 
 
-How to run
-====
-
 ```
-python compare.py <LIST_OF_INPUT_FILES> -o <OUTPUT_FILE>
+python  ${PROJECT_DIR}/utils/analysis/compare.py <LIST_OF_INPUT_FILES> [-o <OUTPUT_FILE> optional]
+
+positional arguments:
+  inputs                Name of the input files.
+
+optional arguments:
+  --output OUTPUT, -o OUTPUT
+                        Name of the output file.
+  --histogramName HISTOGRAMNAME [HISTOGRAMNAME ...], -n HISTOGRAMNAME [HISTOGRAMNAME ...]
+                        Name of the plots to compare (default: all).
+  --visual, -v          If plots should be also displayed.
+  --legend LEGEND [LEGEND ...], -l LEGEND [LEGEND ...]
+                        Labels to be displayed in legend.
+
 ```
