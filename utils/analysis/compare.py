@@ -40,8 +40,13 @@ def setYaxisMinMax(listOfPlots):
    maxim = -1
    for plot in listOfPlots:
       if plot.IsA().InheritsFrom("TH1"):
-         plot_min = plot.GetMinimum()
          plot_max = plot.GetMaximum()
+         # avoid minimum to be == 0
+         plot_min = plot.GetMaximum()
+         for iBin in range(0,plot.GetNbinsX()):
+            content = plot.GetBinContent(iBin)
+            if content != 0 and content < plot_min :
+               plot_min = content
       elif plot.IsA().InheritsFrom("TGraph"):
          plot_min = plot.GetYaxis().GetXmin()
          plot_max = plot.GetYaxis().GetXmax()
