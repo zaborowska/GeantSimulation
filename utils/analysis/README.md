@@ -1,4 +1,4 @@
-#Analysis tool
+# Analysis tool
 
 ## 1. Analyse showers
 
@@ -43,7 +43,9 @@ optional arguments:
 
 ```
 
-3. Compare results
+## 3. Compare results
+
+Compare different samples, full/fast simulation, etc.
 
 
 ```
