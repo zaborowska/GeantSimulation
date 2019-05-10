@@ -161,7 +161,6 @@ def main(input_names, output_name):
     for iCanv in range(len(to_plot)):
         canvases.append(create_single_canvas("canv_h_"+to_plot[iCanv]))
     for graph_name, graph in graphs.items():
-        print (graph_name, graph)
         canvases.append(create_single_canvas("canv_"+graph_name))
 
     # draw
@@ -172,7 +171,6 @@ def main(input_names, output_name):
             prepare_histogram(hist)
             if iEnergy == 0:
                 hist.Draw()
-                print(hist.GetName())
             else:
                 hist.Draw("same")
 
