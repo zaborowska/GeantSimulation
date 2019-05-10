@@ -8,6 +8,7 @@
 #include "TTreeReader.h"
 #include "TFitResult.h"
 #include "ROOT/RDataFrame.hxx"
+#include "createHistograms.h"
 
 void validationPlots(const std::string& aInput, const std::string& aOutput) {
   TFile f(aInput.c_str(), "READ");

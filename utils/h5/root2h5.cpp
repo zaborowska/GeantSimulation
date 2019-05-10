@@ -1,10 +1,10 @@
-#include <iostream>
 #include "TFile.h"
 #include "TTree.h"
 #include "TTreeReader.h"
 #include "H5Cpp.h"
 #include "H5File.h"
 #include "H5DataSet.h"
+#include "root2h5.h"
 
 void root2h5(const std::string& aInput, const std::string& aOutput) {
   TFile f(aInput.c_str(), "READ");

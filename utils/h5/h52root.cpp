@@ -1,10 +1,10 @@
-#include <iostream>
 #include "TFile.h"
 #include "TTree.h"
 #include "TTreeReader.h"
 #include "H5Cpp.h"
 #include "H5File.h"
 #include "H5DataSet.h"
+#include "h52root.h"
 
 void h52root(const std::string& aInput, const std::string& aOutput) {
 

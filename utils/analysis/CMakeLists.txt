@@ -7,10 +7,10 @@ set (tools
   createHistograms
   )
 foreach (tool ${tools})
-  add_executable (${tool} ${PROJECT_SOURCE_DIR}/${tool}.cpp)
+  add_executable (${tool} ${PROJECT_SOURCE_DIR}/${tool}.cpp ${PROJECT_SOURCE_DIR}/${tool}.h)
   target_link_libraries(${tool} ${ROOT_LIBRARIES})
   install(TARGETS ${tool} DESTINATION bin)
-  root_generate_dictionary(G_${tool} ${tool}.cpp LINKDEF ${PROJECT_SOURCE_DIR}/LinkDef.h)
+  root_generate_dictionary(G_${tool} ${tool}.h LINKDEF ${PROJECT_SOURCE_DIR}/LinkDef.h)
   add_library(AnalysisDictionary SHARED ${tool} G_${tool}.cxx)
   target_link_libraries(AnalysisDictionary ${ROOT_LIBRARIES})
   install(TARGETS AnalysisDictionary DESTINATION lib)
