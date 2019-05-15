@@ -52,8 +52,13 @@ def prepare_graph(graph, name, title, colour = 9, markerStyle = 21, factor = 1):
    graph.GetXaxis().SetNdivisions(506)
 
 def get_gaus(histo, with_errors = False):
-    myfunPre = ROOT.TF1("firstGaus","gaus")
-    resultPre = histo.Fit(myfunPre, "SQN")
+    binWithMax = 0
+    contentBinWithMax = 0
+    for iBin in range(0,histo.GetNbinsX()):
+        if histo.GetBinContent(iBin) > histo.GetBinContent(binWithMax):
+            binWithMax = iBin
+    myfunPre = ROOT.TF1("firstGaus","gaus", histo.GetBinCenter(binWithMax - 5), histo.GetBinCenter(binWithMax + 5))
+    resultPre = histo.Fit(myfunPre, "SQNR")
     myfun = ROOT.TF1("finalGaus", "gaus", resultPre.Get().Parameter(1) - 2. * resultPre.Get().Parameter(2),
                      resultPre.Get().Parameter(1) + 2. * resultPre.Get().Parameter(2) )
     result = histo.Fit(myfun, "SRQN")
@@ -90,6 +95,8 @@ def calculate(infile):
     calculations["transSecondMoment"] = get_gaus(infile.Get("transSecondMoment"))
     calculations["numCells"] = get_gaus(infile.Get("numCells"))
     calculations["enCell"] = (infile.Get("enCell").GetMean(), infile.Get("enCell").GetRMS())
+    if infile.Get("simTime"):
+        calculations["simTime"] = get_gaus(infile.Get("simTime"))
     return calculations
 
 def main(input_names, output_name):
@@ -144,6 +151,9 @@ def main(input_names, output_name):
             # TODO instead of always appending, consider merging e.g. for same energy or for same flat energy spectrum
             plots_per_file.append(hist)
         all_plots.append(plots_per_file)
+
+    if "simTime" in to_plot:
+        to_calculate_yaxis["simTime"] = ["simulation time (per event); E_{MC} (GeV); #LTt#GT (s)"]
 
     # new graphs:
     graphs = {}
