@@ -23,6 +23,8 @@ RunAction::RunAction(SaveToFileEventAction* eventAction)
   analysisManager->CreateNtupleIColumn("xCell", fEventAction->GetCalX());
   analysisManager->CreateNtupleIColumn("yCell", fEventAction->GetCalY());
   analysisManager->CreateNtupleIColumn("zCell", fEventAction->GetCalZ());
+  analysisManager->CreateNtupleIColumn("SimType");
+  analysisManager->CreateNtupleDColumn("SimTime");
   analysisManager->FinishNtuple();
 }
 

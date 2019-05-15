@@ -1,5 +1,6 @@
 #include <iostream>
 #include "TH1.h"
+#include "TF1.h"
 #include "TH1F.h"
 #include "TH2F.h"
 #include "TH3F.h"
@@ -10,7 +11,7 @@
 #include "ROOT/RDataFrame.hxx"
 #include "createHistograms.h"
 
-void validationPlots(const std::string& aInput, const std::string& aOutput) {
+void createHistograms(const std::string& aInput, const std::string& aOutput) {
   TFile f(aInput.c_str(), "READ");
 
   // Set initial parameters
@@ -21,12 +22,43 @@ void validationPlots(const std::string& aInput, const std::string& aOutput) {
   double maxEnergy = 500;
 
   // Check if flat energy spectrum or single-energy simulation is analysed
-  ROOT::RDataFrame d("events", &f, {"EnergyMC"});
+  ROOT::RDataFrame d("events", &f, {"EnergyMC","SimTime"});
   auto mc_histo =  d.Histo1D("EnergyMC");
   double energySpan = mc_histo->GetXaxis()->GetXmax() - mc_histo->GetXaxis()->GetXmin();
   if (energySpan < 1e3) {
     maxEnergy = mc_histo->GetMean() / 1.e3; // unit converted to GeV
     std::cout << std::endl << "Detected single-energy simulation, particle energy: " << maxEnergy << std::endl << std::endl;
+  }
+  // check if SimTime exists in ROOT file
+  bool include_simtime = false, include_simtype = false;
+  auto col_names = d.GetColumnNames();
+  if (std::find(col_names.begin(), col_names.end(), "SimTime") != col_names.end()) {
+      include_simtime = true;
+  }
+  if (std::find(col_names.begin(), col_names.end(), "SimType") != col_names.end()) {
+      include_simtype = true;
+  }
+  TH1F *simType = nullptr, *simTime = nullptr;
+  if (include_simtime) {
+    auto time_histo =  d.Histo1D("SimTime");
+    uint time_mean = 0;
+    for(uint iBin = 1; iBin < time_histo->GetNbinsX(); ++iBin) {
+      if (time_histo->GetBinContent(iBin) > time_histo->GetBinContent(time_mean)) {
+        time_mean = iBin;
+      }
+    }
+    TF1* fitgaus = new TF1("fitgaus","gaus", time_histo->GetBinLowEdge(time_mean-5), time_histo->GetBinLowEdge(time_mean + 5) );
+    auto fitResTime = time_histo->Fit(fitgaus,"RqnS");
+    double minTime = fitResTime->Parameter(1) - fitResTime->Parameter(2) * 5;
+    double maxTime = fitResTime->Parameter(1) + fitResTime->Parameter(2) * 5;
+    if (minTime < 0) minTime = 0;
+    simTime = new TH1F("simTime", "simulation time (per event);simulation time (s); Normalised entries", 100, minTime, maxTime);
+  }
+  if (include_simtype) {
+    simType = new TH1F("simType", "type of simulation;simulation type; Normalised entries", 3, -0.5, 2.5);
+    simType->GetXaxis()->SetBinLabel(1,"full sim");
+    simType->GetXaxis()->SetBinLabel(2,"GFlash");
+    simType->GetXaxis()->SetBinLabel(3,"ML");
   }
   auto mesh = new TH3F("mesh", "mesh", netSize, -0.5, netSize - 0.5, netSize, -0.5, netSize - 0.5, netSize, -0.5, netSize - 0.5);
   mesh->SetTitle(";z;x;y");
@@ -48,10 +80,10 @@ void validationPlots(const std::string& aInput, const std::string& aOutput) {
 
   TTreeReader eventsReader("events",&f);
   TTreeReaderValue<double> energyMC(eventsReader, "EnergyMC");
-  TTreeReaderValue<std::vector<double>> energyCellV(eventsReader, "EnergyCell");
-  TTreeReaderValue<std::vector<int>> xCellV(eventsReader, "xCell");
-  TTreeReaderValue<std::vector<int>> yCellV(eventsReader, "yCell");
-  TTreeReaderValue<std::vector<int>> zCellV(eventsReader, "zCell");
+  TTreeReaderArray<double> energyCellV(eventsReader, "EnergyCell");
+  TTreeReaderArray<int> xCellV(eventsReader, "xCell");
+  TTreeReaderArray<int> yCellV(eventsReader, "yCell");
+  TTreeReaderArray<int> zCellV(eventsReader, "zCell");
 
   uint iterEvents = 0;
   // retireved from input
@@ -65,17 +97,17 @@ void validationPlots(const std::string& aInput, const std::string& aOutput) {
   while(eventsReader.Next()){
     // std::cout << "event: " << iterEvents << "\t" << *energyMC << std::endl;
     sumEnergyDeposited = 0;
-    eventSize = energyCellV->size();
+    eventSize = energyCellV.GetSize();
     tFirstMoment = 0;
     tSecondMoment = 0;
     rFirstMoment = 0;
     rSecondMoment = 0;
     for (uint iEntry = 0; iEntry < eventSize; ++iEntry) {
       // get data (missing: angle at entrance)
-      xCell = xCellV->at(iEntry);
-      yCell = yCellV->at(iEntry);
-      zCell = zCellV->at(iEntry);
-      eCell = energyCellV->at(iEntry);
+      xCell = xCellV[iEntry];
+      yCell = yCellV[iEntry];
+      zCell = zCellV[iEntry];
+      eCell = energyCellV[iEntry];
       eCellFraction = eCell / *energyMC;
       // make calculations
       tDistance = zCell; // assumption: particle enters calorimeter perpendiculary
@@ -126,6 +158,24 @@ void validationPlots(const std::string& aInput, const std::string& aOutput) {
   enLayers->Scale(1./iterEvents);
   enFractionLayers->Scale(1./iterEvents);
   transProfileLayers->Scale(1./iterEvents);
+
+  if(include_simtime) {
+    eventsReader.Restart();
+    TTreeReaderValue<double> simulationTime(eventsReader, "SimTime");
+    while(eventsReader.Next()){
+      simTime->Fill(*(simulationTime));
+    }
+    simTime->Scale(1./iterEvents);
+  }
+  if(include_simtype) {
+    eventsReader.Restart();
+    TTreeReaderValue<int> simulationType(eventsReader, "SimType");
+    while(eventsReader.Next()){
+      simType->Fill(*(simulationType));
+    }
+    simType->Scale(1./iterEvents);
+  }
+
   // Store histograms
   std::cout << "Saving output histograms to \"" << aOutput << "\"" << std::endl;
   TFile out(aOutput.c_str(), "RECREATE");
@@ -146,6 +196,8 @@ void validationPlots(const std::string& aInput, const std::string& aOutput) {
   enLayers->Write();
   enFractionLayers->Write();
   transProfileLayers->Write();
+  if(include_simtime) simTime->Write();
+  if(include_simtype) simType->Write();
   out.Close();
   f.Close();
 return;
@@ -165,6 +217,6 @@ int main(int argc, char** argv){
   } else {
     outputName = argv[2];
   }
-  validationPlots(argv[1], outputName);
+  createHistograms(argv[1], outputName);
   return 0;
 }

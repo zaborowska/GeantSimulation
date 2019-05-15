@@ -4,6 +4,6 @@
 #pragma link off all functions;
 #pragma link C++ nestedclasses;
 
-#pragma link C++ function validationPlots;
+#pragma link C++ function createHistograms;
 
 #endif

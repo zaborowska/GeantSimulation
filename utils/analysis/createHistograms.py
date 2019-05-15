@@ -7,9 +7,9 @@ if len(sys.argv) < 2:
 from ROOT import gSystem
 gSystem.Load("libAnalysisDictionary.so")
 
-from ROOT import validationPlots
+from ROOT import createHistograms
 for in_file in sys.argv[1:]:
-    out_file = "./validation_" + in_file.split("/")[-1]
+    out_file = "./histograms_" + in_file.split("/")[-1]
     print "input file: ", in_file
     print "output file: ", out_file
-    validationPlots(in_file, out_file)
+    createHistograms(in_file, out_file)

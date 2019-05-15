@@ -4,6 +4,7 @@
 #include "G4UserEventAction.hh"
 #include "globals.hh"
 #include <vector>
+#include "G4Timer.hh"
 
 class SaveToFileEventAction : public G4UserEventAction
 {
@@ -26,6 +27,7 @@ private:
   std::vector<G4int> fCalX;
   std::vector<G4int> fCalY;
   std::vector<G4int> fCalZ;
+  G4Timer fTimer;
 };
 
 #endif

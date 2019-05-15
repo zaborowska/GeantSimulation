@@ -7,6 +7,7 @@
 #include "G4SDManager.hh"
 #include "G4SystemOfUnits.hh"
 
+#include "EventInformation.hh"
 #include "CalorimeterHit.h"
 #include "Analysis.hh"
 
@@ -18,7 +19,8 @@ SaveToFileEventAction::SaveToFileEventAction()
   fCalEdep{ std::vector<G4double>(25*25*25, 0.)},
   fCalX{ std::vector<G4int>(25*25*25, 0)},
   fCalY{ std::vector<G4int>(25*25*25, 0)},
-  fCalZ{ std::vector<G4int>(25*25*25, 0)}
+  fCalZ{ std::vector<G4int>(25*25*25, 0)},
+  fTimer()
 {
   G4RunManager::GetRunManager()->SetPrintProgress(1000);
 }
@@ -30,7 +32,8 @@ SaveToFileEventAction::SaveToFileEventAction(G4int aCellNo)
     fCalEdep{ std::vector<G4double>(aCellNo*aCellNo*aCellNo, 0.)},
   fCalX{ std::vector<G4int>(aCellNo*aCellNo*aCellNo, 0)},
   fCalY{ std::vector<G4int>(aCellNo*aCellNo*aCellNo, 0)},
-  fCalZ{ std::vector<G4int>(aCellNo*aCellNo*aCellNo, 0)}
+  fCalZ{ std::vector<G4int>(aCellNo*aCellNo*aCellNo, 0)},
+  fTimer()
 {
   G4RunManager::GetRunManager()->SetPrintProgress(1000);
 }
@@ -50,10 +53,14 @@ void SaveToFileEventAction::BeginOfEventAction(const G4Event* event) {
     G4SDManager* sdManager = G4SDManager::GetSDMpointer();
     fHID = sdManager->GetCollectionID("ECalorimeterColl");
   }
+  //New event, add the user information object
+  G4EventManager::GetEventManager()->SetUserInformation(new EventInformation);
+  fTimer.Start();
 }
 
 void SaveToFileEventAction::EndOfEventAction(const G4Event* event)
 {
+  fTimer.Stop();
   G4HCofThisEvent* hce = event->GetHCofThisEvent();
   test::CalorimeterHitsCollection* hcHC
     = static_cast<test::CalorimeterHitsCollection*>(hce->GetHC(fHID));
@@ -97,5 +104,11 @@ void SaveToFileEventAction::EndOfEventAction(const G4Event* event)
 
     G4AnalysisManager* man = G4AnalysisManager::Instance();
     man->FillNtupleDColumn(0, primary_energy);
+
+    EventInformation* eventInformation = dynamic_cast<EventInformation*>(event->GetUserInformation());
+    EventInformation::eSimType simtype = eventInformation->GetSimType();
+    man->FillNtupleIColumn(5, simtype);
+    man->FillNtupleDColumn(6,  fTimer.GetRealElapsed());
+
     man->AddNtupleRow();
 }
