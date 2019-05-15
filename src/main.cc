@@ -11,6 +11,7 @@
 #include "G4UIExecutive.hh"
 #include "G4VisManager.hh"
 #include "G4VisExecutive.hh"
+#include "G4FastSimulationPhysics.hh"
 
 int main(int argc, char** argv)
 {
@@ -26,6 +27,15 @@ int main(int argc, char** argv)
    G4RunManager* runManager = new G4RunManager;
 #endif
    G4VModularPhysicsList* physicsList = new FTFP_BERT(0);
+
+   // FASTSIM
+   G4FastSimulationPhysics* fastSimulationPhysics = new G4FastSimulationPhysics();
+   fastSimulationPhysics->BeVerbose();
+   fastSimulationPhysics->ActivateFastSimulation("e-");
+   fastSimulationPhysics->ActivateFastSimulation("e+");
+   physicsList->RegisterPhysics( fastSimulationPhysics );
+   // FASTSIM
+
    runManager->SetUserInitialization(physicsList);
    G4HadronicProcessStore::Instance()->SetVerbose(0);
    // Load geometry (from GDML)

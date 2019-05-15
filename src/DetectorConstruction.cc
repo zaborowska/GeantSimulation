@@ -20,6 +20,16 @@
 
 #include <iomanip>
 
+// FASTSIM
+#include "GFlashHomoShowerParameterisation.hh"
+#include "G4FastSimulationManager.hh"
+#include "GFlashShowerModel.hh"
+#include "GFlashHitMaker.hh"
+#include "GFlashParticleBounds.hh"
+#include "G4Region.hh"
+#include "G4RegionStore.hh"
+// FASTSIM
+
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 DetectorConstruction::DetectorConstruction()
@@ -104,6 +114,10 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
   fLogicCalor = new G4LogicalVolume(fSolidCalor,
                                          fWorldMaterial,
                                          "Calorimeter");
+  // FASTSTIM
+  G4Region* caloRegion = new G4Region("Calorimeter_region");
+  caloRegion->AddRootLogicalVolume(fLogicCalor);//fLogicCalor);
+  // FASTSIM
 
   fPhysiCalor = new G4PVPlacement(0,                     //no rotation
                                  G4ThreeVector(0, 0, fCalorThickness/2),        //at (0,0,0)
@@ -193,7 +207,6 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
   //
   // Absorbers
   //
-
   G4double xfront = -0.5*fLayerThickness;
   for (G4int k=0; k<fNbOfAbsor; ++k) {
     fSolidAbsor[k] = new G4Box("Absorber",                //its name
@@ -363,7 +376,9 @@ void DetectorConstruction::SetCalorSizeYZ(G4double val)
 void DetectorConstruction::ConstructSDandField()
 {
   std::string caloSDname = "ECal";
-  test::CalorimeterSD* caloSD = new test::CalorimeterSD(caloSDname,fNbOfCells);
+  test::CalorimeterSD* caloSD = new test::CalorimeterSD(caloSDname,fNbOfCells,
+                                                        G4ThreeVector(fCalorSizeYZ/2,fCalorSizeYZ/2,0),
+                                                        G4ThreeVector(fCalorSizeYZ/fNbOfCells, fCalorSizeYZ/fNbOfCells, fLayerThickness));
   G4SDManager::GetSDMpointer()->AddNewDetector(caloSD);
   for (uint iAbs = 0; iAbs < fNbOfAbsor; ++iAbs) {
     if (fIdOfSD[iAbs]) {
@@ -381,6 +396,26 @@ void DetectorConstruction::ConstructSDandField()
     G4AutoDelete::Register(msg);
     fFieldMessenger.Put( msg );
   }
+
+  // FASTSIM
+  // for the moment only for homo calorimeters:
+  if (fNbOfAbsor == 1) {
+    G4RegionStore* regionStore = G4RegionStore::GetInstance();
+    G4Region* caloRegion = regionStore->GetRegion("Calorimeter_region");
+    G4NistManager* nistManager = G4NistManager::Instance();
+    G4cout << "Creating shower parameterization models" << G4endl;
+    auto fFastShowerModel = new GFlashShowerModel("fastShowerModel", caloRegion);
+    auto fParameterisation = new GFlashHomoShowerParameterisation(fAbsorMaterial[0]);
+    fFastShowerModel->SetParameterisation(*fParameterisation);
+    // Energy Cuts to kill particles:
+    auto fParticleBounds = new GFlashParticleBounds();
+    fFastShowerModel->SetParticleBounds(*fParticleBounds);
+    // Makes the EnergieSpots
+    auto fHitMaker = new GFlashHitMaker();
+    fFastShowerModel->SetHitMaker(*fHitMaker);
+    G4cout<<"end shower parameterization."<<G4endl;
+  }
+  // FASTSIM
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

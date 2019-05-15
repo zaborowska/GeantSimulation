@@ -19,20 +19,45 @@
 #include "TROOT.h"
 #include <sstream>
 
+// fastsim
+
+#include "G4GFlashSpot.hh"
+#include "EventInformation.hh"
+#include "G4EventManager.hh"
+
+
 namespace test {
 CalorimeterSD::CalorimeterSD(G4String name): G4VSensitiveDetector(name),
+                                             G4VGFlashSensitiveDetector(),
                                              fHitsCollection(0),
                                              fHCID(-1),
-                                             fCellNo(1) {
+                                             fCellNo(1),
+                                             fDetectorOffset(G4ThreeVector()),
+                                             fCellSize(G4ThreeVector()) {
   collectionName.insert("ECalorimeterColl");
 }
 
 CalorimeterSD::CalorimeterSD(G4String name, G4int aCellNoInAxis): G4VSensitiveDetector(name),
+                                                                  G4VGFlashSensitiveDetector(),
                                                                   fHitsCollection(0),
                                                                   fHCID(-1),
-                                                                  fCellNo(aCellNoInAxis) {
+                                                                  fCellNo(aCellNoInAxis),
+                                                                  fDetectorOffset(G4ThreeVector()),
+                                                                  fCellSize(G4ThreeVector()) {
 
   collectionName.insert("ECalorimeterColl");
+}
+CalorimeterSD::CalorimeterSD(G4String name, G4int aCellNoInAxis, G4ThreeVector aDetectorOffset, G4ThreeVector aCellSize ):
+  G4VSensitiveDetector(name),
+  G4VGFlashSensitiveDetector(),
+  fHitsCollection(0),
+  fHCID(-1),
+  fCellNo(aCellNoInAxis),
+  fDetectorOffset(aDetectorOffset),
+  fCellSize(aCellSize) {
+
+  collectionName.insert("ECalorimeterColl");
+  std::cout << "===" << fDetectorOffset << "\t" << fCellSize << std::endl;
 }
 
 CalorimeterSD::~CalorimeterSD() {
@@ -91,6 +116,30 @@ G4bool CalorimeterSD::ProcessHits(G4Step* step, G4TouchableHistory*)
   return true;
 }
 
+// Separate GFLASH interface
+G4bool CalorimeterSD::ProcessHits(G4GFlashSpot*aSpot ,G4TouchableHistory* ROhist) {
+  EventInformation* eventInformation = dynamic_cast<EventInformation*>(G4EventManager::GetEventManager()->GetNonconstCurrentEvent()->GetUserInformation());
+  eventInformation->SetSimType(EventInformation::eSimType::eGflash);
+  G4double edep = aSpot->GetEnergySpot()->GetEnergy();
+  if (edep==0.) return true;
+  auto localPosition = aSpot->GetEnergySpot()->GetPosition();
+  auto offsetPosition = localPosition + fDetectorOffset;
+  G4int xNo = offsetPosition.x() / fCellSize.x();
+  G4int yNo = offsetPosition.y() / fCellSize.y();
+  G4int zNo = offsetPosition.z() / fCellSize.z();
+
+  G4int hitID = fCellNo*fCellNo*xNo+fCellNo*yNo+zNo;
+  CalorimeterHit* hit = (*fHitsCollection)[hitID];
+  if(hit->GetXid()<0)
+  {
+    hit->SetXid(xNo);
+    hit->SetYid(yNo);
+    hit->SetZid(zNo);
+  }
+  hit->AddEdep(edep);
+
+  return true;
+}
 
 void CalorimeterSD::EndOfEvent(G4HCofThisEvent* hce) {}
 }
