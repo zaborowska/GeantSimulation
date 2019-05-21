@@ -51,10 +51,10 @@ def prepare_graph(graph, name, title, colour = 9, markerStyle = 21, factor = 1):
    graph.GetXaxis().SetLabelSize(0.06)
    graph.GetXaxis().SetNdivisions(506)
 
-def get_gaus(histo, with_errors = False):
-    binWithMax = 0
+def get_gaus(histo):
+    binWithMax = 1
     contentBinWithMax = 0
-    for iBin in range(0,histo.GetNbinsX()):
+    for iBin in range(1,histo.GetNbinsX()):
         if histo.GetBinContent(iBin) > histo.GetBinContent(binWithMax):
             binWithMax = iBin
     myfunPre = ROOT.TF1("firstGaus","gaus", histo.GetBinCenter(binWithMax - 5), histo.GetBinCenter(binWithMax + 5))
@@ -62,14 +62,15 @@ def get_gaus(histo, with_errors = False):
     myfun = ROOT.TF1("finalGaus", "gaus", resultPre.Get().Parameter(1) - 2. * resultPre.Get().Parameter(2),
                      resultPre.Get().Parameter(1) + 2. * resultPre.Get().Parameter(2) )
     result = histo.Fit(myfun, "SRQN")
-    if with_errors:
-        return result.Get().Parameter(1), result.Get().Parameter(2), result.Get().Error(1), result.Get().Error(2)
-    return result.Get().Parameter(1), result.Get().Parameter(2)
+    if result:
+        return result.Get().Parameter(1), result.Get().Error(1), result.Get().Parameter(2), result.Get().Error(2)
+    else:
+        return histo.GetMean(), histo.GetRMS()
 
 def get_span(histo, threshold = 0):
     minBin = histo.GetXaxis().GetNbins()
-    maxBin = 0
-    for ibin in range(0, histo.GetXaxis().GetNbins()):
+    maxBin = 1
+    for ibin in range(1, histo.GetXaxis().GetNbins()):
         if histo.GetBinContent(ibin) > threshold:
             if ibin < minBin:
                 minBin = ibin
@@ -80,20 +81,19 @@ def get_span(histo, threshold = 0):
 def calculate(infile):
     calculations = {}
     calculations["enMC"] = get_span(infile.Get("enMC"))
-    energyResponse = get_gaus(infile.Get("enTotal"), True)
-    enResolution = energyResponse[1] / (energyResponse[0])
+    energyResponse = get_gaus(infile.Get("enTotal"))
+    enResolution = energyResponse[2] / (energyResponse[0])
     enResolutionErrorSigmaPart = energyResponse[3] / (energyResponse[0])
-    enResolutionErrorMeanPart = energyResponse[2] * energyResponse[1] / ( (energyResponse[0]) ** 2)
+    enResolutionErrorMeanPart = energyResponse[1] * energyResponse[2] / ( (energyResponse[0]) ** 2)
     enResolutionError = sqrt( enResolutionErrorSigmaPart ** 2 +  enResolutionErrorMeanPart ** 2 )
-    calculations["enDeposited"] = energyResponse[:2]
+    calculations["enDeposited"] = [energyResponse[:2]
     calculations["enResolution"] = (enResolution, enResolutionError)
-    energyResponse = get_gaus(infile.Get("enFractionTotal"), True)
-    calculations["enLinearity"] = get_gaus(infile.Get("enFractionTotal"))
-    calculations["longFirstMoment"] = get_gaus(infile.Get("longFirstMoment"))
-    calculations["longSecondMoment"] = get_gaus(infile.Get("longSecondMoment"))
-    calculations["transFirstMoment"] = get_gaus(infile.Get("transFirstMoment"))
-    calculations["transSecondMoment"] = get_gaus(infile.Get("transSecondMoment"))
-    calculations["numCells"] = get_gaus(infile.Get("numCells"))
+    calculations["enLinearity"] = get_gaus(infile.Get("enFractionTotal"),True)[:2]
+    calculations["longFirstMoment"] = get_gaus(infile.Get("longFirstMoment"),True)[:2]
+    calculations["longSecondMoment"] = get_gaus(infile.Get("longSecondMoment"),True)[:2]
+    calculations["transFirstMoment"] = get_gaus(infile.Get("transFirstMoment"),True)[:2]
+    calculations["transSecondMoment"] = get_gaus(infile.Get("transSecondMoment"),True)[:2]
+    calculations["numCells"] = get_gaus(infile.Get("numCells"), True)[:2]
     calculations["enCell"] = (infile.Get("enCell").GetMean(), infile.Get("enCell").GetRMS())
     if infile.Get("simTime"):
         calculations["simTime"] = get_gaus(infile.Get("simTime"))

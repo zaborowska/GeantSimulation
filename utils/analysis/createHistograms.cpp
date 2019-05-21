@@ -62,11 +62,11 @@ void createHistograms(const std::string& aInput, const std::string& aOutput) {
   }
   auto mesh = new TH3F("mesh", "mesh", netSize, -0.5, netSize - 0.5, netSize, -0.5, netSize - 0.5, netSize, -0.5, netSize - 0.5);
   mesh->SetTitle(";z;x;y");
-  auto enMC = new TH1F("enMC", "MC energy (GeV);E_{MC} (GeV); Normalised entries", 1000, 0, 1.2 * maxEnergy);
-  auto enTotal = new TH1F("enTotal", "total deposited energy (GeV);E_{dep} (GeV); Normalised entries", 1000, 0, 1.2 * maxEnergy);
+  auto enMC = new TH1F("enMC", "MC energy (GeV);E_{MC} (GeV); Normalised entries", 1000, 0, floor(1.2 * maxEnergy));
+  auto enTotal = new TH1F("enTotal", "total deposited energy (GeV);E_{dep} (GeV); Normalised entries", 1000, 0, floor(1.2 * maxEnergy));
   auto enFractionTotal = new TH1F("enFractionTotal", "fraction of deposited energy;E_{dep} /  E_{MC}; Normalised entries", 1000, 0, 1);
   auto numCells = new TH1F("numCells", "number of cells per event;## cells; Normalised entries", 100, 0, pow(netSize,3) );
-  auto enCell = new TH1F("enCell", "cell energy distribution;E_{cell} (MeV); Normalised entries", 1000, 0, 1.2 * maxEnergy);
+  auto enCell = new TH1F("enCell", "cell energy distribution;E_{cell} (MeV); Normalised entries", 1000, 0, floor(1.2 * maxEnergy));
   auto longProfile = new TH1F("longProfile", "longitudinal profilee;t (layer);#LTE#GT (MeV)", netSize, -0.5, netSize - 0.5);
   auto transProfile = new TH1F("transProfile", "transverse profile;r (layer);#LTE#GT (MeV)", netMidCell, - 0.5, netMidCell - 0.5);
   auto enFractionCell = new TH1F("enFractionCell", "cell energy fraction distribution;E_{cell}/E_{MC}; Normalised entries", 1000, 0, 1);
