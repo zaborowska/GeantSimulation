@@ -117,16 +117,16 @@ G4bool CalorimeterSD::ProcessHits(G4Step* step, G4TouchableHistory*)
 }
 
 // Separate GFLASH interface
-G4bool CalorimeterSD::ProcessHits(G4GFlashSpot*aSpot ,G4TouchableHistory* ROhist) {
+G4bool CalorimeterSD::ProcessHits(G4GFlashSpot*aSpot ,G4TouchableHistory*) {
   EventInformation* eventInformation = dynamic_cast<EventInformation*>(G4EventManager::GetEventManager()->GetNonconstCurrentEvent()->GetUserInformation());
   eventInformation->SetSimType(EventInformation::eSimType::eGflash);
+
   G4double edep = aSpot->GetEnergySpot()->GetEnergy();
   if (edep==0.) return true;
-  auto localPosition = aSpot->GetEnergySpot()->GetPosition();
-  auto offsetPosition = localPosition + fDetectorOffset;
-  G4int xNo = offsetPosition.x() / fCellSize.x();
-  G4int yNo = offsetPosition.y() / fCellSize.y();
-  G4int zNo = offsetPosition.z() / fCellSize.z();
+  auto  touchable = aSpot->GetTouchableHandle()->GetHistory();
+  G4int yNo  = touchable->GetReplicaNo(3); // cell
+  G4int xNo = touchable->GetReplicaNo(4); // row
+  G4int zNo = touchable->GetReplicaNo(2); // layer
 
   G4int hitID = fCellNo*fCellNo*xNo+fCellNo*yNo+zNo;
   CalorimeterHit* hit = (*fHitsCollection)[hitID];
