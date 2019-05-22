@@ -86,14 +86,14 @@ def calculate(infile):
     enResolutionErrorSigmaPart = energyResponse[3] / (energyResponse[0])
     enResolutionErrorMeanPart = energyResponse[1] * energyResponse[2] / ( (energyResponse[0]) ** 2)
     enResolutionError = sqrt( enResolutionErrorSigmaPart ** 2 +  enResolutionErrorMeanPart ** 2 )
-    calculations["enDeposited"] = [energyResponse[:2]
+    calculations["enDeposited"] = energyResponse[:2]
     calculations["enResolution"] = (enResolution, enResolutionError)
-    calculations["enLinearity"] = get_gaus(infile.Get("enFractionTotal"),True)[:2]
-    calculations["longFirstMoment"] = get_gaus(infile.Get("longFirstMoment"),True)[:2]
-    calculations["longSecondMoment"] = get_gaus(infile.Get("longSecondMoment"),True)[:2]
-    calculations["transFirstMoment"] = get_gaus(infile.Get("transFirstMoment"),True)[:2]
-    calculations["transSecondMoment"] = get_gaus(infile.Get("transSecondMoment"),True)[:2]
-    calculations["numCells"] = get_gaus(infile.Get("numCells"), True)[:2]
+    calculations["enLinearity"] = get_gaus(infile.Get("enFractionTotal"))[:2]
+    calculations["longFirstMoment"] = get_gaus(infile.Get("longFirstMoment"))[:2]
+    calculations["longSecondMoment"] = get_gaus(infile.Get("longSecondMoment"))[:2]
+    calculations["transFirstMoment"] = get_gaus(infile.Get("transFirstMoment"))[:2]
+    calculations["transSecondMoment"] = get_gaus(infile.Get("transSecondMoment"))[:2]
+    calculations["numCells"] = get_gaus(infile.Get("numCells"))[:2]
     calculations["enCell"] = (infile.Get("enCell").GetMean(), infile.Get("enCell").GetRMS())
     if infile.Get("simTime"):
         calculations["simTime"] = get_gaus(infile.Get("simTime"))
