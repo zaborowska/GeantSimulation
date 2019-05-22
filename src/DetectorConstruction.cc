@@ -22,6 +22,7 @@
 
 // FASTSIM
 #include "GFlashHomoShowerParameterisation.hh"
+#include "GFlashSamplingShowerParameterisation.hh"
 #include "G4FastSimulationManager.hh"
 #include "GFlashShowerModel.hh"
 #include "GFlashHitMaker.hh"
@@ -399,22 +400,26 @@ void DetectorConstruction::ConstructSDandField()
 
   // FASTSIM
   // for the moment only for homo calorimeters:
+  G4RegionStore* regionStore = G4RegionStore::GetInstance();
+  G4Region* caloRegion = regionStore->GetRegion("Calorimeter_region");
+  auto fFastShowerModel = new GFlashShowerModel("fastShowerModel", caloRegion);
+  G4NistManager* nistManager = G4NistManager::Instance();
   if (fNbOfAbsor == 1) {
-    G4RegionStore* regionStore = G4RegionStore::GetInstance();
-    G4Region* caloRegion = regionStore->GetRegion("Calorimeter_region");
-    G4NistManager* nistManager = G4NistManager::Instance();
-    G4cout << "Creating shower parameterization models" << G4endl;
-    auto fFastShowerModel = new GFlashShowerModel("fastShowerModel", caloRegion);
     auto fParameterisation = new GFlashHomoShowerParameterisation(fAbsorMaterial[0]);
     fFastShowerModel->SetParameterisation(*fParameterisation);
-    // Energy Cuts to kill particles:
-    auto fParticleBounds = new GFlashParticleBounds();
-    fFastShowerModel->SetParticleBounds(*fParticleBounds);
-    // Makes the EnergieSpots
-    auto fHitMaker = new GFlashHitMaker();
-    fFastShowerModel->SetHitMaker(*fHitMaker);
-    G4cout<<"end shower parameterization."<<G4endl;
+  } else if (fNbOfAbsor == 2) {
+    auto fParameterisation = new GFlashSamplingShowerParameterisation(fAbsorMaterial[0], fAbsorMaterial[1],
+                                                                      fAbsorThickness[0],fAbsorThickness[1]);
+    fFastShowerModel->SetParameterisation(*fParameterisation);
+  } else {
+    G4cout << "WARNING! Only two absorbers can be defined in a sampling calorimeter" << G4endl;
   }
+  // Energy Cuts to kill particles:
+  auto fParticleBounds = new GFlashParticleBounds();
+  fFastShowerModel->SetParticleBounds(*fParticleBounds);
+  // Makes the EnergieSpots
+  auto fHitMaker = new GFlashHitMaker();
+  fFastShowerModel->SetHitMaker(*fHitMaker);
   // FASTSIM
 }
 
