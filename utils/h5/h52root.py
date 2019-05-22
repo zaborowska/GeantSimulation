@@ -1,15 +1,20 @@
 import os
 import sys
-
-if len(sys.argv) < 2:
-    sys.exit("======= \nDefine list of input files as arguments.\n=======")
+import argparse
 
 from ROOT import gSystem
 gSystem.Load("libh52rootDictionary.so")
-
 from ROOT import h52root
-for in_file in sys.argv[1:]:
-    out_file = "./" + in_file.split("/")[-1].replace(".h5",".root")
-    print "input file: ", in_file
-    print "output file: ", out_file
-    h52root(in_file, out_file)
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description='H5 to ROOT conversion tools')
+    parser.add_argument('inputs', type=str, nargs='+', help="name of the input files")
+    parser.add_argument('--datasetCellsName', dest='datasetCellsName', type=str, default="ECAL", help="Name of the dataset containing cells")
+    parser.add_argument('--datasetEnergyName', dest='datasetEnergyName', type=str, default="", help="Name of the dataset containing MC energy")
+    parser.add_argument('--energy', '-e', dest='energy', type=int, default=100, help="MC energy")
+    args = parser.parse_args()
+    for in_file in args.inputs:
+        out_file = "./" + in_file.split("/")[-1].replace(".h5",".root")
+        print "input file: ", in_file
+        print "output file: ", out_file
+        h52root(in_file, out_file, args.datasetCellsName, args.datasetEnergyName, args.energy)
