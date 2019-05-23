@@ -11,7 +11,7 @@
 #include "ROOT/RDataFrame.hxx"
 #include "createHistograms.h"
 
-void createHistograms(const std::string& aInput, const std::string& aOutput, double aMinEnergyMC = 1, double aMaxEnergyMC = 500) {
+void createHistograms(const std::string& aInput, const std::string& aOutput, double aMinEnergyMC = 1, double aMaxEnergyMC = 500, float aCellUnitToMeV = 1.) {
   TFile f(aInput.c_str(), "READ");
 
   // Set initial parameters
@@ -120,7 +120,7 @@ void createHistograms(const std::string& aInput, const std::string& aOutput, dou
       xCell = xCellV[iEntry];
       yCell = yCellV[iEntry];
       zCell = zCellV[iEntry];
-      eCell = energyCellV[iEntry];
+      eCell = energyCellV[iEntry] * aCellUnitToMeV;
       eCellFraction = eCell / *energyMC;
       // make calculations
       tDistance = zCell; // assumption: particle enters calorimeter perpendiculary

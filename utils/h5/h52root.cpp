@@ -6,7 +6,7 @@
 #include "H5DataSet.h"
 #include "h52root.h"
 
-void h52root(const std::string& aInput, const std::string& aOutput, const std::string& aDatasetCells = "ECAL", const std::string& aDatasetEnergy = "", int aEnergyMC = 100) {
+void h52root(const std::string& aInput, const std::string& aOutput, const std::string& aDatasetCells = "ECAL", const std::string& aDatasetEnergy = "", int aEnergyMC = 100, int aDatasetEnergyIndex = 0, float aMCEnergyUnitToMeV = 1) {
   std::cout << "Print settings:\n input name: " << aInput << "\n output name: " << aOutput
             << "\n dataset with cells: " << aDatasetCells << "\n dataset with MC energy: " << aDatasetEnergy << "\n MC energy: " << aEnergyMC << std::endl;
   TFile f(aOutput.c_str(), "RECREATE");
@@ -16,7 +16,6 @@ void h52root(const std::string& aInput, const std::string& aOutput, const std::s
   const hsize_t storeMax = 100;
   const double energyThresholdToSave = 0.1;
 
-  float particles[storeMax];
   float data[storeMax][netSize][netSize][netSize];
 
   TTree* events = new TTree("events", "events");
@@ -58,41 +57,85 @@ void h52root(const std::string& aInput, const std::string& aOutput, const std::s
     H5::DataSet dataset_particles = h5InFile.openDataSet( h5DataName_particles);
     H5::DataSpace dataspace_particles = dataset_particles.getSpace();
     int rank_particles = dataspace_particles.getSimpleExtentNdims();
-    assert(rank_particles == 1);
-    hsize_t dim_particles[rank_particles];
-    assert(dim_cells[0] == dim_particles[0]);
-    dataspace_particles.getSimpleExtentDims(dim_particles);
-    hsize_t  offset_particles[rank_particles];
-    hsize_t  h5Dim_particles[rank_particles];
-    h5Dim_particles[0]  = storeMax;
-    H5::DataSpace memspace_particles(rank_particles, h5Dim_particles);
+    assert(rank_particles == 1 || rank_particles == 2);
+    if (rank_particles == 1) {
+      hsize_t dim_particles[rank_particles];
+      dataspace_particles.getSimpleExtentDims(dim_particles);
+      assert(dim_cells[0] == dim_particles[0]);
+      float particles[storeMax];
+      hsize_t  offset_particles[rank_particles];
+      hsize_t  h5Dim_particles[rank_particles];
+      h5Dim_particles[0]  = storeMax;
+      H5::DataSpace memspace_particles(rank_particles, h5Dim_particles);
 
-    for (uint iSlab = 0; iSlab < dim_particles[0]/storeMax; ++iSlab) {
-      offset_cells[0] = iSlab * storeMax;
-      dataspace_cells.selectHyperslab( H5S_SELECT_SET, h5Dim_cells, offset_cells );
-      dataset_cells.read( data, H5::PredType::NATIVE_FLOAT, memspace_cells, dataspace_cells );
-      offset_particles[0] = iSlab * storeMax;
-      dataspace_particles.selectHyperslab( H5S_SELECT_SET, h5Dim_particles, offset_particles );
-      dataset_particles.read( particles, H5::PredType::NATIVE_FLOAT, memspace_particles, dataspace_particles );
-      for (iEvent = 0; iEvent < storeMax; iEvent++) {
-        read_xCellV.clear();
-        read_yCellV.clear();
-        read_zCellV.clear();
-        read_energyCellV.clear();
-        read_energyMC = particles[iEvent];
-        for (i = 0; i < netSize; i++) {
-          for (j = 0; j < netSize; j++) {
-            for (k = 0; k < netSize; k++) {
-              if(data[iEvent][i][j][k] > energyThresholdToSave) {
-                read_xCellV.push_back(i);
-                read_yCellV.push_back(j);
-                read_zCellV.push_back(k);
-                read_energyCellV.push_back(data[iEvent][i][j][k]);
+      for (uint iSlab = 0; iSlab < dim_particles[0]/storeMax; ++iSlab) {
+        offset_cells[0] = iSlab * storeMax;
+        dataspace_cells.selectHyperslab( H5S_SELECT_SET, h5Dim_cells, offset_cells );
+        dataset_cells.read( data, H5::PredType::NATIVE_FLOAT, memspace_cells, dataspace_cells );
+        offset_particles[0] = iSlab * storeMax;
+        dataspace_particles.selectHyperslab( H5S_SELECT_SET, h5Dim_particles, offset_particles );
+        dataset_particles.read( particles, H5::PredType::NATIVE_FLOAT, memspace_particles, dataspace_particles );
+        for (iEvent = 0; iEvent < storeMax; iEvent++) {
+          read_xCellV.clear();
+          read_yCellV.clear();
+          read_zCellV.clear();
+          read_energyCellV.clear();
+          read_energyMC = particles[iEvent] * aMCEnergyUnitToMeV;
+          for (i = 0; i < netSize; i++) {
+            for (j = 0; j < netSize; j++) {
+              for (k = 0; k < netSize; k++) {
+                if(data[iEvent][i][j][k] > energyThresholdToSave) {
+                  read_xCellV.push_back(i);
+                  read_yCellV.push_back(j);
+                  read_zCellV.push_back(k);
+                  read_energyCellV.push_back(data[iEvent][i][j][k]);
+                }
               }
             }
           }
+          events->Fill();
         }
-        events->Fill();
+      }
+    } else if (rank_particles == 2) {
+      hsize_t dim_particles[rank_particles];
+      dataspace_particles.getSimpleExtentDims(dim_particles);
+      assert(dim_cells[0] == dim_particles[0]);
+      assert(aDatasetEnergyIndex < dim_particles[1]);
+      float particles[storeMax][dim_particles[1]];
+      hsize_t  offset_particles[rank_particles];
+      hsize_t  h5Dim_particles[rank_particles];
+      h5Dim_particles[0]  = storeMax;
+      h5Dim_particles[1] = dim_particles[1];
+      offset_particles[1] = 0;
+      H5::DataSpace memspace_particles(rank_particles, h5Dim_particles);
+
+      for (uint iSlab = 0; iSlab < dim_particles[0]/storeMax; ++iSlab) {
+        offset_cells[0] = iSlab * storeMax;
+        dataspace_cells.selectHyperslab( H5S_SELECT_SET, h5Dim_cells, offset_cells );
+        dataset_cells.read( data, H5::PredType::NATIVE_FLOAT, memspace_cells, dataspace_cells );
+        offset_particles[0] = iSlab * storeMax;
+        dataspace_particles.selectHyperslab( H5S_SELECT_SET, h5Dim_particles, offset_particles );
+        dataset_particles.read( particles, H5::PredType::NATIVE_FLOAT, memspace_particles, dataspace_particles );
+        for (iEvent = 0; iEvent < storeMax; iEvent++) {
+          read_xCellV.clear();
+          read_yCellV.clear();
+          read_zCellV.clear();
+          read_energyCellV.clear();
+          read_energyMC = particles[iEvent][aDatasetEnergyIndex] * aMCEnergyUnitToMeV;
+          for (i = 0; i < netSize; i++) {
+            for (j = 0; j < netSize; j++) {
+              for (k = 0; k < netSize; k++) {
+                if(data[iEvent][i][j][k] > energyThresholdToSave) {
+                  read_xCellV.push_back(i);
+                  read_yCellV.push_back(j);
+                  read_zCellV.push_back(k);
+                  read_energyCellV.push_back(data[iEvent][i][j][k] * aMCEnergyUnitToMeV);
+                }
+              }
+            }
+          }
+          events->Fill();
+        }
       }
     }
   } else {
