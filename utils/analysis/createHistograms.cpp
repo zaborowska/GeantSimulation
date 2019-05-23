@@ -11,7 +11,7 @@
 #include "ROOT/RDataFrame.hxx"
 #include "createHistograms.h"
 
-void createHistograms(const std::string& aInput, const std::string& aOutput) {
+void createHistograms(const std::string& aInput, const std::string& aOutput, double aMinEnergyMC = 1, double aMaxEnergyMC = 500) {
   TFile f(aInput.c_str(), "READ");
 
   // Set initial parameters
@@ -19,7 +19,9 @@ void createHistograms(const std::string& aInput, const std::string& aOutput) {
   const double cellSizeMm = 10.;
   const double scaleFactorProfile = 10.;
   const int netMidCell = floor (netSize / 2);
-  double maxEnergy = 500;
+  double minEnergy = aMinEnergyMC;
+  double maxEnergy = aMaxEnergyMC;
+  bool eventSelection = false; // true if not all events are used for analysis
 
   // Check if flat energy spectrum or single-energy simulation is analysed
   ROOT::RDataFrame d("events", &f, {"EnergyMC","SimTime"});
@@ -27,7 +29,12 @@ void createHistograms(const std::string& aInput, const std::string& aOutput) {
   double energySpan = mc_histo->GetXaxis()->GetXmax() - mc_histo->GetXaxis()->GetXmin();
   if (energySpan < 1e3) {
     maxEnergy = mc_histo->GetMean() / 1.e3; // unit converted to GeV
-    std::cout << std::endl << "Detected single-energy simulation, particle energy: " << maxEnergy << std::endl << std::endl;
+    minEnergy = maxEnergy;
+    std::cout << std::endl << "Detected single-energy simulation, particle energy: " << maxEnergy << " GeV." << std::endl << std::endl;
+  } else {
+    // chose only bin of a flat spectrum
+    eventSelection = true;
+    std::cout << std::endl << "Flat energy spectrum simulation, choosing particles with energy within: " << minEnergy << " GeV and " << maxEnergy << " GeV." << std::endl << std::endl;
   }
   // check if SimTime exists in ROOT file
   bool include_simtime = false, include_simtype = false;
@@ -90,12 +97,18 @@ void createHistograms(const std::string& aInput, const std::string& aOutput) {
   size_t eventSize = 0;
   uint xCell = 0, yCell = 0, zCell = 0;
   double eCell = 0;
+  double energyMCinGeV = 0;
   // calculated
   uint tDistance = 0;
   double rDistance = 0, eCellFraction = 0, sumEnergyDeposited = 0;
   double tFirstMoment = 0, tSecondMoment = 0, rFirstMoment = 0, rSecondMoment = 0;
   while(eventsReader.Next()){
-    // std::cout << "event: " << iterEvents << "\t" << *energyMC << std::endl;
+    energyMCinGeV = *(energyMC) / 1.e3;
+    if (eventSelection) {
+      if (energyMCinGeV < minEnergy || energyMCinGeV > maxEnergy) {
+        continue;
+      }
+    }
     sumEnergyDeposited = 0;
     eventSize = energyCellV.GetSize();
     tFirstMoment = 0;
@@ -127,7 +140,7 @@ void createHistograms(const std::string& aInput, const std::string& aOutput) {
       enFractionLayers->Fill(eCellFraction, tDistance);
       sumEnergyDeposited += eCell;
     }
-    enMC->Fill(*(energyMC) / 1.e3);  // convert to GeV
+    enMC->Fill( energyMCinGeV );  // convert to GeV
     enTotal->Fill(sumEnergyDeposited / 1.e3);  // convert to GeV
     enFractionTotal->Fill(sumEnergyDeposited / (*energyMC));  // convert to GeV
     numCells->Fill(eventSize);
@@ -175,7 +188,6 @@ void createHistograms(const std::string& aInput, const std::string& aOutput) {
     }
     simType->Scale(1./iterEvents);
   }
-
   // Store histograms
   std::cout << "Saving output histograms to \"" << aOutput << "\"" << std::endl;
   TFile out(aOutput.c_str(), "RECREATE");

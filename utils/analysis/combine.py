@@ -78,10 +78,13 @@ def get_span(histo, threshold = 0):
                 maxBin = ibin
     return histo.GetMean(), (histo.GetXaxis().GetBinUpEdge(maxBin) - histo.GetXaxis().GetBinLowEdge(minBin)) / 2.
 
-def calculate(infile):
+def calculate(infile, energy):
     calculations = {}
-    calculations["enMC"] = get_span(infile.Get("enMC"))
-    energyResponse = get_gaus(infile.Get("enTotal"))
+    if energy == 0:
+        calculations["enMC"] = get_span(infile.Get("enMC"))
+    else:
+        calculations["enMC"] = (energy, get_span(infile.Get("enMC"))[1])
+    energyResponse = get_gaus(infile.Get("enFractionTotal"))
     enResolution = energyResponse[2] / (energyResponse[0])
     enResolutionErrorSigmaPart = energyResponse[3] / (energyResponse[0])
     enResolutionErrorMeanPart = energyResponse[1] * energyResponse[2] / ( (energyResponse[0]) ** 2)
@@ -99,7 +102,7 @@ def calculate(infile):
         calculations["simTime"] = get_gaus(infile.Get("simTime"))
     return calculations
 
-def main(input_names, output_name):
+def main(input_names, output_name, energies):
 
     to_plot = ["*"]
 
@@ -120,10 +123,13 @@ def main(input_names, output_name):
     all_plots = []
     all_files = []
 
-    for input_file in input_names:
+    for iFile, input_file in enumerate(input_names):
         in_root = ROOT.TFile(input_file, "READ")
         all_files.append(in_root)
-        calc.append(calculate(in_root))
+        if len(energies) > 0:
+            calc.append(calculate(in_root, energies[iFile]))
+        else:
+            calc.append(calculate(in_root, 0))
 
     if len(to_plot) == 1 and to_plot[0] == "*":
         plot_list_all = []
@@ -203,10 +209,13 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Combine shower validation plots')
     parser.add_argument('inputs', type=str, nargs='+', help="name of the input files")
     parser.add_argument('--output', "-o", dest='output', type=str, default="combinedValidation.root", help="name of the output file")
+    parser.add_argument('--energies', "-e", dest='energies', type=float, nargs='+', default=[], help="assign energies to files")
     parser.add_argument('--visual', "-v", dest='visual', action='store_true', help="If plots should be also displayed.")
     args = parser.parse_args()
     if not args.visual:
        ROOT.gROOT.SetBatch(True)
-    main(args.inputs, args.output)
+    if len(args.energies) > 0 and len(args.energies) != len(args.inputs):
+        print("If energies are defined, there must be one value per file.")
+    main(args.inputs, args.output, args.energies)
     if args.visual:
        raw_input("Press ENTER to exit")

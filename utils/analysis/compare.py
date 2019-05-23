@@ -20,18 +20,32 @@ def prepare_legend(legend):
    legend.SetTextFont(42)
    legend.Clear()
 
-def graph2hist(graph):
+def graph2hist(graph, bin_params):
    x_errors = graph.GetEX()
-   min_axis = int(graph.GetXaxis().GetXmin())
-   max_axis = int(graph.GetXaxis().GetXmax())
+   if len(bin_params) == 0:
+      first_run = True
+      bin_params["min"] = graph.GetXaxis().GetXmin()
+      bin_params["max"] = graph.GetXaxis().GetXmax()
+      bin_params["width"] = max(x_errors)
+      bin_params["N"] = int((bin_params["max"] - bin_params["min"]) / bin_params["width"])
+      bin_params["x_values"] = graph.GetX()
+   else:
+      first_run = False
    hist = ROOT.TH1D("h_" + graph.GetName().replace("g_",""),graph.GetTitle()+";"+graph.GetXaxis().GetTitle()+";"+graph.GetYaxis().GetTitle(),
-                    int(( max_axis - min_axis ) / max(x_errors)), min_axis, max_axis)
+                    bin_params["N"], bin_params["min"], bin_params["max"])
    for iPoint in range(graph.GetN()):
-      bin_id = hist.FindBin(graph.GetX()[iPoint])
+      current_x_value = graph.GetX()[iPoint]
+      if not first_run:
+         for x in bin_params["x_values"]:
+            if current_x_value - x_errors[iPoint] < x and x < current_x_value + x_errors[iPoint]:
+               current_x_value = x
+               break
+      bin_id = hist.FindBin(current_x_value)
       hist.SetBinContent(bin_id, graph.GetY()[iPoint])
       hist.SetBinError(bin_id, graph.GetEY()[iPoint])
+      print(graph.GetName(), "  setting " , bin_id, "\t", graph.GetY()[iPoint], "\t", graph.GetEY()[iPoint] )
    ROOT.SetOwnership(hist,False)
-   return hist
+   return hist, bin_params
 
 def setYaxisMinMax(listOfPlots):
    if len(listOfPlots) == 0:
@@ -48,8 +62,13 @@ def setYaxisMinMax(listOfPlots):
             if content != 0 and content < plot_min :
                plot_min = content
       elif plot.IsA().InheritsFrom("TGraph"):
-         plot_min = plot.GetYaxis().GetXmin()
          plot_max = plot.GetYaxis().GetXmax()
+         # avoid minimum to be == 0
+         plot_min = plot.GetYaxis().GetXmax()
+         y_values = plot.GetY()
+         for yVal in y_values:
+            if yVal != 0 and yVal < plot_min:
+               plot_min = yVal
       if minim == -1 or minim > plot_min:
          minim = plot_min
       if maxim == -1 or maxim < plot_max:
@@ -59,17 +78,6 @@ def setYaxisMinMax(listOfPlots):
       listOfPlots[0].SetMaximum(1.1*maxim)
    elif plot.IsA().InheritsFrom("TGraph"):
       listOfPlots[0].GetYaxis().SetRangeUser(minim, maxim)
-
-def checkAvailabilityForDivision(listOfPlots):
-   minim = []
-   maxim = []
-   for plot in listOfPlots:
-      minim.append(plot.GetXaxis().GetXmin())
-      maxim.append(plot.GetXaxis().GetXmax())
-   if len(set(minim)) != 1 or len(set(maxim)) != 1:
-      return False
-   else:
-      return True
 
 def setXaxisMinMax(listOfPlots):
    if len(listOfPlots) == 0:
@@ -135,12 +143,13 @@ def main(input_names, output_name, legend_names = [], histograms = []):
       canvas = prepare_canvas("canv_"+hist_name.replace("h_","").replace("g_",""), hist_name.replace("h_","").replace("g_",""))
       hists = []
       ratios = []
+      bin_params = {}
       for iFile, infile in enumerate(in_root):
          hist = infile.Get(hist_name)
          if not hist:
             sys.exit("Error getting histogram <<"+ hist_name+ ">> from file <<"+ infile.GetName()+ ">>.")
          if hist.IsA().InheritsFrom("TGraph"):
-            hist = graph2hist(hist)
+            hist, bin_params = graph2hist(hist, bin_params)
          hist.SetLineColor(colours[iFile])
          hist.SetFillColor(colours[iFile])
          hist.SetMarkerColor(colours[iFile])
@@ -148,30 +157,28 @@ def main(input_names, output_name, legend_names = [], histograms = []):
          hist.SetMarkerSize(1.6)
          hists.append(hist)
          ROOT.SetOwnership(hist, False)
-         if checkAvailabilityForDivision([hist, hists[0]]):
-            ratio = ROOT.TRatioPlot(hist, hists[0])
-            ratio_graph = ratio.GetCalculationOutputGraph()
-            copyStyle(ratio_graph, hist)
-            ROOT.SetOwnership(ratio, False)
-            ROOT.SetOwnership(ratio_graph, False)
-            ratios.append(ratio_graph)
-            if iFile == 0:
-               ratio.SetGraphDrawOpt("c")
-               ratio.SetH1DrawOpt("ep")
-               ratio.SetH2DrawOpt("ep")
-               ratio.Draw()
-               baseline = ratio
-            else:
-               baseline.GetLowerPad().cd()
-               ratio_graph.Draw("sameep")
-               setYaxisMinMax([ratios[0], ratio_graph])
-               setXaxisMinMax([ratios[0], ratio_graph])
-               baseline.GetLowerPad().Update()
-               baseline.GetUpperPad().cd()
-               hist.Draw("sameep")
-               setYaxisMinMax([hists[0], hist])
-               setXaxisMinMax([hists[0], hist])
-               canvas.Update()
+         ratio = ROOT.TRatioPlot(hist, hists[0])
+         ratio_graph = ratio.GetCalculationOutputGraph()
+         copyStyle(ratio_graph, hist)
+         ROOT.SetOwnership(ratio, False)
+         ROOT.SetOwnership(ratio_graph, False)
+         ratios.append(ratio_graph)
+         if iFile == 0:
+            ratio.SetGraphDrawOpt("c")
+            ratio.SetH1DrawOpt("ep")
+            ratio.SetH2DrawOpt("ep")
+            ratio.Draw()
+            baseline = ratio
+            setXaxisMinMax([ratios[0], ratio_graph])
+         else:
+            baseline.GetLowerPad().cd()
+            ratio_graph.Draw("sameep")
+            setYaxisMinMax([ratios[0], ratio_graph])
+            baseline.GetLowerPad().Update()
+            baseline.GetUpperPad().cd()
+            hist.Draw("sameep")
+            setYaxisMinMax([hists[0], hist])
+            canvas.Update()
 
       legend = baseline.GetUpperPad().BuildLegend()
       prepare_legend(legend)
