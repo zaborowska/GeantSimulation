@@ -192,7 +192,7 @@ int main(int argc, char** argv){
       std::cout << "Using default energy dataset name: \"./" << datasetEnergyName << "\"" << std::endl;
       energyMC = 0;
     }
-  } else if (argc == 6) {
+  } else if (argc == 8) {
     outputName = argv[2];
     datasetCellsName = argv[3];
     datasetEnergyName = argv[4];
@@ -208,6 +208,6 @@ int main(int argc, char** argv){
       energyMC = 0;
     }
   }
-  h52root(inputName, outputName, datasetCellsName, datasetEnergyName, energyMC);
+  h52root(inputName, outputName, datasetCellsName, datasetEnergyName, energyMC, atoi(argv[6]), atoi(argv[7]));
   return 0;
 }
