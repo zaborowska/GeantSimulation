@@ -89,9 +89,9 @@ def calculate(infile, energy):
     enResolutionErrorSigmaPart = energyResponse[3] / (energyResponse[0])
     enResolutionErrorMeanPart = energyResponse[1] * energyResponse[2] / ( (energyResponse[0]) ** 2)
     enResolutionError = sqrt( enResolutionErrorSigmaPart ** 2 +  enResolutionErrorMeanPart ** 2 )
-    calculations["enDeposited"] = energyResponse[:2]
     calculations["enResolution"] = (enResolution, enResolutionError)
-    calculations["enLinearity"] = get_gaus(infile.Get("enFractionTotal"))[:2]
+    calculations["enLinearity"] = energyResponse[:2]
+    calculations["enDeposited"] = get_gaus(infile.Get("enTotal"))[:2]
     calculations["longFirstMoment"] = get_gaus(infile.Get("longFirstMoment"))[:2]
     calculations["longSecondMoment"] = get_gaus(infile.Get("longSecondMoment"))[:2]
     calculations["transFirstMoment"] = get_gaus(infile.Get("transFirstMoment"))[:2]
