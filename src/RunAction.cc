@@ -5,6 +5,8 @@
 #include "G4UnitsTable.hh"
 #include "G4SystemOfUnits.hh"
 
+#include <valgrind/callgrind.h>
+
 RunAction::RunAction(SaveToFileEventAction* eventAction)
   : G4UserRunAction(),
     fEventAction(eventAction) {
@@ -39,10 +41,12 @@ void RunAction::BeginOfRunAction(const G4Run* /*run*/) {
   // Open an output file
   G4String fileName = "ntuples_"+std::to_string(std::time(NULL));
   analysisManager->OpenFile(fileName);
+  CALLGRIND_START_INSTRUMENTATION;
 }
 
 void RunAction::EndOfRunAction(const G4Run* /*run*/)
 {
+  CALLGRIND_STOP_INSTRUMENTATION;
   // print histogram statistics
   G4AnalysisManager* analysisManager = G4AnalysisManager::Instance();
 
