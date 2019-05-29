@@ -77,10 +77,10 @@ void createHistograms(const std::string& aInput, const std::string& aOutput, dou
   auto longProfile = new TH1F("longProfile", "longitudinal profilee;t (layer);#LTE#GT (MeV)", netSize, -0.5, netSize - 0.5);
   auto transProfile = new TH1F("transProfile", "transverse profile;r (layer);#LTE#GT (MeV)", netMidCell, - 0.5, netMidCell - 0.5);
   auto enFractionCell = new TH1F("enFractionCell", "cell energy fraction distribution;E_{cell}/E_{MC}; Normalised entries", 1000, 0, 1);
-  auto longFirstMoment = new TH1F("longFirstMoment", "longitudinal first moment;#LT#lambda#GT;Normalised entries", netSize*cellSizeMm, 0, netSize * cellSizeMm);
-  auto longSecondMoment = new TH1F("longSecondMoment", "longitudinal second moment;#LT#lambda^{2}#GT;Normalised entries", netSize*cellSizeMm, 0, pow(netSize * cellSizeMm, 2));
-  auto transFirstMoment = new TH1F("transFirstMoment", "transverse first moment;#LT#lambda#GT;Normalised entries", netSize*cellSizeMm, 0, netSize * cellSizeMm / scaleFactorProfile );
-  auto transSecondMoment = new TH1F("transSecondMoment", "transverse second moment;#LT#lambda^{2}#GT;Normalised entries", netSize*cellSizeMm, 0, pow(netSize * cellSizeMm, 2) / pow(scaleFactorProfile, 2));
+  auto longFirstMoment = new TH1F("longFirstMoment", "longitudinal first moment;#LT#lambda#GT (mm);Normalised entries", netSize*cellSizeMm, 0, netSize * cellSizeMm);
+  auto longSecondMoment = new TH1F("longSecondMoment", "longitudinal second moment;#LT#lambda^{2}#GT (mm^{2});Normalised entries", netSize*cellSizeMm, 0, pow(netSize * cellSizeMm, 2));
+  auto transFirstMoment = new TH1F("transFirstMoment", "transverse first moment;#LTr#GT (mm);Normalised entries", netSize*cellSizeMm, 0, netSize * cellSizeMm / scaleFactorProfile );
+  auto transSecondMoment = new TH1F("transSecondMoment", "transverse second moment;#LTr^{2}#GT (mm^{2});Normalised entries", netSize*cellSizeMm, 0, pow(netSize * cellSizeMm, 2) / pow(scaleFactorProfile, 2));
   auto enLayers = new TH2F("enLayers", "energy distribution per layer;E_{cell} (MeV); layer; Entries", 100, 0, 1000, netSize, -0.5, netSize - 0.5);
   auto enFractionLayers = new TH2F("enFractionLayers", "energy fraction distribution per layer;E_{cell}/E_{MC}; layer; Entries", 1000, 0, 1., netSize, -0.5, netSize - 0.5);
   auto transProfileLayers = new TH2F("transProfileLayers", "transverse profile per layer ;r (layer); layer;#LTE#GT (MeV)", netMidCell, - 0.5, netMidCell - 0.5, netSize, -0.5, netSize - 0.5);
@@ -112,9 +112,7 @@ void createHistograms(const std::string& aInput, const std::string& aOutput, dou
     sumEnergyDeposited = 0;
     eventSize = energyCellV.GetSize();
     tFirstMoment = 0;
-    tSecondMoment = 0;
     rFirstMoment = 0;
-    rSecondMoment = 0;
     for (uint iEntry = 0; iEntry < eventSize; ++iEntry) {
       // get data (missing: angle at entrance)
       xCell = xCellV[iEntry];
@@ -126,9 +124,7 @@ void createHistograms(const std::string& aInput, const std::string& aOutput, dou
       tDistance = zCell; // assumption: particle enters calorimeter perpendiculary
       rDistance = sqrt( (xCell - netMidCell) * (xCell - netMidCell) + (yCell - netMidCell) * (yCell - netMidCell));
       tFirstMoment += eCell * (tDistance + 0.5) * cellSizeMm;
-      tSecondMoment += eCell * pow((tDistance + 0.5) * cellSizeMm, 2);
       rFirstMoment += eCell * rDistance * cellSizeMm;
-      rSecondMoment += eCell * pow(rDistance * cellSizeMm, 2);
       // fill histograms
       mesh->Fill(zCell, xCell, yCell, eCell);
       enCell->Fill(eCell);
@@ -140,14 +136,28 @@ void createHistograms(const std::string& aInput, const std::string& aOutput, dou
       enFractionLayers->Fill(eCellFraction, tDistance);
       sumEnergyDeposited += eCell;
     }
+    tFirstMoment /= sumEnergyDeposited;
+    rFirstMoment /= sumEnergyDeposited;
+    tSecondMoment = 0;
+    rSecondMoment = 0;
+    for (uint iEntry = 0; iEntry < eventSize; ++iEntry) {
+      // get data (missing: angle at entrance)
+      xCell = xCellV[iEntry];
+      yCell = yCellV[iEntry];
+      zCell = zCellV[iEntry];
+      eCell = energyCellV[iEntry] * aCellUnitToMeV;
+      // make calculations
+      tDistance = zCell; // assumption: particle enters calorimeter perpendiculary
+      rDistance = sqrt( (xCell - netMidCell) * (xCell - netMidCell) + (yCell - netMidCell) * (yCell - netMidCell));
+      tSecondMoment += eCell * pow((tDistance + 0.5) * cellSizeMm - tFirstMoment, 2);
+      rSecondMoment += eCell * pow(rDistance * cellSizeMm - rFirstMoment, 2);
+    }
+    tSecondMoment /= sumEnergyDeposited;
+    rSecondMoment /= sumEnergyDeposited;
     enMC->Fill( energyMCinGeV );  // convert to GeV
     enTotal->Fill(sumEnergyDeposited / 1.e3);  // convert to GeV
     enFractionTotal->Fill(sumEnergyDeposited / (*energyMC));  // convert to GeV
     numCells->Fill(eventSize);
-    tFirstMoment /= sumEnergyDeposited;
-    tSecondMoment /= sumEnergyDeposited;
-    rFirstMoment /= sumEnergyDeposited;
-    rSecondMoment /= sumEnergyDeposited;
     longFirstMoment->Fill(tFirstMoment);
     longSecondMoment->Fill(tSecondMoment);
     transFirstMoment->Fill(rFirstMoment);
