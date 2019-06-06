@@ -6,7 +6,7 @@
 #include "H5DataSet.h"
 #include "h52root.h"
 
-void h52root(const std::string& aInput, const std::string& aOutput, const std::string& aDatasetCells = "ECAL", const std::string& aDatasetEnergy = "", int aEnergyMC = 100, int aDatasetEnergyIndex = 0, float aMCEnergyUnitToMeV = 1) {
+void h52root(const std::string& aInput, const std::string& aOutput, const std::string& aDatasetCells = "ECAL", const std::string& aDatasetEnergy = "", int aEnergyMC = 100, int aDatasetEnergyIndex = 0, float aMCEnergyUnitToMeV = 1.e3) {
   std::cout << "Print settings:\n input name: " << aInput << "\n output name: " << aOutput
             << "\n dataset with cells: " << aDatasetCells << "\n dataset with MC energy: " << aDatasetEnergy << "\n MC energy: " << aEnergyMC << std::endl;
   TFile f(aOutput.c_str(), "RECREATE");

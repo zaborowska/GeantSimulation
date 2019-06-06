@@ -13,7 +13,7 @@ if __name__ == "__main__":
     parser.add_argument('--datasetEnergyName', dest='datasetEnergyName', type=str, default="", help="Name of the dataset containing MC energy")
     parser.add_argument('--datasetEnergyIndex', dest='datasetEnergyIndex', type=int, default=0, help="Index of the MC energy in the dataset containing MC energy")
     parser.add_argument('--energy', '-e', dest='energy', type=int, default=100, help="MC energy")
-    parser.add_argument('--energyUnitToMeV', '-unit', dest='unit', type=float, default=1, help="MC energy unit conversion to MeV")
+    parser.add_argument('--energyUnitToMeV', '-unit', dest='unit', type=float, default=1.e3, help="MC energy unit conversion to MeV")
     args = parser.parse_args()
     for in_file in args.inputs:
         out_file = "./" + in_file.split("/")[-1].replace(".h5",".root")

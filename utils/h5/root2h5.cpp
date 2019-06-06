@@ -57,7 +57,7 @@ void root2h5(const std::string& aInput, const std::string& aOutput) {
   H5::DataSet dataset_particles = h5OutFile.createDataSet( h5DataName_particles, datatype, dataspace_particles, h5cparms_particles );
 
   while(eventsReader.Next()){
-    particles[iEvent] = *energyMC;
+    particles[iEvent] = *energyMC / 1.e3; // conversion from MeV (root file) to GeV (h5)
     sum = 0;
     for (j = 0; j < netSize; j++) {
       for (i = 0; i < netSize; i++) {
@@ -73,7 +73,7 @@ void root2h5(const std::string& aInput, const std::string& aOutput) {
       eCell = energyCellV->at(iEntry);
       sum += eCell;
       if(xCell < netSize && yCell < netSize && zCell < netSize ) {
-        data[iEvent][xCell][yCell][zCell] = eCell;
+        data[iEvent][xCell][yCell][zCell] = eCell / 1.e3; // conversion from MeV (root file) to GeV (h5)
       } else {
         std::cout << " ERROR, attempting to acces [" << xCell << "][" << yCell << "][" << zCell << std::endl;
         return;
