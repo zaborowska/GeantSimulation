@@ -14,7 +14,7 @@ void h52root(const std::string& aInput, const std::string& aOutput, const std::s
   const hsize_t netSize = 25;
   const int rank = 4;
   const hsize_t storeMax = 100;
-  const double energyThresholdToSave = 0.1;
+  const double energyThresholdToSave = 0.1 / aMCEnergyUnitToMeV;
 
   float data[storeMax][netSize][netSize][netSize];
 
