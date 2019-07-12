@@ -31,33 +31,35 @@ CalorimeterSD::CalorimeterSD(G4String name): G4VSensitiveDetector(name),
                                              G4VGFlashSensitiveDetector(),
                                              fHitsCollection(0),
                                              fHCID(-1),
-                                             fCellNo(1),
+                                             fCellNoXY(1),
+                                             fCellNoZ(1),
                                              fDetectorOffset(G4ThreeVector()),
                                              fCellSize(G4ThreeVector()) {
   collectionName.insert("ECalorimeterColl");
 }
 
-CalorimeterSD::CalorimeterSD(G4String name, G4int aCellNoInAxis): G4VSensitiveDetector(name),
+CalorimeterSD::CalorimeterSD(G4String name, G4int aCellNoInAxisXY, G4int aCellNoInAxisZ): G4VSensitiveDetector(name),
                                                                   G4VGFlashSensitiveDetector(),
                                                                   fHitsCollection(0),
                                                                   fHCID(-1),
-                                                                  fCellNo(aCellNoInAxis),
+                                                                  fCellNoXY(aCellNoInAxisXY),
+                                                                  fCellNoZ(aCellNoInAxisZ),
                                                                   fDetectorOffset(G4ThreeVector()),
                                                                   fCellSize(G4ThreeVector()) {
 
   collectionName.insert("ECalorimeterColl");
 }
-CalorimeterSD::CalorimeterSD(G4String name, G4int aCellNoInAxis, G4ThreeVector aDetectorOffset, G4ThreeVector aCellSize ):
+CalorimeterSD::CalorimeterSD(G4String name, G4int aCellNoInAxisXY, G4int aCellNoInAxisZ, G4ThreeVector aDetectorOffset, G4ThreeVector aCellSize ):
   G4VSensitiveDetector(name),
   G4VGFlashSensitiveDetector(),
   fHitsCollection(0),
   fHCID(-1),
-  fCellNo(aCellNoInAxis),
+  fCellNoXY(aCellNoInAxisXY),
+  fCellNoZ(aCellNoInAxisZ),
   fDetectorOffset(aDetectorOffset),
   fCellSize(aCellSize) {
 
   collectionName.insert("ECalorimeterColl");
-  std::cout << "===" << fDetectorOffset << "\t" << fCellSize << std::endl;
 }
 
 CalorimeterSD::~CalorimeterSD() {
@@ -72,9 +74,9 @@ void CalorimeterSD::Initialize(G4HCofThisEvent* hce) {
   hce->AddHitsCollection(fHCID,fHitsCollection);
 
   // fill calorimeter hits with zero energy deposition
-  for (G4int ix=0;ix<fCellNo;ix++)
-    for (G4int iy=0;iy<fCellNo;iy++)
-      for (G4int iz=0;iz<fCellNo;iz++) {
+  for (G4int ix=0;ix<fCellNoXY;ix++)
+    for (G4int iy=0;iy<fCellNoXY;iy++)
+      for (G4int iz=0;iz<fCellNoZ;iz++) {
         CalorimeterHit* hit = new CalorimeterHit();
         fHitsCollection->insert(hit);
       }
@@ -94,7 +96,7 @@ G4bool CalorimeterSD::ProcessHits(G4Step* step, G4TouchableHistory*)
   // G4int envelopeNo = touchable->GetCopyNumber(4); // calorimeter envelope
   // G4int worldNo = touchable->GetCopyNumber(5); // world volume
 
-  G4int hitID = fCellNo*fCellNo*xNo+fCellNo*yNo+zNo;
+  G4int hitID = fCellNoXY*fCellNoZ*xNo+fCellNoZ*yNo+zNo;
   CalorimeterHit* hit = (*fHitsCollection)[hitID];
 
   if(hit->GetXid()<0)
@@ -128,7 +130,7 @@ G4bool CalorimeterSD::ProcessHits(G4GFlashSpot*aSpot ,G4TouchableHistory*) {
   G4int xNo = touchable->GetReplicaNo(4); // row
   G4int zNo = touchable->GetReplicaNo(2); // layer
 
-  G4int hitID = fCellNo*fCellNo*xNo+fCellNo*yNo+zNo;
+  G4int hitID = fCellNoXY*fCellNoZ*xNo+fCellNoZ*yNo+zNo;
   CalorimeterHit* hit = (*fHitsCollection)[hitID];
   if(hit->GetXid()<0)
   {

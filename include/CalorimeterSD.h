@@ -26,8 +26,8 @@ namespace test {
 {
 public:
   CalorimeterSD(G4String name);
-  CalorimeterSD(G4String name,G4int aCellNoInAxis);
-  CalorimeterSD(G4String name,G4int aCellNoInAxis, G4ThreeVector, G4ThreeVector);
+  CalorimeterSD(G4String name,G4int aCellNoInAxisXY,G4int aCellNoInAxisZ);
+  CalorimeterSD(G4String name,G4int aCellNoInAxisXY,G4int aCellNoInAxisZ, G4ThreeVector, G4ThreeVector);
   virtual ~CalorimeterSD();
   virtual void Initialize(G4HCofThisEvent*HCE);
   virtual void EndOfEvent(G4HCofThisEvent*HCE);
@@ -37,7 +37,8 @@ public:
 private:
   CalorimeterHitsCollection* fHitsCollection;
   G4int fHCID;
-  G4int fCellNo;
+  G4int fCellNoXY;
+  G4int fCellNoZ;
   G4ThreeVector fDetectorOffset;
   G4ThreeVector fCellSize;
 };

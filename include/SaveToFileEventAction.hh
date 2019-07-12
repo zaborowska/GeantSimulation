@@ -11,6 +11,7 @@ class SaveToFileEventAction : public G4UserEventAction
 public:
   SaveToFileEventAction();
   SaveToFileEventAction(G4int);
+  SaveToFileEventAction(G4int, G4int);
   virtual ~SaveToFileEventAction() {};
 
   virtual void BeginOfEventAction(const G4Event*);
@@ -22,7 +23,8 @@ public:
 
 private:
   G4int fHID;
-  G4int fCellNo;
+  G4int fCellNoXY;
+  G4int fCellNoZ;
   std::vector<G4double> fCalEdep;
   std::vector<G4int> fCalX;
   std::vector<G4int> fCalY;

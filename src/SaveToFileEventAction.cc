@@ -15,7 +15,8 @@
 SaveToFileEventAction::SaveToFileEventAction()
 : G4UserEventAction(),
   fHID(-1),
-  fCellNo(25),
+  fCellNoXY(25),
+  fCellNoZ(25),
   fCalEdep{ std::vector<G4double>(25*25*25, 0.)},
   fCalX{ std::vector<G4int>(25*25*25, 0)},
   fCalY{ std::vector<G4int>(25*25*25, 0)},
@@ -28,11 +29,25 @@ SaveToFileEventAction::SaveToFileEventAction()
 SaveToFileEventAction::SaveToFileEventAction(G4int aCellNo)
   : G4UserEventAction(),
     fHID(-1),
-    fCellNo(aCellNo),
+    fCellNoXY(aCellNo),
+    fCellNoZ(aCellNo),
     fCalEdep{ std::vector<G4double>(aCellNo*aCellNo*aCellNo, 0.)},
   fCalX{ std::vector<G4int>(aCellNo*aCellNo*aCellNo, 0)},
   fCalY{ std::vector<G4int>(aCellNo*aCellNo*aCellNo, 0)},
   fCalZ{ std::vector<G4int>(aCellNo*aCellNo*aCellNo, 0)},
+  fTimer()
+{
+  G4RunManager::GetRunManager()->SetPrintProgress(1000);
+}
+SaveToFileEventAction::SaveToFileEventAction(G4int aCellNoXY, G4int aCellNoZ)
+  : G4UserEventAction(),
+    fHID(-1),
+    fCellNoXY(aCellNoXY),
+    fCellNoZ(aCellNoZ),
+    fCalEdep{ std::vector<G4double>(aCellNoXY*aCellNoXY*aCellNoZ, 0.)},
+  fCalX{ std::vector<G4int>(aCellNoXY*aCellNoXY*aCellNoZ, 0)},
+  fCalY{ std::vector<G4int>(aCellNoXY*aCellNoXY*aCellNoZ, 0)},
+  fCalZ{ std::vector<G4int>(aCellNoXY*aCellNoXY*aCellNoZ, 0)},
   fTimer()
 {
   G4RunManager::GetRunManager()->SetPrintProgress(1000);
@@ -79,14 +94,14 @@ void SaveToFileEventAction::EndOfEventAction(const G4Event* event)
       ->GetPrimaryVertex()->GetPrimary(0)->GetTotalEnergy();
     G4int numNonZeroThresholdCells = 0;
 
-    fCalEdep.resize(fCellNo*fCellNo*fCellNo);
-    fCalX.resize(fCellNo*fCellNo*fCellNo);
-    fCalY.resize(fCellNo*fCellNo*fCellNo);
-    fCalZ.resize(fCellNo*fCellNo*fCellNo);
-    for (G4int ix=0;ix<fCellNo;ix++)
-      for (G4int iy=0;iy<fCellNo;iy++)
-        for (G4int iz=0;iz<fCellNo;iz++) {
-            hitId = fCellNo*fCellNo*ix+fCellNo*iy+iz;
+    fCalEdep.resize(fCellNoXY*fCellNoXY*fCellNoZ);
+    fCalX.resize(fCellNoXY*fCellNoXY*fCellNoZ);
+    fCalY.resize(fCellNoXY*fCellNoXY*fCellNoZ);
+    fCalZ.resize(fCellNoXY*fCellNoXY*fCellNoZ);
+    for (G4int ix=0;ix<fCellNoXY;ix++)
+      for (G4int iy=0;iy<fCellNoXY;iy++)
+        for (G4int iz=0;iz<fCellNoZ;iz++) {
+            hitId = fCellNoXY*fCellNoZ*ix+fCellNoZ*iy+iz;
             test::CalorimeterHit* hit = (*hcHC)[hitId];
             G4double eDep = hit->GetEdep();
             if (eDep > 0.1) {
@@ -108,7 +123,7 @@ void SaveToFileEventAction::EndOfEventAction(const G4Event* event)
     EventInformation* eventInformation = dynamic_cast<EventInformation*>(event->GetUserInformation());
     EventInformation::eSimType simtype = eventInformation->GetSimType();
     man->FillNtupleIColumn(5, simtype);
-    man->FillNtupleDColumn(6,  fTimer.GetRealElapsed());
+    man->FillNtupleDColumn(6, fTimer.GetRealElapsed());
 
     man->AddNtupleRow();
 }

@@ -40,9 +40,9 @@ int main(int argc, char** argv)
    G4HadronicProcessStore::Instance()->SetVerbose(0);
    // Load geometry (from GDML)
    G4cout << "Geometry loaded from  file " << argv[1]<<G4endl;
-   G4VUserDetectorConstruction* detector = new DetectorConstruction();
+   DetectorConstruction* detector = new DetectorConstruction();
    runManager->SetUserInitialization(detector);
-   runManager->SetUserInitialization( new sim::FullSimActions );
+   runManager->SetUserInitialization( new sim::FullSimActions(detector) );
 
   //----------------
   // Visualization:

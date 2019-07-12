@@ -41,6 +41,7 @@ public:
   G4double GetCalorSizeYZ() const    {return fCalorSizeYZ;};
 
   G4int GetNbOfLayers() const        {return fNbOfLayers;};
+  G4int GetNbOfCells() const        {return fNbOfCells;};
 
   G4int       GetNbOfAbsor() const   {return fNbOfAbsor;};
   const G4Material* GetAbsorMaterial(G4int i) const

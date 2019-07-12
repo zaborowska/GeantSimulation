@@ -377,7 +377,7 @@ void DetectorConstruction::SetCalorSizeYZ(G4double val)
 void DetectorConstruction::ConstructSDandField()
 {
   std::string caloSDname = "ECal";
-  test::CalorimeterSD* caloSD = new test::CalorimeterSD(caloSDname,fNbOfCells,
+  test::CalorimeterSD* caloSD = new test::CalorimeterSD(caloSDname,fNbOfCells,fNbOfLayers,
                                                         G4ThreeVector(fCalorSizeYZ/2,fCalorSizeYZ/2,0),
                                                         G4ThreeVector(fCalorSizeYZ/fNbOfCells, fCalorSizeYZ/fNbOfCells, fLayerThickness));
   G4SDManager::GetSDMpointer()->AddNewDetector(caloSD);

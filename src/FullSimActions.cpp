@@ -4,11 +4,15 @@
 #include "RunAction.hh"
 #include "TThread.h"
 #include "Randomize.hh"
+#include "DetectorConstruction.hh"
 #include <ctime>
 
 namespace sim {
 FullSimActions::FullSimActions():
-  G4VUserActionInitialization() {}
+  G4VUserActionInitialization(), fDetector(nullptr) {}
+
+FullSimActions::FullSimActions(const DetectorConstruction* aDetector):
+  G4VUserActionInitialization(), fDetector(aDetector) {}
 
 FullSimActions::~FullSimActions() {}
 
@@ -21,7 +25,7 @@ void FullSimActions::BuildForMaster() const
 
 void FullSimActions::Build() const {
   SetUserAction(new PrimaryGeneratorAction());
-  auto eventAction = new SaveToFileEventAction(25);
+  auto eventAction = new SaveToFileEventAction(fDetector->GetNbOfCells(), fDetector->GetNbOfLayers());
   SetUserAction(eventAction);
   SetUserAction(new RunAction(eventAction));
 }
