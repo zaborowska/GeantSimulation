@@ -104,7 +104,7 @@ void SaveToFileEventAction::EndOfEventAction(const G4Event* event)
             hitId = fCellNoXY*fCellNoZ*ix+fCellNoZ*iy+iz;
             test::CalorimeterHit* hit = (*hcHC)[hitId];
             G4double eDep = hit->GetEdep();
-            if (eDep > 0.1) {
+            if (eDep > 0.0005) { // e > 0.5 keV
                 fCalEdep[numNonZeroThresholdCells] = eDep;
                 fCalX[numNonZeroThresholdCells] = ix;
                 fCalY[numNonZeroThresholdCells] = iy;
