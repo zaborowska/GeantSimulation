@@ -17,6 +17,7 @@ if(WITH_GEANT4_UIVIS)
 else()
   find_package(Geant4 REQUIRED)
 endif()
+message(STATUS "Found Geant: ${Geant4_INCLUDE_DIR}")
 
 #----------------------------------------------------------------------------
 # Setup Geant4 include directories and compile definitions
