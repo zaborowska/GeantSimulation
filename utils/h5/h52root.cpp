@@ -60,8 +60,8 @@ void h52root(const std::string& aInput, const std::string& aOutput, const std::s
     int rank_particles = dataspace_particles.getSimpleExtentNdims();
     assert(rank_particles == 1);
     hsize_t dim_particles[rank_particles];
-    assert(dim_cells[0] == dim_particles[0]);
     dataspace_particles.getSimpleExtentDims(dim_particles);
+    assert(dim_cells[0] == dim_particles[0]);
     hsize_t  offset_particles[rank_particles];
     hsize_t  h5Dim_particles[rank_particles];
     h5Dim_particles[0]  = storeMax;
