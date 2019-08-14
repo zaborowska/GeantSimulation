@@ -44,7 +44,7 @@ public:
   G4int GetNbOfCells() const        {return fNbOfCells;};
 
   G4int       GetNbOfAbsor() const   {return fNbOfAbsor;};
-  const G4Material* GetAbsorMaterial(G4int i) const
+  G4Material* GetAbsorMaterial(G4int i) const // return of non-const pointer for gflash to work
   {return fAbsorMaterial[i];};
   G4double GetAbsorThickness(G4int i) const
   {return fAbsorThickness[i];};

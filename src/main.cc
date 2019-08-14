@@ -1,6 +1,8 @@
 #include "FTFP_BERT.hh"
 #include "G4HadronicProcessStore.hh"
 #include "DetectorConstruction.hh"
+#include "ParallelWorldForReadout.h"
+#include "G4ParallelWorldPhysics.hh"
 #include "FullSimActions.h"
 #ifdef G4MULTITHREADED
 #include "G4MTRunManager.hh"
@@ -11,7 +13,7 @@
 #include "G4UIExecutive.hh"
 #include "G4VisManager.hh"
 #include "G4VisExecutive.hh"
-#include "G4FastSimulationPhysics.hh"
+#include "myG4FastSimulationPhysics.hh"
 
 int main(int argc, char** argv)
 {
@@ -26,22 +28,26 @@ int main(int argc, char** argv)
 #else
    G4RunManager* runManager = new G4RunManager;
 #endif
-   G4VModularPhysicsList* physicsList = new FTFP_BERT(0);
+   G4String parallelWorldName = "readoutWorld";
+
+   DetectorConstruction* detector = new DetectorConstruction();
+   detector->RegisterParallelWorld(new ParallelWorldForReadout(parallelWorldName, detector));
+   runManager->SetUserInitialization(detector);
+
+   G4VModularPhysicsList* physicsList = new FTFP_BERT();
+
+   physicsList->RegisterPhysics(new G4ParallelWorldPhysics(parallelWorldName));
 
    // FASTSIM
-   G4FastSimulationPhysics* fastSimulationPhysics = new G4FastSimulationPhysics();
+   auto fastSimulationPhysics = new myG4FastSimulationPhysics();
    fastSimulationPhysics->BeVerbose();
-   fastSimulationPhysics->ActivateFastSimulation("e-");
-   fastSimulationPhysics->ActivateFastSimulation("e+");
+   fastSimulationPhysics->ActivateFastSimulation("e-", parallelWorldName);
+   fastSimulationPhysics->ActivateFastSimulation("e+", parallelWorldName);
    physicsList->RegisterPhysics( fastSimulationPhysics );
    // FASTSIM
 
    runManager->SetUserInitialization(physicsList);
    G4HadronicProcessStore::Instance()->SetVerbose(0);
-   // Load geometry (from GDML)
-   G4cout << "Geometry loaded from  file " << argv[1]<<G4endl;
-   DetectorConstruction* detector = new DetectorConstruction();
-   runManager->SetUserInitialization(detector);
    runManager->SetUserInitialization( new sim::FullSimActions(detector) );
 
   //----------------

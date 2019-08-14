@@ -20,17 +20,6 @@
 
 #include <iomanip>
 
-// FASTSIM
-#include "GFlashHomoShowerParameterisation.hh"
-#include "GFlashSamplingShowerParameterisation.hh"
-#include "G4FastSimulationManager.hh"
-#include "GFlashShowerModel.hh"
-#include "GFlashHitMaker.hh"
-#include "GFlashParticleBounds.hh"
-#include "G4Region.hh"
-#include "G4RegionStore.hh"
-// FASTSIM
-
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 DetectorConstruction::DetectorConstruction()
@@ -115,10 +104,6 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
   fLogicCalor = new G4LogicalVolume(fSolidCalor,
                                          fWorldMaterial,
                                          "Calorimeter");
-  // FASTSTIM
-  G4Region* caloRegion = new G4Region("Calorimeter_region");
-  caloRegion->AddRootLogicalVolume(fLogicCalor);//fLogicCalor);
-  // FASTSIM
 
   fPhysiCalor = new G4PVPlacement(0,                     //no rotation
                                  G4ThreeVector(0, 0, fCalorThickness/2),        //at (0,0,0)
@@ -152,66 +137,13 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
                                    fLogicCalor,
                                    false,
                                    0);
-
-  //
-  // Cells along Y = row
-  //
-
-  fSolidRow = new G4Box("Row",fCalorSizeYZ/2,fCalorSizeYZ/fNbOfCells/2,
-                       fLayerThickness/2);
-
-  fLogicRow = new G4LogicalVolume(fSolidRow,
-                                   fWorldMaterial,
-                                   "Row");
-  if (fNbOfCells > 1)
-    fPhysiRow = new G4PVReplica("Row",
-                                fLogicRow,
-                                fLogicLayer,
-                                 kYAxis,
-                                 fNbOfCells,
-                                 fCalorSizeYZ/fNbOfCells);
-  else
-    fPhysiRow = new G4PVPlacement(0,
-                                   G4ThreeVector(),
-                                   fLogicRow,
-                                   "Row",
-                                   fLogicLayer,
-                                   false,
-                                   0);
-
-  //
-  // Cells along Z = single cell
-  //
-
-  fSolidCell = new G4Box("Cell", fCalorSizeYZ/fNbOfCells/2,fCalorSizeYZ/fNbOfCells/2,
-                       fLayerThickness/2);
-
-  fLogicCell = new G4LogicalVolume(fSolidCell,
-                                   fWorldMaterial,
-                                   "Cell");
-  if (fNbOfCells > 1)
-    fPhysiCell = new G4PVReplica("Cell",
-                                fLogicCell,
-                                fLogicRow,
-                                 kXAxis,
-                                 fNbOfCells,
-                                 fCalorSizeYZ/fNbOfCells);
-  else
-    fPhysiCell = new G4PVPlacement(0,
-                                   G4ThreeVector(),
-                                   fLogicCell,
-                                   "Cell",
-                                   fLogicRow,
-                                   false,
-                                   0);
-
   //
   // Absorbers
   //
   G4double xfront = -0.5*fLayerThickness;
   for (G4int k=0; k<fNbOfAbsor; ++k) {
     fSolidAbsor[k] = new G4Box("Absorber",                //its name
-                               fCalorSizeYZ/fNbOfCells/2,fCalorSizeYZ/fNbOfCells/2,fAbsorThickness[k]/2);
+                               fCalorSizeYZ/2,fCalorSizeYZ/2,fAbsorThickness[k]/2);
 
     fLogicAbsor[k] = new G4LogicalVolume(fSolidAbsor[k],    //its solid
                                         fAbsorMaterial[k], //its material
@@ -223,7 +155,7 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
                                        G4ThreeVector(0.,0.,xcenter),
                          fLogicAbsor[k],
                          fAbsorMaterial[k]->GetName(),
-                         fLogicCell,
+                         fLogicLayer,
                          false,
                          k+50);                                //copy number
   }
@@ -376,16 +308,6 @@ void DetectorConstruction::SetCalorSizeYZ(G4double val)
 
 void DetectorConstruction::ConstructSDandField()
 {
-  std::string caloSDname = "ECal";
-  test::CalorimeterSD* caloSD = new test::CalorimeterSD(caloSDname,fNbOfCells,fNbOfLayers,
-                                                        G4ThreeVector(fCalorSizeYZ/2,fCalorSizeYZ/2,0),
-                                                        G4ThreeVector(fCalorSizeYZ/fNbOfCells, fCalorSizeYZ/fNbOfCells, fLayerThickness));
-  G4SDManager::GetSDMpointer()->AddNewDetector(caloSD);
-  for (uint iAbs = 0; iAbs < fNbOfAbsor; ++iAbs) {
-    if (fIdOfSD[iAbs]) {
-      SetSensitiveDetector(fLogicAbsor[iAbs], caloSD);
-    }
-  }
   if ( fFieldMessenger.Get() == 0 ) {
     // Create global magnetic field messenger.
     // Uniform magnetic field is then created automatically if
@@ -396,31 +318,7 @@ void DetectorConstruction::ConstructSDandField()
     //msg->SetVerboseLevel(1);
     G4AutoDelete::Register(msg);
     fFieldMessenger.Put( msg );
-  }
 
-  // FASTSIM
-  // for the moment only for homo calorimeters:
-  G4RegionStore* regionStore = G4RegionStore::GetInstance();
-  G4Region* caloRegion = regionStore->GetRegion("Calorimeter_region");
-  auto fFastShowerModel = new GFlashShowerModel("fastShowerModel", caloRegion);
-  G4NistManager* nistManager = G4NistManager::Instance();
-  if (fNbOfAbsor == 1) {
-    auto fParameterisation = new GFlashHomoShowerParameterisation(fAbsorMaterial[0]);
-    fFastShowerModel->SetParameterisation(*fParameterisation);
-  } else if (fNbOfAbsor == 2) {
-    auto fParameterisation = new GFlashSamplingShowerParameterisation(fAbsorMaterial[0], fAbsorMaterial[1],
-                                                                      fAbsorThickness[0],fAbsorThickness[1]);
-    fFastShowerModel->SetParameterisation(*fParameterisation);
-  } else {
-    G4cout << "WARNING! Only two absorbers can be defined in a sampling calorimeter" << G4endl;
-  }
-  // Energy Cuts to kill particles:
-  auto fParticleBounds = new GFlashParticleBounds();
-  fFastShowerModel->SetParticleBounds(*fParticleBounds);
-  // Makes the EnergieSpots
-  auto fHitMaker = new GFlashHitMaker();
-  fFastShowerModel->SetHitMaker(*fHitMaker);
-  // FASTSIM
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
