@@ -34,18 +34,24 @@ CalorimeterSD::CalorimeterSD(G4String name): G4VSensitiveDetector(name),
                                              fCellNoXY(1),
                                              fCellNoZ(1),
                                              fDetectorOffset(G4ThreeVector()),
-                                             fCellSize(G4ThreeVector()) {
+                                             fCellSize(G4ThreeVector()),
+  fxDetectorTouchableDepth(2),
+  fyDetectorTouchableDepth(1),
+  fzDetectorTouchableDepth(3){
   collectionName.insert("ECalorimeterColl");
 }
 
 CalorimeterSD::CalorimeterSD(G4String name, G4int aCellNoInAxisXY, G4int aCellNoInAxisZ): G4VSensitiveDetector(name),
-                                                                  G4VGFlashSensitiveDetector(),
-                                                                  fHitsCollection(0),
-                                                                  fHCID(-1),
-                                                                  fCellNoXY(aCellNoInAxisXY),
-                                                                  fCellNoZ(aCellNoInAxisZ),
-                                                                  fDetectorOffset(G4ThreeVector()),
-                                                                  fCellSize(G4ThreeVector()) {
+                                                                                          G4VGFlashSensitiveDetector(),
+                                                                                          fHitsCollection(0),
+                                                                                          fHCID(-1),
+                                                                                          fCellNoXY(aCellNoInAxisXY),
+  fCellNoZ(aCellNoInAxisZ),
+  fDetectorOffset(G4ThreeVector()),
+  fCellSize(G4ThreeVector()),
+  fxDetectorTouchableDepth(2),
+  fyDetectorTouchableDepth(1),
+  fzDetectorTouchableDepth(3) {
 
   collectionName.insert("ECalorimeterColl");
 }
@@ -57,7 +63,26 @@ CalorimeterSD::CalorimeterSD(G4String name, G4int aCellNoInAxisXY, G4int aCellNo
   fCellNoXY(aCellNoInAxisXY),
   fCellNoZ(aCellNoInAxisZ),
   fDetectorOffset(aDetectorOffset),
-  fCellSize(aCellSize) {
+  fCellSize(aCellSize),
+  fxDetectorTouchableDepth(2),
+  fyDetectorTouchableDepth(1),
+  fzDetectorTouchableDepth(3)  {
+
+  collectionName.insert("ECalorimeterColl");
+}
+CalorimeterSD::CalorimeterSD(G4String name, G4int aCellNoInAxisXY, G4int aCellNoInAxisZ, G4ThreeVector aDetectorOffset, G4ThreeVector aCellSize,
+                             G4int aXdetector, G4int aYdetector, G4int aZdetector ):
+  G4VSensitiveDetector(name),
+  G4VGFlashSensitiveDetector(),
+  fHitsCollection(0),
+  fHCID(-1),
+  fCellNoXY(aCellNoInAxisXY),
+  fCellNoZ(aCellNoInAxisZ),
+  fDetectorOffset(aDetectorOffset),
+  fCellSize(aCellSize),
+  fxDetectorTouchableDepth(aXdetector),
+  fyDetectorTouchableDepth(aYdetector),
+  fzDetectorTouchableDepth(aZdetector)  {
 
   collectionName.insert("ECalorimeterColl");
 }
@@ -89,10 +114,10 @@ G4bool CalorimeterSD::ProcessHits(G4Step* step, G4TouchableHistory*)
 
   G4TouchableHistory* touchable = (G4TouchableHistory*)(step->GetPreStepPoint()->GetTouchable());
 
-  G4int yNo = touchable->GetCopyNumber(1); // cell
-  G4int xNo = touchable->GetCopyNumber(2); // row
+  G4int yNo = touchable->GetCopyNumber(fyDetectorTouchableDepth); // cell
+  G4int xNo = touchable->GetCopyNumber(fxDetectorTouchableDepth); // row
   // G4int materialNo = touchable->GetCopyNumber(0); // which absorber within cell
-  G4int zNo = touchable->GetCopyNumber(3); // layer
+  G4int zNo = touchable->GetCopyNumber(fzDetectorTouchableDepth); // layer
   // G4int envelopeNo = touchable->GetCopyNumber(4); // calorimeter envelope
   // G4int worldNo = touchable->GetCopyNumber(5); // world volume
 
@@ -113,8 +138,8 @@ G4bool CalorimeterSD::ProcessHits(G4Step* step, G4TouchableHistory*)
 
   }
   hit->AddEdep(edep);
-//  std::cout << "Hit: energy " << edep << " x " << xNo << " y " << yNo << " z " << zNo << " z3 " << zNo3 << " z4 " << zNo4 << " z5 " << zNo5 << "total / event : "
-//            << std::endl;
+  // std::cout << "Hit: energy " << edep << " x " << xNo << " y " << yNo << " z " << zNo 
+  //           << std::endl;
   return true;
 }
 
