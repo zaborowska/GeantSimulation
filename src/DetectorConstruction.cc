@@ -318,7 +318,7 @@ void DetectorConstruction::ConstructSDandField()
     //msg->SetVerboseLevel(1);
     G4AutoDelete::Register(msg);
     fFieldMessenger.Put( msg );
-
+  }
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
