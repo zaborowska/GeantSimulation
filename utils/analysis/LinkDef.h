@@ -5,5 +5,6 @@
 #pragma link C++ nestedclasses;
 
 #pragma link C++ function createHistograms;
+#pragma link C++ function parametrisation;
 
 #endif
