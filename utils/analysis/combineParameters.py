@@ -171,37 +171,24 @@ def main(input_names, output_name, energies, energy_critical = 0, X0 = 0, RM = 0
                           "transSecondMoment": ["transverse second moment; E_{MC} (GeV); #LT r^{2}#GT (mm^{2})"],
                           "numCells": ["number of cells above threshold; E_{MC} (GeV); # cells"],
                           "enCell": ["average cell energy; E_{MC} (GeV); #LTE_{cell}#GT (MeV)"],
-                          "avgLongProfileAlpha":  ["average longitudinal profile - #alpha parameter; E_{MC} (GeV);#alpha",
-                                                   ],
+                          "avgLongProfileAlpha":  ["average longitudinal profile - #alpha parameter; E_{MC} (GeV);#alpha"],
                           "avgLongProfileBeta": ["average longitudinal profile - #beta parameter; E_{MC} (GeV);#beta"],
-                          "avgLongProfileT": ["average longitudinal profile - T_{max} parameter; E_{MC} (GeV);T_{max}",
-                                                   r'''$T$ parameter extracted from Gamma fit, Eq.~(\ref{eq:longProfileAlphaT}), to the average longitudinal shower profile.'''],
-                          "singleLongProfileAlphaMean": ["single longitudinal profile - mean #alpha parameter; E_{MC} (GeV);#LT#alpha#GT",
-                                                   ],
-                          "singleLongProfileBetaMean": ["single longitudinal profile - mean #beta parameter; E_{MC} (GeV);#LT#beta#GT",
-                                                   r'''Mean of the Gaussian distribution of $\beta$ parameter, extracted from Gamma fit, Eq.~(\ref{eq:longProfileAlphaT}), to the single event longitudinal shower profile.'''],
-                          "singleLongProfileTMean": ["single longitudinal profile - mean T_{max} parameter; E_{MC} (GeV);#LTT_{max}#GT",
-                                                   r'''Mean of the Gaussian distribution of $T$ parameter, extracted from Gamma fit, Eq.~(\ref{eq:longProfileAlphaT}), to the single event longitudinal shower profile.'''],
-                          "singleLongProfileAlphaSigma": ["single longitudinal profile - #sigma(#alpha) parameter; E_{MC} (GeV);#sigma(#alpha)",
-                                                   r'''Sigma of the Gaussian distribution of $\alpha$ parameter, extracted from Gamma fit, Eq.~(\ref{eq:longProfileAlphaT}), to the single event longitudinal shower profile.'''],
-                          "singleLongProfileBetaSigma": ["single longitudinal profile - #sigma(#beta) parameter; E_{MC} (GeV);#sigma(#beta)",
-                                                   r'''Sigma of the Gaussian distribution of $\beta$ parameter, extracted from Gamma fit, Eq.~(\ref{eq:longProfileAlphaT}), to the single event longitudinal shower profile.'''],
-                          "singleLongProfileTSigma": ["single longitudinal profile - #sigma(T_{max}) parameter; E_{MC} (GeV);#sigma(T_{max})",
-                                                   r'''Sigma of the Gaussian distribution of $T$ parameter, extracted from Gamma fit, Eq.~(\ref{eq:longProfileAlphaT}), to the single event longitudinal shower profile.'''],
+                          "avgLongProfileT": ["average longitudinal profile - T_{max} parameter; E_{MC} (GeV);T_{max}"],
+                          "singleLongProfileAlphaMean": ["single longitudinal profile - mean #alpha parameter; E_{MC} (GeV);#LT#alpha#GT"],
+                          "singleLongProfileBetaMean": ["single longitudinal profile - mean #beta parameter; E_{MC} (GeV);#LT#beta#GT"],
+                          "singleLongProfileTMean": ["single longitudinal profile - mean T_{max} parameter; E_{MC} (GeV);#LTT_{max}#GT"],
+                          "singleLongProfileAlphaSigma": ["single longitudinal profile - #sigma(#alpha) parameter; E_{MC} (GeV);#sigma(#alpha)"],
+                          "singleLongProfileBetaSigma": ["single longitudinal profile - #sigma(#beta) parameter; E_{MC} (GeV);#sigma(#beta)"],
+                          "singleLongProfileTSigma": ["single longitudinal profile - #sigma(T_{max}) parameter; E_{MC} (GeV);#sigma(T_{max})"],
                           "singleLongProfileAlphaTRho": ["single longitudinal profile - #rho(#alpha,T_{max}) parameter; E_{MC} (GeV);#rho(#alpha,T_{max})"],
-                          "singleLongProfileLogAlphaMean": ["single longitudinal profile - mean log(#alpha) parameter; E_{MC} (GeV);#LTlog(#alpha)#GT",
-                                                   r'''Mean of the Gaussian distribution of $\log\alpha$ parameter, extracted from Gamma fit, Eq.~(\ref{eq:longProfileAlphaT}), to the single event longitudinal shower profile.'''],
-                          "singleLongProfileLogBetaMean": ["single longitudinal profile - mean log(#beta) parameter; E_{MC} (GeV);#LTlog(#beta)#GT",
-                                                   r'''Mean of the Gaussian distribution of $\log\beta$ parameter, extracted from Gamma fit, Eq.~(\ref{eq:longProfileAlphaT}), to the single event longitudinal shower profile.'''],
-                          "singleLongProfileLogTMean": ["single longitudinal profile - mean log(T_{max}) parameter; E_{MC} (GeV);#LT log(T_{max})#GT",
-                                                   r'''Mean of the Gaussian distribution of $\log T$ parameter, extracted from Gamma fit, Eq.~(\ref{eq:longProfileAlphaT}), to the single event longitudinal shower profile.'''],
-                          "singleLongProfileLogAlphaSigma": ["single longitudinal profile - #sigma(log(#alpha)) parameter; E_{MC} (GeV);#sigma(log(#alpha))",
-                                                   r'''Sigma of the Gaussian distribution of $\log\alpha$ parameter, extracted from Gamma fit, Eq.~(\ref{eq:longProfileAlphaT}), to the single event longitudinal shower profile.'''],
-                          "singleLongProfileLogBetaSigma": ["single longitudinal profile - #sigma(log(#beta)) parameter; E_{MC} (GeV);#sigma(log(#beta))",
-                                                   r'''Sigma of the Gaussian distribution of $\log\alpha$ parameter, extracted from Gamma fit, Eq.~(\ref{eq:longProfileAlphaT}), to the single event longitudinal shower profile.'''],
-                          "singleLongProfileLogTSigma": ["single longitudinal profile - #sigma(log(T_{max})) parameter; E_{MC} (GeV);#sigma(log(T_{max}))",
-                                                         ""],
+                          "singleLongProfileLogAlphaMean": ["single longitudinal profile - mean log(#alpha) parameter; E_{MC} (GeV);#LTlog(#alpha)#GT"],
+                          "singleLongProfileLogBetaMean": ["single longitudinal profile - mean log(#beta) parameter; E_{MC} (GeV);#LTlog(#beta)#GT"],
+                          "singleLongProfileLogTMean": ["single longitudinal profile - mean log(T_{max}) parameter; E_{MC} (GeV);#LT log(T_{max})#GT"],
+                          "singleLongProfileLogAlphaSigma": ["single longitudinal profile - #sigma(log(#alpha)) parameter; E_{MC} (GeV);#sigma(log(#alpha))"],
+                          "singleLongProfileLogBetaSigma": ["single longitudinal profile - #sigma(log(#beta)) parameter; E_{MC} (GeV);#sigma(log(#beta))"],
+                          "singleLongProfileLogTSigma": ["single longitudinal profile - #sigma(log(T_{max})) parameter; E_{MC} (GeV);#sigma(log(T_{max}))"],
                           "singleLongProfileLogAlphaLogTRho": ["single longitudinal profile - #rho(log(#alpha),log(T_{max})) parameter; E_{MC} (GeV);#rho(log(#alpha),log(T_{max}))"]}
+    to_calculate_yaxis_3d = {"numCellsLayers": ["number of cells above threshold; E_{MC} (GeV); t (layer); # cells"]}
 
     # calculations from file:
     calc = []
@@ -247,8 +234,14 @@ def main(input_names, output_name, energies, energy_critical = 0, X0 = 0, RM = 0
     if "simTime" in to_plot:
         to_calculate_yaxis["simTime"] = ["simulation time (per event); E_{MC} (GeV); #LTt#GT (s)"]
 
+    # check what is the number of layers
+    num_layers = all_files[0].Get("numCellsLayers").GetYaxis().GetNbins()
+
     # new graphs:
     graphs = {}
+    graphs3d = {}
+    graphsLayers = {}
+    graphsEnergy = {}
     for graph_name, graph_params in to_calculate_yaxis.items():
         graph = ROOT.TGraphErrors()
         graph.SetName("g_"+graph_name)
@@ -265,6 +258,41 @@ def main(input_names, output_name, energies, energy_critical = 0, X0 = 0, RM = 0
             graph.SetPoint(graph.GetN(), to_plot_on_x, entry[graph_name][0])
             graph.SetPointError(graph.GetN() - 1, to_plot_on_ex, entry[graph_name][1])
         graphs[graph_name] = graph
+    for graph_name, graph_params in to_calculate_yaxis_3d.items():
+        graph = ROOT.TGraph2DErrors()
+        graph.SetName("g_"+graph_name)
+        if energy_critical > 0:
+            graph_params[0] = graph_params[0].replace("E_{MC} (GeV)", "y = E_{MC} / E_{critical}")
+        graph.SetTitle(graph_params[0])
+        for ilayer in range(0,num_layers):
+            graph_per_layer = ROOT.TGraphErrors()
+            graph_per_layer.SetName("g_"+graph_name+"_layer"+str(ilayer))
+            graph_per_layer.SetTitle("number of cells in layer "+str(ilayer))
+            if energy_critical > 0:
+                graph_per_layer.GetXaxis().SetTitle("E_{MC} (GeV)")
+            else:
+                graph_per_layer.GetXaxis().SetTitle("y = E_{MC} / E_{critical}")
+            graphsLayers[ilayer] = graph_per_layer
+        for entry in calc:
+            graph_per_energy = ROOT.TGraphErrors()
+            graph_per_energy.SetName("g_"+graph_name+"_energy_"+str(int(entry["enMC"][0]))+"GeV")
+            graph_per_energy.SetTitle("number of cells for energy "+str(int(entry["enMC"][0]))+" GeV")
+            graph_per_energy.GetXaxis().SetTitle("layer ID")
+            if energy_critical > 0:
+                to_plot_on_x = entry["enMC"][0] / energy_critical
+                to_plot_on_ex = entry["enMC"][1] / energy_critical
+            else:
+                to_plot_on_x = entry["enMC"][0]
+                to_plot_on_ex = entry["enMC"][1]
+            for ilayer, values_per_layer in enumerate(entry[graph_name]):
+                graph.SetPoint(graph.GetN(), to_plot_on_x, ilayer, values_per_layer[0])
+                graph.SetPointError(graph.GetN() - 1, to_plot_on_ex, 0.5, values_per_layer[1])
+                graphsLayers[ilayer].SetPoint(graphsLayers[ilayer].GetN(), to_plot_on_x, values_per_layer[0])
+                graphsLayers[ilayer].SetPointError(graphsLayers[ilayer].GetN() - 1, to_plot_on_ex, values_per_layer[1])
+                graph_per_energy.SetPoint(graph_per_energy.GetN(), ilayer, values_per_layer[0])
+                graph_per_energy.SetPointError(graph_per_energy.GetN() - 1, 0.5, values_per_layer[1])
+            graphsEnergy[graph_per_energy.GetName()] = graph_per_energy
+        graphs3d[graph_name] = graph
 
     # create canvases
     canvases = []
@@ -272,6 +300,10 @@ def main(input_names, output_name, energies, energy_critical = 0, X0 = 0, RM = 0
         canvases.append(create_single_canvas("canv_h_"+to_plot[iCanv]))
     for graph_name, graph in graphs.items():
         canvases.append(create_single_canvas("canv_"+graph_name))
+    for graph_name, graph in graphs3d.items():
+        canvases.append(create_single_canvas("canv_"+graph_name))
+    for graph_name, graph in graphsLayers.items():
+        canvases.append(create_single_canvas("canv_"+str(graph_name)))
 
     # draw
     # plots
@@ -289,13 +321,29 @@ def main(input_names, output_name, energies, energy_critical = 0, X0 = 0, RM = 0
         canvases[len(to_plot) + iGraph].cd()
         prepare_graph(graphs[graph_name], "g_"+graph_name, graphs[graph_name].GetTitle())
         graphs[graph_name].Draw("aep")
-
+    for iGraph, graph_name in enumerate(graphs3d):
+        canvases[len(to_plot) + len(graphs) + iGraph].cd()
+        prepare_graph(graphs3d[graph_name], "g_"+graph_name, graphs3d[graph_name].GetTitle())
+        graphs3d[graph_name].Draw("apERR")
+    for iGraph, graph_name in enumerate(graphsLayers):
+        canvases[len(to_plot) + len(graphs) + +len(graphs3d) + iGraph].cd()
+        prepare_graph(graphsLayers[graph_name], "g_"+str(graph_name), graphsLayers[graph_name].GetTitle())
+        graphsLayers[graph_name].Draw("aep")
     # store everything in a file
     out_root_perEnergy = ROOT.TFile(output_name[:-5]+"_perEnergy.root", "RECREATE")
     for plots in all_plots:
         for plot in plots:
             plot.Write()
+    out_root_perLayer = ROOT.TFile(output_name[:-5]+"_perLayer.root", "RECREATE")
+    for graph_name, graph in graphsLayers.items():
+        graph.Write()
+    for graph_name, graph in graphsEnergy.items():
+        graph.Write()
     out_root = ROOT.TFile(output_name, "RECREATE")
+    for graph_name, graph in graphs3d.items():
+        graph.Write()
+
+
     longitudinal_params_to_calculate_lin = ["avgLongProfileAlpha", "avgLongProfileT", "avgLongProfileBeta", "singleLongProfileLogAlphaLogTRho"] #, "singleLongProfileAlphaMean", "singleLongProfileTMean", "singleLongProfileBetaMean"]
     longitudinal_params_to_calculate_log = ["singleLongProfileLogAlphaMean", "singleLongProfileLogTMean", "singleLongProfileLogBetaMean"]
     longitudinal_params_to_calculate_inv = ["singleLongProfileLogAlphaSigma", "singleLongProfileLogTSigma", "singleLongProfileLogBetaSigma"]
@@ -315,8 +363,13 @@ def main(input_names, output_name, energies, energy_critical = 0, X0 = 0, RM = 0
                        "singleLongProfileLogAlphaSigma_p0": -0.58, "singleLongProfileLogAlphaSigma_p1": 0.86,
                        "singleLongProfileLogAlphaLogTRho_p0": 0.705, "singleLongProfileLogAlphaLogTRho_p1": -0.023}
     os.system("mkdir -p tex")
+    os.system("mkdir -p data")
     for graph_name, graph in graphs.items():
         graph.Write()
+        if graph_name.find("Rho")>0:
+            ROOT.gROOT.SetBatch(False)
+        else:
+            ROOT.gROOT.SetBatch(True)
         canv = create_single_canvas("canv")
         if graph_name in longitudinal_params_to_calculate_lin :
             fitfun = ROOT.TF1("fitfun", "[0]+[1]*log(x)", graph.GetXaxis().GetXmin(), graph.GetXaxis().GetXmax(), 2)
@@ -331,7 +384,7 @@ def main(input_names, output_name, energies, energy_critical = 0, X0 = 0, RM = 0
             fitfun.SetParameter(0,original_params[graph_name+"_p0"])
             fitfun.SetParameter(1,original_params[graph_name+"_p1"])
         fitres = graph.Fit(fitfun, "RSM")
-        print(fitres.Get().Parameter(0), fitres.Get().Error(0), fitres.Get().Parameter(1), fitres.Get().Error(1))
+        print(fitres.Get().Chi2(), fitres.Get().Parameter(0), fitres.Get().Error(0), fitres.Get().Parameter(1), fitres.Get().Error(1))
         longitudinal_params[graph_name+"_p0"] = fitres.Get().Parameter(0)
         longitudinal_params[graph_name+"_e0"] = fitres.Get().Error(0)
         longitudinal_params[graph_name+"_p1"] = fitres.Get().Parameter(1)
@@ -351,6 +404,16 @@ def main(input_names, output_name, energies, energy_critical = 0, X0 = 0, RM = 0
         canv.Print("tex/"+graph_name+".pdf")
         canv.Print("tex/"+graph_name+".root")
     print longitudinal_params
+    out_data = open("data/" + output_name[:-5] + "G4_" + material_name + ".dat","w+")
+    p = longitudinal_params
+    save_for_geant = [p["avgLongProfileT_p0"], p["avgLongProfileT_p1"], p["avgLongProfileAlpha_p0"], p["avgLongProfileAlpha_p1"],
+                  p["singleLongProfileLogTSigma_p0"], p["singleLongProfileLogTSigma_p1"],
+                  p["singleLongProfileLogAlphaSigma_p0"], p["singleLongProfileLogAlphaSigma_p1"],
+                  p["singleLongProfileLogAlphaLogTRho_p0"], p["singleLongProfileLogAlphaLogTRho_p1"]]
+    out_data.write(str(len(save_for_geant))+"\n")
+    for param in save_for_geant:
+        out_data.write(str(param) + "\n")
+    out_data.close()
     out_tex = open("tex/" + output_name[:-4] + "tex","w+")
     out_tex.write(r'''\documentclass[12pt]{article}''')
     out_tex.write(r'''\usepackage{graphicx}''')

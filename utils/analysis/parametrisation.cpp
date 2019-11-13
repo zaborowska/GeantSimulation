@@ -20,10 +20,8 @@
 //#include "createHistograms.h"
 
 void parametrisation(const std::string& aInput, const std::string& aOutput, double X0, double RM, double EC) {
-  RooFit::PrintLevel(2);
-  // RooAbsPdf::PrintLevel(1);
-  // RooAbsPdf::Verbose(false);
   RooMsgService::instance().setSilentMode(true);
+  RooMsgService::instance().setGlobalKillBelow(RooFit::WARNING);
 
   TFile f(aInput.c_str(), "READ");
 
@@ -137,6 +135,7 @@ void parametrisation(const std::string& aInput, const std::string& aOutput, doub
   auto longSecondMoment = new TH1F("longSecondMoment", "longitudinal second moment;#LT#lambda^{2}#GT (mm^{2});Normalised entries", 100, 0, 0); // netSizeZ*cellSizeMmZ, 0, pow(netSizeZ * cellSizeMmZ, 2));
   auto transFirstMoment = new TH1F("transFirstMoment", "transverse first moment;#LTr#GT (mm);Normalised entries",  100, 0, 0); //netSizeXY*cellSizeMmXY, 0, netSizeXY * cellSizeMmXY / scaleFactorProfile );
   auto transSecondMoment = new TH1F("transSecondMoment", "transverse second moment;#LTr^{2}#GT (mm^{2});Normalised entries",  100, 0, 0); //netSizeXY*cellSizeMmXY, 0, pow(netSizeXY * cellSizeMmXY, 2) / pow(scaleFactorProfile, 2));
+  auto numCellsLayers = new TH2F("numCellsLayers", "number of cells distribution per layer;## cells; t (X_{0}); Entries", 1000, 0, 0, netSizeZ, 0, maxLengthZ);
   auto enLayers = new TH2F("enLayers", "energy distribution per layer;E_{cell} (MeV); t (X_{0}); Entries", 1000, 0, 0, netSizeZ, 0, maxLengthZ);
   auto logEnLayers = new TH2F("logEnLayers", "energy distribution per layer;log(E_{cell} (MeV)); t (X_{0}); Entries", 1000, 0, 0, netSizeZ, 0, maxLengthZ);
   auto enFractionLayers = new TH2F("enFractionLayers", "energy fraction distribution per layer;E_{cell}/E_{MC}; t (X_{0}); Entries", 1000, 0, 0, netSizeZ, 0, maxLengthZ);
@@ -152,6 +151,7 @@ void parametrisation(const std::string& aInput, const std::string& aOutput, doub
   uint iterEvents = 0;
   // retireved from input
   size_t eventSize = 0;
+  std::array<uint, netSizeZ> numCellsPerLayer;
   uint xCell = 0, yCell = 0, zCell = 0;
   double eCell = 0;
   double energyMCinGeV = 0;
@@ -166,6 +166,9 @@ void parametrisation(const std::string& aInput, const std::string& aOutput, doub
     tFirstMoment = 0;
     rFirstMoment = 0;
     longProfileSingle->Reset();
+    for (uint iLayer = 0; iLayer < netSizeZ; ++iLayer) {
+      numCellsPerLayer[iLayer] = 0;
+    }
     for (uint iEntry = 0; iEntry < eventSize; ++iEntry) {
       // get data (missing: angle at entrance)
       xCell = xCellV[iEntry];
@@ -191,6 +194,7 @@ void parametrisation(const std::string& aInput, const std::string& aOutput, doub
       enFractionCell->Fill(eCellFraction);
       enFractionLayers->Fill(eCellFraction, tDistance*zId2t);
       sumEnergyDeposited += eCell;
+      numCellsPerLayer[zCell] ++;
     }
     tFirstMoment /= sumEnergyDeposited;
     rFirstMoment /= sumEnergyDeposited;
@@ -218,6 +222,9 @@ void parametrisation(const std::string& aInput, const std::string& aOutput, doub
     longSecondMoment->Fill(tSecondMoment);
     transFirstMoment->Fill(rFirstMoment);
     transSecondMoment->Fill(rSecondMoment);
+    for (uint iLayer = 0; iLayer < netSizeZ; ++iLayer) {
+      numCellsLayers->Fill(numCellsPerLayer[iLayer], (iLayer + 0.5)*zId2t);
+    }
     iterEvents++;
     // event-by-event calculations:
     RooDataHist dataSingleLongProfile("dataSingleLongProfile","dataSingleLongProfile",t,RooFit::Import(*longProfileSingle)) ;
@@ -251,6 +258,7 @@ void parametrisation(const std::string& aInput, const std::string& aOutput, doub
   longSecondMoment->Scale(1./iterEvents);
   transFirstMoment->Scale(1./iterEvents);
   transSecondMoment->Scale(1./iterEvents);
+  numCellsLayers->Scale(1./iterEvents);
   enLayers->Scale(1./iterEvents);
   logEnLayers->Scale(1./iterEvents);
   enFractionLayers->Scale(1./iterEvents);
@@ -324,6 +332,7 @@ void parametrisation(const std::string& aInput, const std::string& aOutput, doub
   transFirstMoment->Write();
   transSecondMoment->Write();
   enLayers->Write();
+  numCellsLayers->Write();
   logEnLayers->Write();
   enFractionLayers->Write();
   transProfileLayers->Write();

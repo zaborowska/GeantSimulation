@@ -27,7 +27,7 @@ include(${Geant4_USE_FILE})
 #----------------------------------------------------------------------------
 # Find ROOT (required package)
 #
-find_package(ROOT REQUIRED)
+find_package(ROOT CONFIG REQUIRED RooFit RooFitCore)
 message(STATUS "Found ROOT: ${ROOT_DIR}")
 
 #----------------------------------------------------------------------------

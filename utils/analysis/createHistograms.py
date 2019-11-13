@@ -3,7 +3,7 @@ import sys
 import argparse
 
 from ROOT import gSystem
-gSystem.Load("libAnalysisDictionary.so")
+gSystem.Load("libcreateHistogramsDictionary.so")
 from ROOT import createHistograms
 
 if __name__ == "__main__":

@@ -7,6 +7,7 @@
 #include "G4UIcommand.hh"
 #include "G4UIparameter.hh"
 #include "G4UIcmdWithAnInteger.hh"
+#include "G4UIcmdWithABool.hh"
 #include "G4UIcmdWithADoubleAndUnit.hh"
 #include "G4UIcmdWithoutParameter.hh"
 
@@ -116,16 +117,16 @@ void DetectorMessenger::SetNewValue(G4UIcommand* command,G4String newValue)
   if( command == fSizeYZCmd )
    { fDetector->SetCalorSizeYZ(fSizeYZCmd->GetNewDoubleValue(newValue));}
 
-  if( command == fNbLayersCmd )
+  else if( command == fNbLayersCmd )
     { fDetector->SetNbOfLayers(fNbLayersCmd->GetNewIntValue(newValue));}
 
-  if( command == fNbCellsCmd )
+  else if( command == fNbCellsCmd )
    { fDetector->SetNbOfCells(fNbCellsCmd->GetNewIntValue(newValue));}
 
-  if( command == fNbAbsorCmd )
+  else if( command == fNbAbsorCmd )
    { fDetector->SetNbOfAbsor(fNbAbsorCmd->GetNewIntValue(newValue));}
 
-  if (command == fAbsorCmd)
+  else if (command == fAbsorCmd)
    {
      G4int num; G4double tick;
      G4String unt, mat;
