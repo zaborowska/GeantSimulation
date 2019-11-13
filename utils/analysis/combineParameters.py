@@ -52,27 +52,60 @@ def prepare_graph(graph, name, title, colour = 9, markerStyle = 21, factor = 1):
    graph.GetXaxis().SetLabelSize(0.06)
    graph.GetXaxis().SetNdivisions(506)
 
-def get_gaus(histo):
+def get_gaus(histo, ifFromMaxBin = False):
     if histo.Integral() < 1e-10:
         return 0,0,0,0
-    binWithMax = 1
-    contentBinWithMax = 0
-    for iBin in range(1,histo.GetNbinsX()):
-        if histo.GetBinContent(iBin) > histo.GetBinContent(binWithMax):
-            binWithMax = iBin
-    myfunPre = ROOT.TF1("firstGaus","gaus", histo.GetBinCenter(binWithMax - 5), histo.GetBinCenter(binWithMax + 5))
-    resultPre = histo.Fit(myfunPre, "SQRN")
-    myfun = ROOT.TF1("finalGaus", "gaus", resultPre.Get().Parameter(1) - 2. * resultPre.Get().Parameter(2),
-                     resultPre.Get().Parameter(1) + 2. * resultPre.Get().Parameter(2) )
-    result = histo.Fit(myfun, "SRQ+")
-    ROOT.SetOwnership(histo, False)
-    if result:
-        return result.Get().Parameter(1), result.Get().Error(1), result.Get().Parameter(2), result.Get().Error(2)
+    if ifFromMaxBin:
+        binWithMax = 1
+        contentBinWithMax = 0
+        for iBin in range(1,histo.GetNbinsX()):
+            if histo.GetBinContent(iBin) > histo.GetBinContent(binWithMax):
+                binWithMax = iBin
+        minFitRange = histo.GetBinCenter(binWithMax - 5)
+        maxFitRange = histo.GetBinCenter(binWithMax + 5)
     else:
+        minFitRange = histo.GetMean() - 2 * histo.GetRMS()
+        maxFitRange = histo.GetMean() + 2 * histo.GetRMS()
+    # check if fit range is within histogram range
+    minFitRange = minFitRange if minFitRange > histo.GetXaxis().GetXmin() else histo.GetXaxis().GetXmin()
+    maxFitRange = maxFitRange if maxFitRange < histo.GetXaxis().GetXmax() else histo.GetXaxis().GetXmax()
+    myfunPre = ROOT.TF1("firstGaus","gaus", minFitRange, maxFitRange)
+    resultPre = histo.Fit(myfunPre, "SQRN")
+    minFitRange = resultPre.Get().Parameter(1) - 2. * resultPre.Get().Parameter(2)
+    maxFitRange = resultPre.Get().Parameter(1) + 2. * resultPre.Get().Parameter(2)
+    minFitRange = minFitRange if minFitRange > histo.GetXaxis().GetXmin() else histo.GetXaxis().GetXmin()
+    maxFitRange = maxFitRange if maxFitRange < histo.GetXaxis().GetXmax() else histo.GetXaxis().GetXmax()
+    if minFitRange > maxFitRange or maxFitRange < histo.GetXaxis().GetXmin() or minFitRange > histo.GetXaxis().GetXmax():
+        minFitRange = histo.GetXaxis().GetXmin()
+        maxFitRange = histo.GetXaxis().GetXmax()
+    myfun = ROOT.TF1("finalGaus", "gaus", minFitRange, maxFitRange)
+    ROOT.SetOwnership(histo, False)
+    try:
+        result = histo.Fit(myfun, "SRQ+")
+        if result:
+            return result.Get().Parameter(1), result.Get().Error(1), result.Get().Parameter(2), result.Get().Error(2)
+        else:
+            return histo.GetMean(), histo.GetRMS()
+    except:
+        print("ERROR")
         return histo.GetMean(), histo.GetRMS()
+
+def get_gaus_from_projections(histo2d):
+    if histo2d.Integral() < 1e-10:
+        return [[]]
+    num_of_projections = histo2d.GetYaxis().GetNbins()
+    values = []
+    for layer in range(0,num_of_projections): # bin id starts at 1
+        hist = histo2d.ProjectionX("proj"+str(layer),layer, layer+1)
+        if hist.Integral() > 1e-10:
+            gauss_fit = get_gaus(hist)
+            values.append(gauss_fit[0:2])
+    print (values)
+    return values
 
 def get_gamma(histo, energy):
     ROOT.RooMsgService.instance().setSilentMode(True)
+    ROOT.RooMsgService.instance().setGlobalKillBelow(ROOT.RooFit.WARNING);
     if histo.GetIntegral() == 0:
         return 0,0,0,0, 0, 0
     else:
@@ -155,7 +188,8 @@ def calculate(infile, energy):
     calculations["singleLongProfileAlphaTRho"] =[infile.Get("longProfileRhoAlphaT").GetCorrelationFactor(),0]
     calculations["singleLongProfileLogAlphaLogTRho"] = [infile.Get("longProfileRhoLogAlphaLogT").GetCorrelationFactor(),0]
     if infile.Get("simTime"):
-        calculations["simTime"] = get_gaus(infile.Get("simTime"))
+        calculations["simTime"] = get_gaus(infile.Get("simTime"), True)
+    calculations["numCellsLayers"] = get_gaus_from_projections(infile.Get("numCellsLayers"))
     return calculations
 
 def main(input_names, output_name, energies, energy_critical = 0, X0 = 0, RM = 0, material_name = "unknown"):
