@@ -46,14 +46,14 @@
 
 myGFlashHomoShowerParameterisation::
 myGFlashHomoShowerParameterisation(G4Material * aMat,
-                                 GVFlashHomoShowerTuning * aPar)
+                                 myGVFlashHomoShowerTuning * aPar)
   : GVFlashShowerParameterisation(),
     ConstantResolution(0.), NoiseResolution(0.), SamplingResolution(0.),
     AveLogAlphah(0.), AveLogTmaxh(0.), SigmaLogAlphah(0.), SigmaLogTmaxh(0.),
     Rhoh(0.), Alphah(0.), Tmaxh(0.), Betah(0.)
 
 {  
-  if(!aPar) { thePar = new GVFlashHomoShowerTuning; owning = true; }
+  if(!aPar) { thePar = new myGVFlashHomoShowerTuning; owning = true; }
   else      { thePar = aPar; owning = false; }
 
   SetMaterial(aMat);
@@ -66,9 +66,10 @@ myGFlashHomoShowerParameterisation(G4Material * aMat,
   // shower max
   //
   ParAveT1    = thePar->ParAveT1();   // ln (ln y -0.812)  
-  ParAveA1    = thePar->ParAveA1();   // ln a (0.81 + (0.458 + 2.26/Z)ln y)
+  ParAveT2    = thePar->ParAveT2();
+  ParAveA1    = thePar->ParAveA1();   // ln a (0.81 + (0.458)ln y)
   ParAveA2    = thePar->ParAveA2();
-  ParAveA3    = thePar->ParAveA3();
+  ParAveA3    = 0;
 
   // Variance of shower max
   ParSigLogT1 = thePar->ParSigLogT1();     // Sigma T1 (-1.4 + 1.26 ln y)**-1 
@@ -178,9 +179,9 @@ GenerateLongitudinalProfile(G4double Energy)
 void
 myGFlashHomoShowerParameterisation::ComputeLongitudinalParameters(G4double y)
 {
-  AveLogTmaxh  = std::log(ParAveT1 + std::log(y));
+  AveLogTmaxh  = std::log(ParAveT1 + ParAveT2*std::log(y));
     //ok  <ln T hom>
-  AveLogAlphah = std::log(ParAveA1 + (ParAveA2+ParAveA3/Z)*std::log(y));
+  AveLogAlphah = std::log(ParAveA1 + ParAveA2*std::log(y));
     //ok  <ln alpha hom> 
 
   SigmaLogTmaxh  = 1.00/( ParSigLogT1 + ParSigLogT2*std::log(y)) ;
@@ -214,7 +215,7 @@ void myGFlashHomoShowerParameterisation::GenerateNSpotProfile(const G4double y)
   TNSpot     = Tmaxh *  (ParSpotT1+ParSpotT2*Z);   // ok
   AlphaNSpot = Alphah * (ParSpotA1+ParSpotA2*Z);   
   BetaNSpot  = (AlphaNSpot-1.00)/TNSpot;           // ok 
-  NSpot      = ParSpotN1 * std::log(Z)*std::pow((y*Ec)/GeV,ParSpotN2 ); // ok
+  NSpot      = 10 * ParSpotN1 * std::log(Z)*std::pow((y*Ec)/GeV,ParSpotN2 ); // ok
 }
 
 G4double myGFlashHomoShowerParameterisation::

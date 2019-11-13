@@ -41,7 +41,7 @@
 #define myGFlashHomoShowerParameterisation_h 1
 
 #include "globals.hh"
-#include "GVFlashHomoShowerTuning.hh"
+#include "myGVFlashHomoShowerTuning.hh"
 #include "GVFlashShowerParameterisation.hh"
 
 class G4Material;
@@ -51,7 +51,7 @@ class myGFlashHomoShowerParameterisation : public GVFlashShowerParameterisation
   public:  // with description
   
     myGFlashHomoShowerParameterisation(G4Material * aMat,
-                                     GVFlashHomoShowerTuning * aPar = 0);
+                                     myGVFlashHomoShowerTuning * aPar = 0);
     ~myGFlashHomoShowerParameterisation();
 
     void ComputeRadialParameters(G4double y, G4double Tau);
@@ -90,12 +90,12 @@ class myGFlashHomoShowerParameterisation : public GVFlashShowerParameterisation
     G4double SamplingResolution;
 
     // parametrization parameters
-    GVFlashHomoShowerTuning * thePar;
+    myGVFlashHomoShowerTuning * thePar;
     G4bool owning;
 
     // Cashed parameters:  
     // Longitudinal Coefficients for a homogeneous calo
-    G4double ParAveT1;
+  G4double ParAveT1, ParAveT2;
     G4double ParAveA1,ParAveA2,ParAveA3;
     G4double ParSigLogT1,ParSigLogT2;
     G4double ParSigLogA1,ParSigLogA2;

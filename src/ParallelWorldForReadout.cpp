@@ -17,6 +17,7 @@
 
 // FASTSIM
 #include "myGFlashHomoShowerParameterisation.hh"
+#include "myGVFlashHomoShowerTuning.hh"
 #include "GFlashSamplingShowerParameterisation.hh"
 #include "G4FastSimulationManager.hh"
 #include "myGFlashShowerModel.hh"
@@ -171,7 +172,10 @@ void ParallelWorldForReadout::ConstructSD()
   auto fFastShowerModel = new myGFlashShowerModel("fastShowerModel", caloRegion);
   G4NistManager* nistManager = G4NistManager::Instance();
   if (massDetector->GetNbOfAbsor() == 1) {
-    auto fParameterisation = new myGFlashHomoShowerParameterisation(massDetector->GetAbsorMaterial(0));
+    G4String datafile_name("combinedValidation"+massDetector->GetAbsorMaterial(0)->GetName()+".dat");
+    auto params = new myGVFlashHomoShowerTuning(datafile_name);
+    params->printParameters();
+    auto fParameterisation = new myGFlashHomoShowerParameterisation(massDetector->GetAbsorMaterial(0), params);
     fFastShowerModel->SetParameterisation(*fParameterisation);
   } else if (massDetector->GetNbOfAbsor() == 2) {
     auto fParameterisation = new GFlashSamplingShowerParameterisation(massDetector->GetAbsorMaterial(0),
