@@ -81,7 +81,7 @@ myGFlashShowerModel::~myGFlashShowerModel()
 
 G4bool
 myGFlashShowerModel::IsApplicable(const G4ParticleDefinition& particleType)
-{ 
+{
   return 
   &particleType == G4Electron::ElectronDefinition() ||
   &particleType == G4Positron::PositronDefinition(); 
@@ -106,7 +106,7 @@ G4bool myGFlashShowerModel::ModelTrigger(const G4FastTrack & fastTrack )
       // check conditions depending on particle flavour
       // performance to be optimized @@@@@@@
       Parameterisation->GenerateLongitudinalProfile(ParticleEnergy);
-      select     = CheckParticleDefAndContainment(fastTrack);  
+      select     = CheckParticleDefAndContainment(fastTrack);
       if (select) EnergyStop= PBound->GetEneToKill(ParticleType);
     }
   }

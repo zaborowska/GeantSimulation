@@ -36,6 +36,6 @@ if __name__ == "__main__":
     # ignore messages from RooFit that are still printed
     for in_file in args.inputs:
         out_file = "./parametrisation_" + in_file.split("/")[-1]
-        print "input file: ", in_file
-        print "output file: ", out_file
+        print( "input file: ", in_file)
+        print( "output file: ", out_file)
         parametrisation(in_file, out_file, X0, RM, EC)
