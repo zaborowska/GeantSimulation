@@ -10,20 +10,22 @@
 #include "G4UIcmdWithABool.hh"
 #include "G4UIcmdWithADoubleAndUnit.hh"
 #include "G4UIcmdWithoutParameter.hh"
+#include "G4UIcmdWithAString.hh"
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 DetectorMessenger::DetectorMessenger(DetectorConstruction * Det)
 :G4UImessenger(),fDetector(Det),
- fTestemDir(0),
- fDetDir(0),
- fSizeYZCmd(0),
- fNbLayersCmd(0),
- fNbCellsCmd(0),
- fSensitiveCmd(0),
- fNotSensitiveCmd(0),
- fNbAbsorCmd(0),
- fAbsorCmd(0)
+ fTestemDir(nullptr),
+ fDetDir(nullptr),
+ fSizeYZCmd(nullptr),
+ fNbLayersCmd(nullptr),
+ fNbCellsCmd(nullptr),
+ fSensitiveCmd(nullptr),
+ fNotSensitiveCmd(nullptr),
+ fNbAbsorCmd(nullptr),
+ fAbsorCmd(nullptr),
+ fParametersNameCmd(nullptr)
 {
   fTestemDir = new G4UIdirectory("/testem/");
   fTestemDir->SetGuidance("UI commands specific to this example");
@@ -93,6 +95,12 @@ DetectorMessenger::DetectorMessenger(DetectorConstruction * Det)
   //
   fAbsorCmd->AvailableForStates(G4State_PreInit,G4State_Idle);
   fAbsorCmd->SetToBeBroadcasted(false);
+  //
+  fParametersNameCmd = new G4UIcmdWithAString("/testem/det/setParametrisationFile",this);
+  fParametersNameCmd->SetGuidance("Path to the parametrisation input for EM showers.");
+  fParametersNameCmd->SetParameterName("FileName",false);
+  fParametersNameCmd->AvailableForStates(G4State_PreInit,G4State_Idle);
+  fParametersNameCmd->SetToBeBroadcasted(false);
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -106,6 +114,7 @@ DetectorMessenger::~DetectorMessenger()
   delete fNotSensitiveCmd;
   delete fNbAbsorCmd;
   delete fAbsorCmd;
+  delete fParametersNameCmd;
   delete fDetDir;
   delete fTestemDir;
 }
@@ -141,6 +150,9 @@ void DetectorMessenger::SetNewValue(G4UIcommand* command,G4String newValue)
      fDetector->SetAbsorThickness(num,tick);
      fDetector->SetAbsorSensitive(num,sensitive);
    }
+  else if( command == fParametersNameCmd )
+   { fDetector->SetParametersFileName(newValue);}
+
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

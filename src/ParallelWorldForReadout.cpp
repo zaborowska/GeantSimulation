@@ -172,7 +172,7 @@ void ParallelWorldForReadout::ConstructSD()
   auto fFastShowerModel = new myGFlashShowerModel("fastShowerModel", caloRegion);
   G4NistManager* nistManager = G4NistManager::Instance();
   if (massDetector->GetNbOfAbsor() == 1) {
-    G4String datafile_name("combinedValidation"+massDetector->GetAbsorMaterial(0)->GetName()+".dat");
+    G4String datafile_name = massDetector->GetParametersFileName();
     auto params = new myGVFlashHomoShowerTuning(datafile_name);
     params->printParameters();
     auto fParameterisation = new myGFlashHomoShowerParameterisation(massDetector->GetAbsorMaterial(0), params);

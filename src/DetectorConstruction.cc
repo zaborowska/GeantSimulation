@@ -29,7 +29,8 @@ DetectorConstruction::DetectorConstruction()
   fPhysiRow(nullptr),fSolidRow(nullptr),fLogicRow(nullptr),
   fPhysiCell(nullptr),fSolidCell(nullptr),fLogicCell(nullptr),
   fPhysiCalor(nullptr),fSolidLayer(nullptr),fLogicLayer(nullptr),
-  fPhysiLayer(nullptr),fDetectorMessenger(nullptr)
+  fPhysiLayer(nullptr),fDetectorMessenger(nullptr),
+  fParametersFileName("")
 {
   fDetectorMessenger= new DetectorMessenger(this);
 

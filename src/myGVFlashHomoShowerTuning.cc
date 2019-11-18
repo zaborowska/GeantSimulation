@@ -2,7 +2,11 @@
 #include "G4DataVector.hh"
 
 myGVFlashHomoShowerTuning::myGVFlashHomoShowerTuning(const G4String& aName) {
-  readParameters(aName);
+  if( aName.empty() ) {
+    G4cout << "Using default GFlash parameters." << G4endl;
+  } else {
+    readParameters(aName);
+  }
 }
 
 void myGVFlashHomoShowerTuning::readParameters(const G4String& aName) {

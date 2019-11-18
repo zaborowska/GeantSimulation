@@ -51,6 +51,8 @@ public:
   const G4VPhysicalVolume* GetphysiWorld()        {return fPhysiWorld;};
   const G4Material*        GetWorldMaterial()     {return fWorldMaterial;};
   const G4VPhysicalVolume* GetAbsorber(G4int i)   {return fPhysiAbsor[i];};
+  inline const G4String GetParametersFileName() const {return fParametersFileName;};
+  inline void SetParametersFileName(const G4String& aFileName) {fParametersFileName = aFileName;};
 
 private:
 
@@ -96,6 +98,8 @@ private:
 
   DetectorMessenger* fDetectorMessenger;
   G4Cache<G4GlobalMagFieldMessenger*> fFieldMessenger;
+
+  G4String fParametersFileName;
 
 private:
 

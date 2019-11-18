@@ -40,6 +40,7 @@ class G4UIcommand;
 class G4UIcmdWithAnInteger;
 class G4UIcmdWithADoubleAndUnit;
 class G4UIcmdWithoutParameter;
+class G4UIcmdWithAString;
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
@@ -64,6 +65,7 @@ class DetectorMessenger: public G4UImessenger
     G4UIcmdWithAnInteger*      fNotSensitiveCmd;
     G4UIcmdWithAnInteger*      fNbAbsorCmd;
     G4UIcommand*               fAbsorCmd;
+    G4UIcmdWithAString*        fParametersNameCmd;
 };
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

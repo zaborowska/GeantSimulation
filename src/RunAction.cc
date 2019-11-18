@@ -6,6 +6,7 @@
 #include "G4SystemOfUnits.hh"
 
 #include <valgrind/callgrind.h>
+#include <filesystem>
 
 RunAction::RunAction(SaveToFileEventAction* eventAction)
   : G4UserRunAction(),
@@ -39,7 +40,20 @@ void RunAction::BeginOfRunAction(const G4Run* /*run*/) {
   G4AnalysisManager* analysisManager = G4AnalysisManager::Instance();
 
   // Open an output file
-  G4String fileName = "ntuples_"+std::to_string(std::time(NULL));
+  std::string fileName = analysisManager->GetFileName();
+  int iterFile = 0;
+  std::string::size_type position = 0;
+  while (std::filesystem::exists(fileName)) {
+    if ( fileName.find(".root") != std::string::npos ) {
+      position = fileName.find("_file");
+      if ( position == std::string::npos ) {
+        fileName.insert(fileName.size() - std::string(".root").size(), "_file"+std::to_string(iterFile+1));
+      } else {
+        fileName.replace(position + std::string("_file").length(), fileName.size() - std::string(".root").length() - position - std::string("_file").length(), std::to_string(iterFile+1));
+      }
+      iterFile ++;
+    }
+  }
   analysisManager->OpenFile(fileName);
   CALLGRIND_START_INSTRUMENTATION;
 }
