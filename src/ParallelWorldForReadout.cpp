@@ -58,7 +58,7 @@ void ParallelWorldForReadout::Construct()
                                          "Calorimeter");
   // FASTSTIM
   caloRegion = new G4Region("Calorimeter_region_parallelgeo");
-  caloRegion->AddRootLogicalVolume(fLogicCalor);//fLogicCalor);
+  caloRegion->AddRootLogicalVolume(fLogicCalor);
   // FASTSIM
 
   auto fPhysiCalor = new G4PVPlacement(0,                     //no rotation
@@ -189,8 +189,8 @@ void ParallelWorldForReadout::ConstructSD()
   auto fParticleBounds = new GFlashParticleBounds();
   fFastShowerModel->SetParticleBounds(*fParticleBounds);
   // Makes the EnergieSpots
-  auto fHitMaker = new myGFlashHitMaker();
-  fHitMaker->SetUseSDOfEnvelopeWorld(true);
+  auto fHitMaker = new GFlashHitMaker();
+  fHitMaker->SetNameOfWorldWithSD("readoutWorld");
   fFastShowerModel->SetHitMaker(*fHitMaker);
   //FASTSIM
 }

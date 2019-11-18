@@ -33,6 +33,7 @@ class CalorimeterHit : public G4VHit {
 public:
     CalorimeterHit();
     CalorimeterHit(G4int iX,G4int iY,G4int iZ);
+  CalorimeterHit(G4double aSizeXY, G4double aSizeZ);
     CalorimeterHit(const CalorimeterHit &right);
     virtual ~CalorimeterHit();
 
@@ -73,6 +74,8 @@ public:
     G4double fEdep;
     G4ThreeVector fPos;
     G4RotationMatrix fRot;
+  G4double fXYsize;
+  G4double fZsize;
 };
 
 typedef G4THitsCollection<CalorimeterHit> CalorimeterHitsCollection;

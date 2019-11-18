@@ -102,7 +102,7 @@ void CalorimeterSD::Initialize(G4HCofThisEvent* hce) {
   for (G4int ix=0;ix<fCellNoXY;ix++)
     for (G4int iy=0;iy<fCellNoXY;iy++)
       for (G4int iz=0;iz<fCellNoZ;iz++) {
-        CalorimeterHit* hit = new CalorimeterHit();
+        CalorimeterHit* hit = new CalorimeterHit(fCellSize.x(),fCellSize.z());
         fHitsCollection->insert(hit);
       }
 }

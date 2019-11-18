@@ -16,10 +16,13 @@ namespace test {
 G4ThreadLocal G4Allocator<CalorimeterHit>* CalorimeterHitAllocator;
 
 CalorimeterHit::CalorimeterHit()
-: G4VHit(), fxID(-1), fyID(-1), fzID(-1), fEdep(0.), fPos(0) {}
+  : G4VHit(), fxID(-1), fyID(-1), fzID(-1), fEdep(0.), fPos(0), fXYsize(0),fZsize(0) {}
 
 CalorimeterHit::CalorimeterHit(G4int iX,G4int iY,G4int iZ)
-: G4VHit(), fxID(iX), fyID(iY), fzID(iZ), fEdep(0.), fPos(0) {}
+: G4VHit(), fxID(iX), fyID(iY), fzID(iZ), fEdep(0.), fPos(0), fXYsize(0),fZsize(0) {}
+
+CalorimeterHit::CalorimeterHit(G4double aSizeXY, G4double aSizeZ)
+: G4VHit(), fxID(-1), fyID(-1), fzID(-1), fEdep(0.), fPos(0), fXYsize(aSizeXY),fZsize(aSizeZ) {}
 
 CalorimeterHit::~CalorimeterHit() {}
 
@@ -30,6 +33,8 @@ CalorimeterHit::CalorimeterHit(const CalorimeterHit &right) : G4VHit() {
     fEdep = right.fEdep;
     fPos = right.fPos;
     fRot = right.fRot;
+    fXYsize = right.fXYsize;
+    fZsize = right.fZsize;
 }
 
 const CalorimeterHit& CalorimeterHit::operator=(const CalorimeterHit &right) {
@@ -39,6 +44,8 @@ const CalorimeterHit& CalorimeterHit::operator=(const CalorimeterHit &right) {
     fEdep = right.fEdep;
     fPos = right.fPos;
     fRot = right.fRot;
+    fXYsize = right.fXYsize;
+    fZsize = right.fZsize;
     return *this;
 }
 
@@ -51,12 +58,12 @@ void CalorimeterHit::Draw() {
     if (pVVisManager&&(fEdep>0.))
     {
       G4Transform3D trans(fRot,fPos);
-        std::cout<<"drawing point at: "<<fPos<<std::endl;
+      std::cout<<"drawing point at: "<<fPos<<" colour " << fEdep << " with size " << fXYsize/2. << " , " << fXYsize/2. <<" , " << fZsize/2. <<std::endl;
         G4VisAttributes attribs;
-        G4Colour colour(1.,0.,0.);
+        G4Colour colour(fEdep, 0.,0.);
         attribs.SetColour(colour);
         attribs.SetForceSolid(true);
-        G4Box box("dummy",1.*cm/2.,1.*cm/2.,1*cm/2.);
+        G4Box box("dummy",fXYsize/2.,fXYsize/2.,fZsize/2.);
         pVVisManager->Draw(box,attribs,trans);
     }
 }
