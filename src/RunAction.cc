@@ -56,6 +56,8 @@ void RunAction::BeginOfRunAction(const G4Run* /*run*/) {
     }
   }
   analysisManager->OpenFile(fileName);
+  // if geometry has changed...
+  fEventAction->UpdateParameters();
   CALLGRIND_START_INSTRUMENTATION;
 }
 

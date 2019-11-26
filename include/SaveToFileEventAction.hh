@@ -6,16 +6,21 @@
 #include <vector>
 #include "G4Timer.hh"
 
+class DetectorConstruction;
+
 class SaveToFileEventAction : public G4UserEventAction
 {
 public:
   SaveToFileEventAction();
   SaveToFileEventAction(G4int);
   SaveToFileEventAction(G4int, G4int);
+  /// This constructor allows to update detector parameters
+  SaveToFileEventAction(const DetectorConstruction*);
   virtual ~SaveToFileEventAction() {};
 
   virtual void BeginOfEventAction(const G4Event*);
   virtual void EndOfEventAction(const G4Event*);
+  void UpdateParameters();
   inline std::vector<G4double>& GetCalEdep() { return fCalEdep; }
   inline std::vector<G4int>& GetCalX() { return fCalX; }
   inline std::vector<G4int>& GetCalY() { return fCalY; }
@@ -23,6 +28,7 @@ public:
   inline std::vector<G4double>& GetGflashParams() {return fGflashParams; }
 
 private:
+  const DetectorConstruction* fDetector;
   G4int fHID;
   G4int fCellNoXY;
   G4int fCellNoZ;

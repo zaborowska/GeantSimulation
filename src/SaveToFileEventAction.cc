@@ -6,6 +6,7 @@
 #include "G4VHitsCollection.hh"
 #include "G4SDManager.hh"
 #include "G4SystemOfUnits.hh"
+#include "DetectorConstruction.hh"
 
 #include "EventInformation.hh"
 #include "CalorimeterHit.h"
@@ -14,6 +15,7 @@
 
 SaveToFileEventAction::SaveToFileEventAction()
 : G4UserEventAction(),
+  fDetector(nullptr),
   fHID(-1),
   fCellNoXY(25),
   fCellNoZ(25),
@@ -29,6 +31,7 @@ SaveToFileEventAction::SaveToFileEventAction()
 
 SaveToFileEventAction::SaveToFileEventAction(G4int aCellNo)
   : G4UserEventAction(),
+    fDetector(nullptr),
     fHID(-1),
     fCellNoXY(aCellNo),
     fCellNoZ(aCellNo),
@@ -42,6 +45,7 @@ SaveToFileEventAction::SaveToFileEventAction(G4int aCellNo)
 }
 SaveToFileEventAction::SaveToFileEventAction(G4int aCellNoXY, G4int aCellNoZ)
   : G4UserEventAction(),
+    fDetector(nullptr),
     fHID(-1),
     fCellNoXY(aCellNoXY),
     fCellNoZ(aCellNoZ),
@@ -52,6 +56,21 @@ SaveToFileEventAction::SaveToFileEventAction(G4int aCellNoXY, G4int aCellNoZ)
   fGflashParams{ std::vector<G4double>(10, 0.)},
   fTimer()
 {
+  G4RunManager::GetRunManager()->SetPrintProgress(1000);
+}
+SaveToFileEventAction::SaveToFileEventAction(const DetectorConstruction* aDetector)
+  : G4UserEventAction(),
+    fDetector(aDetector),
+    fHID(-1),
+  fGflashParams{ std::vector<G4double>(10, 0.)},
+  fTimer()
+{
+  fCellNoXY = aDetector->GetNbOfCells();
+  fCellNoZ = aDetector->GetNbOfLayers();
+  fCalEdep.reserve(fCellNoXY*fCellNoXY*fCellNoZ);
+  fCalX.reserve(fCellNoXY*fCellNoXY*fCellNoZ);
+  fCalY.reserve(fCellNoXY*fCellNoXY*fCellNoZ);
+  fCalZ.reserve(fCellNoXY*fCellNoXY*fCellNoZ);
   G4RunManager::GetRunManager()->SetPrintProgress(1000);
 }
 
@@ -126,6 +145,14 @@ void SaveToFileEventAction::EndOfEventAction(const G4Event* event)
     EventInformation::eSimType simtype = eventInformation->GetSimType();
     man->FillNtupleIColumn(5, simtype);
     man->FillNtupleDColumn(6, fTimer.GetRealElapsed());
+    fGflashParams = eventInformation->GetGflashParams();
 
     man->AddNtupleRow();
+}
+void SaveToFileEventAction::UpdateParameters() {
+  if (fDetector == nullptr) {
+    return;
+  }
+  fCellNoXY = fDetector->GetNbOfCells();
+  fCellNoZ = fDetector->GetNbOfLayers();
 }

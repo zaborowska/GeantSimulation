@@ -25,7 +25,7 @@ void FullSimActions::BuildForMaster() const
 
 void FullSimActions::Build() const {
   SetUserAction(new PrimaryGeneratorAction());
-  auto eventAction = new SaveToFileEventAction(fDetector->GetNbOfCells(), fDetector->GetNbOfLayers());
+  auto eventAction = new SaveToFileEventAction(fDetector);
   SetUserAction(eventAction);
   SetUserAction(new RunAction(eventAction));
 }
