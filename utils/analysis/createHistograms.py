@@ -16,6 +16,6 @@ if __name__ == "__main__":
 
     for in_file in args.inputs:
         out_file = "./histograms_" + in_file.split("/")[-1]
-        print "input file: ", in_file
-        print "output file: ", out_file
+        print( "input file: ", in_file)
+        print( "output file: ", out_file)
         createHistograms(in_file, out_file, args.minEnergy, args.maxEnergy, args.unit)
