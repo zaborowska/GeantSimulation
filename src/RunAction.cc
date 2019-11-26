@@ -28,6 +28,7 @@ RunAction::RunAction(SaveToFileEventAction* eventAction)
   analysisManager->CreateNtupleIColumn("zCell", fEventAction->GetCalZ());
   analysisManager->CreateNtupleIColumn("SimType");
   analysisManager->CreateNtupleDColumn("SimTime");
+  analysisManager->CreateNtupleDColumn("GflashParams", fEventAction->GetGflashParams());
   analysisManager->FinishNtuple();
 }
 

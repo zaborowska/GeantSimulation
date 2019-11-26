@@ -44,6 +44,9 @@
 #include "G4Material.hh"
 #include "G4MaterialTable.hh"
 
+#include "G4EventManager.hh"
+#include "EventInformation.hh"
+
 myGFlashHomoShowerParameterisation::
 myGFlashHomoShowerParameterisation(G4Material * aMat,
                                  myGVFlashHomoShowerTuning * aPar)
@@ -208,6 +211,20 @@ void myGFlashHomoShowerParameterisation::GenerateEnergyProfile(G4double /* y */)
            std::exp( AveLogAlphah + SigmaLogAlphah *
            (Correlation1h*Random1 - Correlation2h*Random2) );
   Betah  = (Alphah-1.00)/Tmaxh;
+
+  std::vector<G4double> params = { AveLogTmaxh,
+                                   SigmaLogTmaxh,
+                                   Rhoh,
+                                   Tmaxh,
+                                   AveLogAlphah,
+                                   SigmaLogAlphah,
+                                   Alphah,
+                                   Betah,
+                                   Random1,
+                                   Random2 };
+
+  EventInformation* eventInformation = dynamic_cast<EventInformation*> (G4EventManager::GetEventManager()->GetUserInformation());
+  eventInformation->SetGflashParams(params);
 }
 
 void myGFlashHomoShowerParameterisation::GenerateNSpotProfile(const G4double y)

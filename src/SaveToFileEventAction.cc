@@ -21,6 +21,7 @@ SaveToFileEventAction::SaveToFileEventAction()
   fCalX{ std::vector<G4int>(25*25*25, 0)},
   fCalY{ std::vector<G4int>(25*25*25, 0)},
   fCalZ{ std::vector<G4int>(25*25*25, 0)},
+  fGflashParams{ std::vector<G4double>(10, 0.)},
   fTimer()
 {
   G4RunManager::GetRunManager()->SetPrintProgress(1000);
@@ -48,6 +49,7 @@ SaveToFileEventAction::SaveToFileEventAction(G4int aCellNoXY, G4int aCellNoZ)
   fCalX{ std::vector<G4int>(aCellNoXY*aCellNoXY*aCellNoZ, 0)},
   fCalY{ std::vector<G4int>(aCellNoXY*aCellNoXY*aCellNoZ, 0)},
   fCalZ{ std::vector<G4int>(aCellNoXY*aCellNoXY*aCellNoZ, 0)},
+  fGflashParams{ std::vector<G4double>(10, 0.)},
   fTimer()
 {
   G4RunManager::GetRunManager()->SetPrintProgress(1000);

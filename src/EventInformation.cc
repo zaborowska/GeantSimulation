@@ -1,7 +1,8 @@
 #include "EventInformation.hh"
 #include "globals.hh"
 
-EventInformation::EventInformation(): fSimType(eFullSim) {}
+EventInformation::EventInformation(): fSimType(eFullSim),
+  fGflashParams{ std::vector<G4double>(10, 0.)} {}
 EventInformation::~EventInformation() {}
 
 void EventInformation::SetSimType(EventInformation::eSimType aSimType) {
@@ -10,6 +11,10 @@ void EventInformation::SetSimType(EventInformation::eSimType aSimType) {
 
 EventInformation::eSimType EventInformation::GetSimType() const {
   return fSimType;
+}
+
+void EventInformation::SetGflashParams(std::vector<G4double>& aGflashParams) {
+  fGflashParams = aGflashParams;
 }
 
 void EventInformation::Print() const {

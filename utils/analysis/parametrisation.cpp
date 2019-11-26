@@ -19,18 +19,18 @@
 #include "RooPlot.h"
 //#include "createHistograms.h"
 
-void parametrisation(const std::string& aInput, const std::string& aOutput, double X0, double RM, double EC) {
+void parametrisation(const std::string& aInput, const std::string& aOutput, double X0, double RM, double EC, uint numCellsXY = 200, uint numCellsZ = 60, double cellSizeXYinMM = 0.98, double cellSizeZinMM = 4.45, uint rebinTransverse = 2) {
   RooMsgService::instance().setSilentMode(true);
   RooMsgService::instance().setGlobalKillBelow(RooFit::WARNING);
 
   TFile f(aInput.c_str(), "READ");
 
   // Set initial parameters
-  const int netSizeXY = 200; // 200 bins of width 0.98mm = 0.05RM (RM = 19.6mm)
-  const int rebinXY = 2; // to form trans profile etc in bins of 0.2RM
-  const int netSizeZ = 60; // 60 bins of width 4.45mm = 0.5X0 (X0=8.9mm)
-  const double cellSizeMmXY = RM * 10. / netSizeXY; // assume always cell size of (10/200) 0.05 RM
-  const double cellSizeMmZ = X0 / 2.; // assume always cell size of 0.5 X0
+  const uint netSizeXY = numCellsXY; // 200 bins of width 0.98mm = 0.05RM (RM = 19.6mm)
+  const uint rebinXY = rebinTransverse; // to form trans profile etc in bins of 0.2RM
+  const uint netSizeZ = numCellsZ; // 60 bins of width 4.45mm = 0.5X0 (X0=8.9mm)
+  const double cellSizeMmXY = cellSizeXYinMM;
+  const double cellSizeMmZ = cellSizeZinMM;
   //
   // recalculate lengths in units of Xo, RM, EC
   const double maxLengthXY = netSizeXY / 2. * cellSizeMmXY / RM;
@@ -74,13 +74,16 @@ void parametrisation(const std::string& aInput, const std::string& aOutput, doub
   RooGamma Gamma("gamma","gamma PDF",t, gammaAlpha, gammaBeta, gammaMu) ;
   //
   // check if SimTime exists in ROOT file
-  bool include_simtime = false, include_simtype = false;
+  bool include_simtime = false, include_simtype = false, include_generated_params = false;
   auto col_names = d.GetColumnNames();
   if (std::find(col_names.begin(), col_names.end(), "SimTime") != col_names.end()) {
       include_simtime = true;
   }
   if (std::find(col_names.begin(), col_names.end(), "SimType") != col_names.end()) {
       include_simtype = true;
+  }
+  if (std::find(col_names.begin(), col_names.end(), "GflashParams") != col_names.end()) {
+      include_generated_params = true;
   }
   TH1F *simType = nullptr, *simTime = nullptr;
   if (include_simtime) {
@@ -140,6 +143,17 @@ void parametrisation(const std::string& aInput, const std::string& aOutput, doub
   auto logEnLayers = new TH2F("logEnLayers", "energy distribution per layer;log(E_{cell} (MeV)); t (X_{0}); Entries", 1000, 0, 0, netSizeZ, 0, maxLengthZ);
   auto enFractionLayers = new TH2F("enFractionLayers", "energy fraction distribution per layer;E_{cell}/E_{MC}; t (X_{0}); Entries", 1000, 0, 0, netSizeZ, 0, maxLengthZ);
   auto transProfileLayers = new TH2F("transProfileLayers", "transverse profile per layer ;r (R_{M}); layer;#LTE#GT (MeV)", netMidCellXY, 0, maxLengthXY, netSizeZ, 0, maxLengthZ);
+  // validation plots (from G4 GFlash)
+  auto g4generatedLongProfileLogAlphaMean = new TH1F("g4generatedLongProfileLogAlphaMean", "longitudinal profile - G4 generated - log alpha parameter;#LTlog(#alpha)#GT;Entries", 100, 1, 3);
+  auto g4generatedLongProfileLogAlphaSigma = new TH1F("g4generatedLongProfileLogAlphaSigma", "longitudinal profile - G4 generated - log alpha parameter;#sigma(log(#alpha));Entries", 100, 0, 3);
+  auto g4generatedLongProfileLogTMean = new TH1F("g4generatedLongProfileLogTMean", "longitudinal profile - G4 generated - log shower maximum;#LTlog(T_{max})#GT;Entries", 100, 1, 3);
+  auto g4generatedLongProfileLogTSigma = new TH1F("g4generatedLongProfileLogTSigma", "longitudinal profile - G4 generated - log shower maximum;#sigma(log(T_{max}));Entries", 100, 0, 3);
+  auto g4generatedLongProfileAlpha = new TH1F("g4generatedLongProfileAlpha", "longitudinal profile - G4 generated - alpha parameter;#alpha;Entries", 100, 1, 10);
+  auto g4generatedLongProfileBeta = new TH1F("g4generatedLongProfileBeta", "longitudinal profile - G4 generated - beta parameter;#beta;Entries", 100, 0, 2);
+  auto g4generatedLongProfileT = new TH1F("g4generatedLongProfileT", "longitudinal profile - G4 generated - shower maximum;T_{max};Entries", 100, 1, 20);
+  auto g4generatedLongProfileRhoLogAlphaLogT = new TH1F("g4generatedLongProfileRhoLogAlphaLogT", "longitudinal profile - G4 generated - correlation;#rho(log(#alpha),log(T_{max}));Entries", 100, -1, 1);
+  auto g4generatedLongProfileRandom1 = new TH1F("g4generatedLongProfileRandom1", "longitudinal profile - G4 generated - random 1;random_{1};Entries", 100, -5, 5);
+  auto g4generatedLongProfileRandom2 = new TH1F("g4generatedLongProfileRandom2", "longitudinal profile - G4 generated - random 2;random_{2};Entries", 100, -5, 5);
 
   TTreeReader eventsReader("events",&f);
   TTreeReaderValue<double> energyMC(eventsReader, "EnergyMC");
@@ -151,7 +165,8 @@ void parametrisation(const std::string& aInput, const std::string& aOutput, doub
   uint iterEvents = 0;
   // retireved from input
   size_t eventSize = 0;
-  std::array<uint, netSizeZ> numCellsPerLayer;
+  std::vector<uint> numCellsPerLayer;
+  numCellsPerLayer.reserve(netSizeZ);
   uint xCell = 0, yCell = 0, zCell = 0;
   double eCell = 0;
   double energyMCinGeV = 0;
@@ -280,6 +295,33 @@ void parametrisation(const std::string& aInput, const std::string& aOutput, doub
     }
     simType->Scale(1./iterEvents);
   }
+  if ( include_generated_params ) {
+    eventsReader.Restart();
+    TTreeReaderArray<double> generatedParams(eventsReader, "GflashParams");
+    while(eventsReader.Next()){
+      g4generatedLongProfileLogTMean->Fill(generatedParams[0]);
+      g4generatedLongProfileLogTSigma->Fill(generatedParams[1]);
+      g4generatedLongProfileRhoLogAlphaLogT->Fill(generatedParams[2]);
+      g4generatedLongProfileT->Fill(generatedParams[3]);
+      g4generatedLongProfileLogAlphaMean->Fill(generatedParams[4]);
+      g4generatedLongProfileLogAlphaSigma->Fill(generatedParams[5]);
+      g4generatedLongProfileAlpha->Fill(generatedParams[6]);
+      g4generatedLongProfileBeta->Fill(generatedParams[7]);
+      g4generatedLongProfileRandom1->Fill(generatedParams[8]);
+      g4generatedLongProfileRandom2->Fill(generatedParams[9]);
+    }
+    g4generatedLongProfileLogAlphaMean->Scale(1./iterEvents);
+    g4generatedLongProfileLogAlphaSigma->Scale(1./iterEvents);
+    g4generatedLongProfileLogTMean->Scale(1./iterEvents);
+    g4generatedLongProfileLogTSigma->Scale(1./iterEvents);
+    g4generatedLongProfileAlpha->Scale(1./iterEvents);
+    g4generatedLongProfileBeta->Scale(1./iterEvents);
+    g4generatedLongProfileT->Scale(1./iterEvents);
+    g4generatedLongProfileRhoLogAlphaLogT->Scale(1./iterEvents);
+    g4generatedLongProfileRandom1->Scale(1./iterEvents);
+    g4generatedLongProfileRandom2->Scale(1./iterEvents);
+  }
+
   // Define longitudinal profile fit function
   RooDataHist dataAvgLongProfile("dataAvgLongProfile","dataAvgLongProfile",t,RooFit::Import(*longProfile)) ;
   RooPlot* frame = t.frame(RooFit::Title("Gamma p.d.f.")) ;
@@ -338,6 +380,18 @@ void parametrisation(const std::string& aInput, const std::string& aOutput, doub
   transProfileLayers->Write();
   if(include_simtime) simTime->Write();
   if(include_simtype) simType->Write();
+  if(include_generated_params) {
+    g4generatedLongProfileLogAlphaMean->Write();
+    g4generatedLongProfileLogAlphaSigma->Write();
+    g4generatedLongProfileLogTMean->Write();
+    g4generatedLongProfileLogTSigma->Write();
+    g4generatedLongProfileAlpha->Write();
+    g4generatedLongProfileBeta->Write();
+    g4generatedLongProfileT->Write();
+    g4generatedLongProfileRhoLogAlphaLogT->Write();
+    g4generatedLongProfileRandom1->Write();
+    g4generatedLongProfileRandom2->Write();
+  }
   canvLongProfile.Write();
   out.Close();
   f.Close();
