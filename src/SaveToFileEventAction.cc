@@ -39,6 +39,7 @@ SaveToFileEventAction::SaveToFileEventAction(G4int aCellNo)
   fCalX{ std::vector<G4int>(aCellNo*aCellNo*aCellNo, 0)},
   fCalY{ std::vector<G4int>(aCellNo*aCellNo*aCellNo, 0)},
   fCalZ{ std::vector<G4int>(aCellNo*aCellNo*aCellNo, 0)},
+  fGflashParams{ std::vector<G4double>(10, 0.)},
   fTimer()
 {
   G4RunManager::GetRunManager()->SetPrintProgress(1000);
