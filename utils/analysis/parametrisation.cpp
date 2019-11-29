@@ -19,32 +19,32 @@
 #include "RooPlot.h"
 //#include "createHistograms.h"
 
-void parametrisation(const std::string& aInput, const std::string& aOutput, double X0, double RM, double EC, uint numCellsXY = 200, uint numCellsZ = 60, double cellSizeXYinMM = 0.98, double cellSizeZinMM = 4.45, uint rebinTransverse = 2) {
+void parametrisation(const std::string& aInput, const std::string& aOutput, double X0, double RM, double EC, uint numCellsR = 200, uint numCellsZ = 60, double cellSizeRinMM = 0.98, double cellSizeZinMM = 4.45, uint rebinTransverse = 1) {
   RooMsgService::instance().setSilentMode(true);
   RooMsgService::instance().setGlobalKillBelow(RooFit::WARNING);
 
   TFile f(aInput.c_str(), "READ");
 
   // Set initial parameters
-  const uint netSizeXY = numCellsXY; // 200 bins of width 0.98mm = 0.05RM (RM = 19.6mm)
-  const uint rebinXY = rebinTransverse; // to form trans profile etc in bins of 0.2RM
+  const uint netSizeR = numCellsR; // 200 bins of width 0.98mm = 0.1RM (RM = 19.6mm)
+  const uint rebinR = rebinTransverse;
   const uint netSizeZ = numCellsZ; // 60 bins of width 4.45mm = 0.5X0 (X0=8.9mm)
-  const double cellSizeMmXY = cellSizeXYinMM;
+  const double cellSizeMmR = cellSizeRinMM;
   const double cellSizeMmZ = cellSizeZinMM;
   //
   // recalculate lengths in units of Xo, RM, EC
-  const double maxLengthXY = netSizeXY / 2. * cellSizeMmXY / RM;
+  const double maxLengthR = netSizeR * cellSizeMmR / RM;
   const double maxLengthZ = netSizeZ * cellSizeMmZ / X0;
-  const double xyId2r = cellSizeMmXY / RM;
+  const double rId2r = cellSizeMmR / RM;
   const double zId2t = cellSizeMmZ / X0;
 
-  std::cout << "\n\n\n max lengths = xy z : " << maxLengthXY << "\t" << maxLengthZ << "\t" <<
-    " conversion factors : " << xyId2r << "\t" << zId2t << std::endl << std::endl << std::endl;
+  std::cout << "\n\n\n max lengths = R z : " << maxLengthR << "\t" << maxLengthZ << "\t" <<
+    " conversion factors : " << rId2r << "\t" << zId2t << std::endl << std::endl << std::endl;
   //
   double minEnergy = 0;
   double maxEnergy = 0;
   const double scaleFactorProfile = 10.; // to shorten the axis in some cases (otherwise most entries in the very beginning only)
-  const double netMidCellXY = floor (netSizeXY / 2);
+  const double netMidCellR = floor (netSizeR / 2);
 
   // Check if flat energy spectrum or single-energy simulation is analysed
   ROOT::RDataFrame d("events", &f, {"EnergyMC","SimTime"});
@@ -107,7 +107,7 @@ void parametrisation(const std::string& aInput, const std::string& aOutput, doub
     simType->GetXaxis()->SetBinLabel(2,"GFlash");
     simType->GetXaxis()->SetBinLabel(3,"ML");
   }
-  auto mesh = new TH3F("mesh", "mesh", netSizeZ, 0, maxLengthZ, netSizeXY, - maxLengthXY, maxLengthXY, netSizeXY, -maxLengthXY, maxLengthXY);
+  auto mesh = new TH3F("mesh", "mesh", netSizeZ, 0, maxLengthZ, netSizeR, - maxLengthR, maxLengthR, netSizeR, -maxLengthR, maxLengthR);
   mesh->SetTitle(";z (X_{0});x (R_{M});y (R_{M})");
   auto enMC = new TH1F("enMC", "MC energy (GeV);E_{MC} (GeV); Normalised entries", 1000, 0, floor(1.2 * maxEnergy));
   auto enTotal = new TH1F("enTotal", "total deposited energy (GeV);E_{dep} (GeV); Normalised entries", 1000, 0, floor(1.2 * maxEnergy));
@@ -131,18 +131,20 @@ void parametrisation(const std::string& aInput, const std::string& aOutput, doub
   auto longProfileRhoLogAlphaLogT = new TGraph();
   longProfileRhoLogAlphaLogT->SetName("longProfileRhoLogAlphaLogT");
   longProfileRhoLogAlphaLogT->SetTitle("longitudinal profile fit correlation - log alpha and log T;log(#alpha);log(T_{max});Entries");
-  auto transProfile = new TH1F("transProfile", "transverse profile;r (R_{M});#LTE#GT (MeV)", netMidCellXY / rebinXY, 0, maxLengthXY);
+  auto transProfile = new TH1F("transProfile", "transverse profile;r (R_{M});#LTE#GT (MeV)", netMidCellR / rebinR, 0, maxLengthR);
   auto enFractionCell = new TH1F("enFractionCell", "cell energy fraction distribution;E_{cell}/E_{MC}; Normalised entries", 100, 0, 0);
 //  enFractionCell->SetBit(TH1::kCanRebin);
   auto longFirstMoment = new TH1F("longFirstMoment", "longitudinal first moment;#LT#lambda#GT (mm);Normalised entries", 100, 0, 0); //netSizeZ*cellSizeMmZ, 0, netSizeZ * cellSizeMmZ);
   auto longSecondMoment = new TH1F("longSecondMoment", "longitudinal second moment;#LT#lambda^{2}#GT (mm^{2});Normalised entries", 100, 0, 0); // netSizeZ*cellSizeMmZ, 0, pow(netSizeZ * cellSizeMmZ, 2));
-  auto transFirstMoment = new TH1F("transFirstMoment", "transverse first moment;#LTr#GT (mm);Normalised entries",  100, 0, 0); //netSizeXY*cellSizeMmXY, 0, netSizeXY * cellSizeMmXY / scaleFactorProfile );
-  auto transSecondMoment = new TH1F("transSecondMoment", "transverse second moment;#LTr^{2}#GT (mm^{2});Normalised entries",  100, 0, 0); //netSizeXY*cellSizeMmXY, 0, pow(netSizeXY * cellSizeMmXY, 2) / pow(scaleFactorProfile, 2));
+  auto transFirstMoment = new TH1F("transFirstMoment", "transverse first moment;#LTr#GT (mm);Normalised entries",  100, 0, 0); //netSizeR*cellSizeMmR, 0, netSizeR * cellSizeMmR / scaleFactorProfile );
+  auto transSecondMoment = new TH1F("transSecondMoment", "transverse second moment;#LTr^{2}#GT (mm^{2});Normalised entries",  100, 0, 0); //netSizeR*cellSizeMmR, 0, pow(netSizeR * cellSizeMmR, 2) / pow(scaleFactorProfile, 2));
   auto numCellsLayers = new TH2F("numCellsLayers", "number of cells distribution per layer;## cells; t (X_{0}); Entries", 1000, 0, 0, netSizeZ, 0, maxLengthZ);
   auto enLayers = new TH2F("enLayers", "energy distribution per layer;E_{cell} (MeV); t (X_{0}); Entries", 1000, 0, 0, netSizeZ, 0, maxLengthZ);
   auto logEnLayers = new TH2F("logEnLayers", "energy distribution per layer;log(E_{cell} (MeV)); t (X_{0}); Entries", 1000, 0, 0, netSizeZ, 0, maxLengthZ);
   auto enFractionLayers = new TH2F("enFractionLayers", "energy fraction distribution per layer;E_{cell}/E_{MC}; t (X_{0}); Entries", 1000, 0, 0, netSizeZ, 0, maxLengthZ);
-  auto transProfileLayers = new TH2F("transProfileLayers", "transverse profile per layer ;r (R_{M}); layer;#LTE#GT (MeV)", netMidCellXY, 0, maxLengthXY, netSizeZ, 0, maxLengthZ);
+  auto transProfileLayers = new TH2F("transProfileLayers", "transverse profile per layer ;r (R_{M}); layer;#LTE#GT (MeV)", (netMidCellR*2+1) / rebinR, -maxLengthR, maxLengthR, netSizeZ, 0, maxLengthZ);
+  auto transXProfileLayers = new TH2F("transXProfileLayers", "transverse X profile per layer ;x (R_{M}); layer;#LTE#GT (MeV)", netSizeR, 0, 2*maxLengthR, netSizeZ, 0, maxLengthZ);
+  auto transYProfileLayers = new TH2F("transYProfileLayers", "transverse Y profile per layer ;y (R_{M}); layer;#LTE#GT (MeV)", netSizeR, 0, 2*maxLengthR, netSizeZ, 0, maxLengthZ);
   // validation plots (from G4 GFlash)
   auto g4generatedLongProfileLogAlphaMean = new TH1F("g4generatedLongProfileLogAlphaMean", "longitudinal profile - G4 generated - log alpha parameter;#LTlog(#alpha)#GT;Entries", 100, 1, 3);
   auto g4generatedLongProfileLogAlphaSigma = new TH1F("g4generatedLongProfileLogAlphaSigma", "longitudinal profile - G4 generated - log alpha parameter;#sigma(log(#alpha));Entries", 100, 0, 3);
@@ -158,8 +160,8 @@ void parametrisation(const std::string& aInput, const std::string& aOutput, doub
   TTreeReader eventsReader("events",&f);
   TTreeReaderValue<double> energyMC(eventsReader, "EnergyMC");
   TTreeReaderArray<double> energyCellV(eventsReader, "EnergyCell");
-  TTreeReaderArray<int> xCellV(eventsReader, "xCell");
-  TTreeReaderArray<int> yCellV(eventsReader, "yCell");
+  TTreeReaderArray<int> rhoCellV(eventsReader, "rhoCell");
+  TTreeReaderArray<int> phiCellV(eventsReader, "phiCell");
   TTreeReaderArray<int> zCellV(eventsReader, "zCell");
 
   uint iterEvents = 0;
@@ -167,13 +169,14 @@ void parametrisation(const std::string& aInput, const std::string& aOutput, doub
   size_t eventSize = 0;
   std::vector<uint> numCellsPerLayer;
   numCellsPerLayer.reserve(netSizeZ);
-  uint xCell = 0, yCell = 0, zCell = 0;
+  uint rhoCell = 0, phiCell = 0, zCell = 0;
   double eCell = 0;
   double energyMCinGeV = 0;
   // calculated
   double tDistance = 0;
   double rDistance = 0, eCellFraction = 0, sumEnergyDeposited = 0;
   double tFirstMoment = 0, tSecondMoment = 0, rFirstMoment = 0, rSecondMoment = 0;
+  double xDistance = 0, yDistance = 0;
   while(eventsReader.Next()){
     energyMCinGeV = *(energyMC) / 1.e3;
     sumEnergyDeposited = 0;
@@ -186,26 +189,32 @@ void parametrisation(const std::string& aInput, const std::string& aOutput, doub
     }
     for (uint iEntry = 0; iEntry < eventSize; ++iEntry) {
       // get data (missing: angle at entrance)
-      xCell = xCellV[iEntry];
-      yCell = yCellV[iEntry];
+      rhoCell = rhoCellV[iEntry];
+      phiCell = phiCellV[iEntry];
       zCell = zCellV[iEntry];
       eCell = energyCellV[iEntry];
       eCellFraction = eCell / *energyMC;
       // make calculations
       tDistance = zCell + 0.5; // assumption: particle enters calorimeter perpendiculary
-      rDistance = sqrt( (xCell - netMidCellXY) * (xCell - netMidCellXY) + (yCell - netMidCellXY) * (yCell - netMidCellXY));
+      int signX = 1;
+      if (rhoCell < netMidCellR) {
+        signX = -1;
+      }
+      rDistance = signX * sqrt( (rhoCell - netMidCellR) * (rhoCell - netMidCellR) + (phiCell - netMidCellR) * (phiCell - netMidCellR));
       tFirstMoment += eCell * tDistance * cellSizeMmZ;
-      rFirstMoment += eCell * rDistance * cellSizeMmXY;
+      rFirstMoment += eCell * rDistance * cellSizeMmR;
       // fill histograms
-      mesh->Fill(tDistance*zId2t, (xCell - netMidCellXY) * xyId2r, (yCell-netMidCellXY) * xyId2r, eCell);
+      mesh->Fill(tDistance*zId2t, (rhoCell - netMidCellR) * rId2r, (phiCell-netMidCellR) * rId2r, eCell);
       enCell->Fill(eCell);
       logEnCell->Fill(log(eCell));
       enLayers->Fill(eCell, tDistance*zId2t);
       logEnLayers->Fill(log(eCell), tDistance*zId2t);
       longProfile->Fill(tDistance*zId2t, eCell);
       longProfileSingle->Fill(tDistance*zId2t, eCell);
-      transProfile->Fill(rDistance*xyId2r, eCell);
-      transProfileLayers->Fill(rDistance*xyId2r, tDistance*zId2t, eCell);
+      transProfile->Fill(rDistance*rId2r, eCell);
+      transProfileLayers->Fill(rDistance*rId2r, tDistance*zId2t, eCell);
+      transXProfileLayers->Fill(rhoCell*rId2r, tDistance*zId2t, eCell);
+      transYProfileLayers->Fill(phiCell*rId2r, tDistance*zId2t, eCell);
       enFractionCell->Fill(eCellFraction);
       enFractionLayers->Fill(eCellFraction, tDistance*zId2t);
       sumEnergyDeposited += eCell;
@@ -217,15 +226,15 @@ void parametrisation(const std::string& aInput, const std::string& aOutput, doub
     rSecondMoment = 0;
     for (uint iEntry = 0; iEntry < eventSize; ++iEntry) {
       // get data (missing: angle at entrance)
-      xCell = xCellV[iEntry];
-      yCell = yCellV[iEntry];
+      rhoCell = rhoCellV[iEntry];
+      phiCell = phiCellV[iEntry];
       zCell = zCellV[iEntry];
       eCell = energyCellV[iEntry];
       // make calculations
       tDistance = zCell+0.5; // assumption: particle enters calorimeter perpendiculary
-      rDistance = sqrt( (xCell - netMidCellXY) * (xCell - netMidCellXY) + (yCell - netMidCellXY) * (yCell - netMidCellXY));
+      rDistance = sqrt( (rhoCell - netMidCellR) * (rhoCell - netMidCellR) + (phiCell - netMidCellR) * (phiCell - netMidCellR));
       tSecondMoment += eCell * pow(tDistance * cellSizeMmZ - tFirstMoment, 2);
-      rSecondMoment += eCell * pow(rDistance * cellSizeMmXY - rFirstMoment, 2);
+      rSecondMoment += eCell * pow(rDistance * cellSizeMmR - rFirstMoment, 2);
     }
     tSecondMoment /= sumEnergyDeposited;
     rSecondMoment /= sumEnergyDeposited;
@@ -278,6 +287,8 @@ void parametrisation(const std::string& aInput, const std::string& aOutput, doub
   logEnLayers->Scale(1./iterEvents);
   enFractionLayers->Scale(1./iterEvents);
   transProfileLayers->Scale(1./iterEvents);
+transXProfileLayers->Scale(1./iterEvents);
+transYProfileLayers->Scale(1./iterEvents);
 
   if(include_simtime) {
     eventsReader.Restart();
@@ -378,6 +389,8 @@ void parametrisation(const std::string& aInput, const std::string& aOutput, doub
   logEnLayers->Write();
   enFractionLayers->Write();
   transProfileLayers->Write();
+  transXProfileLayers->Write();
+  transYProfileLayers->Write();
   if(include_simtime) simTime->Write();
   if(include_simtype) simType->Write();
   if(include_generated_params) {

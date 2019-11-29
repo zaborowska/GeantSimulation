@@ -10,8 +10,8 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Create validation histograms')
     parser.add_argument('inputs', type=str, nargs='+', help="name of the input files")
     parser.add_argument('--material', "-m", required=True, type=str, help="Material to define X0, RM and Ec")
-    parser.add_argument('--sizeInMm', "-size", required=True, type=float, nargs="+", help="Size of cell in mm [xy, z]")
-    parser.add_argument('--numCells', "-num", required=True, type=int, nargs="+", help="Number of cells [xy, z]")
+    parser.add_argument('--sizeInMm', "-size", required=True, type=float, nargs="+", help="Size of cell in mm [R, z]")
+    parser.add_argument('--numCells', "-num", required=True, type=int, nargs="+", help="Number of cells [R, z]")
     args = parser.parse_args()
 
     if args.material == "Pb":
@@ -24,7 +24,7 @@ if __name__ == "__main__":
         EC = 0.00797
     if args.material == "PbWO4":
         X0 = 8.903
-        RM = 16.02
+        RM = 19.59
         EC = 0.00964
 
     print ( " ===== " )
