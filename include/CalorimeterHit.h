@@ -32,8 +32,7 @@ namespace test {
 class CalorimeterHit : public G4VHit {
 public:
     CalorimeterHit();
-    CalorimeterHit(G4int iX,G4int iY,G4int iZ);
-  CalorimeterHit(G4double aSizeXY, G4double aSizeZ);
+    CalorimeterHit(G4int iRho,G4int iPhi,G4int iZ);
     CalorimeterHit(const CalorimeterHit &right);
     virtual ~CalorimeterHit();
 
@@ -48,11 +47,11 @@ public:
     virtual std::vector<G4AttValue>* CreateAttValues() const;
     virtual void Print();
 
-    void SetXid(G4int z) { fxID = z; }
-    G4int GetXid() const { return fxID; }
+    void SetRhoId(G4int z) { fRhoID = z; }
+    G4int GetRhoId() const { return fRhoID; }
 
-    void SetYid(G4int z) { fyID = z; }
-    G4int GetYid() const { return fyID; }
+    void SetPhiId(G4int z) { fPhiID = z; }
+    G4int GetPhiId() const { return fPhiID; }
 
     void SetZid(G4int z) { fzID = z; }
     G4int GetZid() const { return fzID; }
@@ -68,14 +67,12 @@ public:
     G4RotationMatrix GetRot() const { return fRot; }
 
 public:
-    G4int fxID;
-    G4int fyID;
+    G4int fRhoID;
+    G4int fPhiID;
     G4int fzID;
     G4double fEdep;
     G4ThreeVector fPos;
     G4RotationMatrix fRot;
-  G4double fXYsize;
-  G4double fZsize;
 };
 
 typedef G4THitsCollection<CalorimeterHit> CalorimeterHitsCollection;

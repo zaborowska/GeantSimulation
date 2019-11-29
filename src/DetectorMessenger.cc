@@ -18,9 +18,10 @@ DetectorMessenger::DetectorMessenger(DetectorConstruction * Det)
 :G4UImessenger(),fDetector(Det),
  fTestemDir(nullptr),
  fDetDir(nullptr),
- fSizeYZCmd(nullptr),
+ fSizeCaloRadiusCmd(nullptr),
  fNbLayersCmd(nullptr),
- fNbCellsCmd(nullptr),
+ fNbRhoCellsCmd(nullptr),
+ fNbPhiCellsCmd(nullptr),
  fSensitiveCmd(nullptr),
  fNotSensitiveCmd(nullptr),
  fNbAbsorCmd(nullptr),
@@ -33,13 +34,13 @@ DetectorMessenger::DetectorMessenger(DetectorConstruction * Det)
   fDetDir = new G4UIdirectory("/testem/det/");
   fDetDir->SetGuidance("detector construction commands");
 
-  fSizeYZCmd = new G4UIcmdWithADoubleAndUnit("/testem/det/setSizeYZ",this);
-  fSizeYZCmd->SetGuidance("Set tranverse size of the calorimeter");
-  fSizeYZCmd->SetParameterName("Size",false);
-  fSizeYZCmd->SetRange("Size>0.");
-  fSizeYZCmd->SetUnitCategory("Length");
-  fSizeYZCmd->AvailableForStates(G4State_PreInit,G4State_Idle);
-  fSizeYZCmd->SetToBeBroadcasted(false);
+  fSizeCaloRadiusCmd = new G4UIcmdWithADoubleAndUnit("/testem/det/setCaloRadius",this);
+  fSizeCaloRadiusCmd->SetGuidance("Set tranverse size of the calorimeter (radius)");
+  fSizeCaloRadiusCmd->SetParameterName("Size",false);
+  fSizeCaloRadiusCmd->SetRange("Size>0.");
+  fSizeCaloRadiusCmd->SetUnitCategory("Length");
+  fSizeCaloRadiusCmd->AvailableForStates(G4State_PreInit,G4State_Idle);
+  fSizeCaloRadiusCmd->SetToBeBroadcasted(false);
 
   fNbLayersCmd = new G4UIcmdWithAnInteger("/testem/det/setNbOfLayers",this);
   fNbLayersCmd->SetGuidance("Set number of layers.");
@@ -48,12 +49,19 @@ DetectorMessenger::DetectorMessenger(DetectorConstruction * Det)
   fNbLayersCmd->AvailableForStates(G4State_PreInit,G4State_Idle);
   fNbLayersCmd->SetToBeBroadcasted(false);
 
-  fNbCellsCmd = new G4UIcmdWithAnInteger("/testem/det/setNbOfCells",this);
-  fNbCellsCmd->SetGuidance("Set number of cells.");
-  fNbCellsCmd->SetParameterName("NbCells",false);
-  fNbCellsCmd->SetRange("NbCells>0");
-  fNbCellsCmd->AvailableForStates(G4State_PreInit,G4State_Idle);
-  fNbCellsCmd->SetToBeBroadcasted(false);
+  fNbRhoCellsCmd = new G4UIcmdWithAnInteger("/testem/det/setNbOfRhoCells",this);
+  fNbRhoCellsCmd->SetGuidance("Set number of cells.");
+  fNbRhoCellsCmd->SetParameterName("NbRhoCells",false);
+  fNbRhoCellsCmd->SetRange("NbRhoCells>0");
+  fNbRhoCellsCmd->AvailableForStates(G4State_PreInit,G4State_Idle);
+  fNbRhoCellsCmd->SetToBeBroadcasted(false);
+
+  fNbPhiCellsCmd = new G4UIcmdWithAnInteger("/testem/det/setNbOfPhiCells",this);
+  fNbPhiCellsCmd->SetGuidance("Set number of cells.");
+  fNbPhiCellsCmd->SetParameterName("NbPhiCells",false);
+  fNbPhiCellsCmd->SetRange("NbPhiCells>0");
+  fNbPhiCellsCmd->AvailableForStates(G4State_PreInit,G4State_Idle);
+  fNbPhiCellsCmd->SetToBeBroadcasted(false);
 
   fNbAbsorCmd = new G4UIcmdWithAnInteger("/testem/det/setNbOfAbsor",this);
   fNbAbsorCmd->SetGuidance("Set number of Absorbers.");
@@ -107,9 +115,10 @@ DetectorMessenger::DetectorMessenger(DetectorConstruction * Det)
 
 DetectorMessenger::~DetectorMessenger()
 {
-  delete fSizeYZCmd;
+  delete fSizeCaloRadiusCmd;
   delete fNbLayersCmd;
-  delete fNbCellsCmd;
+  delete fNbRhoCellsCmd;
+  delete fNbPhiCellsCmd;
   delete fSensitiveCmd;
   delete fNotSensitiveCmd;
   delete fNbAbsorCmd;
@@ -123,14 +132,17 @@ DetectorMessenger::~DetectorMessenger()
 
 void DetectorMessenger::SetNewValue(G4UIcommand* command,G4String newValue)
 {
-  if( command == fSizeYZCmd )
-   { fDetector->SetCalorSizeYZ(fSizeYZCmd->GetNewDoubleValue(newValue));}
+  if( command == fSizeCaloRadiusCmd )
+   { fDetector->SetCalorRadius(fSizeCaloRadiusCmd->GetNewDoubleValue(newValue));}
 
   else if( command == fNbLayersCmd )
     { fDetector->SetNbOfLayers(fNbLayersCmd->GetNewIntValue(newValue));}
 
-  else if( command == fNbCellsCmd )
-   { fDetector->SetNbOfCells(fNbCellsCmd->GetNewIntValue(newValue));}
+  else if( command == fNbRhoCellsCmd )
+   { fDetector->SetNbOfRhoCells(fNbRhoCellsCmd->GetNewIntValue(newValue));}
+
+  else if( command == fNbPhiCellsCmd )
+   { fDetector->SetNbOfPhiCells(fNbPhiCellsCmd->GetNewIntValue(newValue));}
 
   else if( command == fNbAbsorCmd )
    { fDetector->SetNbOfAbsor(fNbAbsorCmd->GetNewIntValue(newValue));}

@@ -23,8 +23,8 @@ RunAction::RunAction(SaveToFileEventAction* eventAction)
   analysisManager->CreateNtuple("events", "per event data");
   analysisManager->CreateNtupleDColumn("EnergyMC");
   analysisManager->CreateNtupleDColumn("EnergyCell", fEventAction->GetCalEdep());
-  analysisManager->CreateNtupleIColumn("xCell", fEventAction->GetCalX());
-  analysisManager->CreateNtupleIColumn("yCell", fEventAction->GetCalY());
+  analysisManager->CreateNtupleIColumn("rhoCell", fEventAction->GetCalRho());
+  analysisManager->CreateNtupleIColumn("phiCell", fEventAction->GetCalPhi());
   analysisManager->CreateNtupleIColumn("zCell", fEventAction->GetCalZ());
   analysisManager->CreateNtupleIColumn("SimType");
   analysisManager->CreateNtupleDColumn("SimTime");

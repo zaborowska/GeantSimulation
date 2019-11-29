@@ -6,6 +6,7 @@
 #include "G4Cache.hh"
 
 class G4Box;
+class G4Tubs;
 class G4LogicalVolume;
 class G4VPhysicalVolume;
 class G4Material;
@@ -25,23 +26,25 @@ public:
   void SetAbsorThickness(G4int,G4double);
   void SetAbsorSensitive(G4int,G4bool);
   void SetWorldMaterial (const G4String&);
-  void SetCalorSizeYZ   (G4double);
+  void SetCalorRadius   (G4double);
   void SetNbOfLayers    (G4int);
-  void SetNbOfCells    (G4int);
+  void SetNbOfRhoCells    (G4int);
+  void SetNbOfPhiCells    (G4int);
 
   virtual G4VPhysicalVolume* Construct();
   virtual void ConstructSDandField();
 
   void PrintCalorParameters();
 
-  G4double GetWorldSizeX() const     {return fWorldSizeX;};
-  G4double GetWorldSizeYZ() const    {return fWorldSizeYZ;};
+  G4double GetWorldSizeTransverse() const     {return fWorldSizeTransverse;};
+  G4double GetWorldSizeZ() const    {return fWorldSizeZ;};
 
   G4double GetCalorThickness() const {return fCalorThickness;};
-  G4double GetCalorSizeYZ() const    {return fCalorSizeYZ;};
+  G4double GetCalorRadius() const    {return fCalorRadius;};
 
   G4int GetNbOfLayers() const        {return fNbOfLayers;};
-  G4int GetNbOfCells() const        {return fNbOfCells;};
+  G4int GetNbOfRhoCells() const        {return fNbOfRhoCells;};
+  G4int GetNbOfPhiCells() const        {return fNbOfPhiCells;};
 
   G4int       GetNbOfAbsor() const   {return fNbOfAbsor;};
   G4Material* GetAbsorMaterial(G4int i) const // return of non-const pointer for gflash to work
@@ -61,38 +64,31 @@ private:
   G4double           fAbsorThickness[kMaxAbsor];
 
   G4int              fNbOfLayers;
-  G4int              fNbOfCells;
+  G4int              fNbOfRhoCells;
+  G4int              fNbOfPhiCells;
   G4bool             fIdOfSD[kMaxAbsor];
   G4double           fLayerThickness;
 
-  G4double           fCalorSizeYZ;
+  G4double           fCalorRadius;
   G4double           fCalorThickness;
 
   G4Material*        fWorldMaterial;
-  G4double           fWorldSizeYZ;
-  G4double           fWorldSizeX;
+  G4double           fWorldSizeTransverse;
+  G4double           fWorldSizeZ;
 
   G4Box*             fSolidWorld;
   G4LogicalVolume*   fLogicWorld;
   G4VPhysicalVolume* fPhysiWorld;
 
-  G4Box*             fSolidCalor;
+  G4Tubs*             fSolidCalor;
   G4LogicalVolume*   fLogicCalor;
   G4VPhysicalVolume* fPhysiCalor;
 
-  G4Box*             fSolidRow;
-  G4LogicalVolume*   fLogicRow;
-  G4VPhysicalVolume* fPhysiRow;
-
-  G4Box*             fSolidCell;
-  G4LogicalVolume*   fLogicCell;
-  G4VPhysicalVolume* fPhysiCell;
-
-  G4Box*             fSolidLayer;
+  G4Tubs*             fSolidLayer;
   G4LogicalVolume*   fLogicLayer;
   G4VPhysicalVolume* fPhysiLayer;
 
-  G4Box*             fSolidAbsor[kMaxAbsor];
+  G4Tubs*             fSolidAbsor[kMaxAbsor];
   G4LogicalVolume*   fLogicAbsor[kMaxAbsor];
   G4VPhysicalVolume* fPhysiAbsor[kMaxAbsor];
 

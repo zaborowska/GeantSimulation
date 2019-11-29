@@ -1,6 +1,7 @@
 #include "ParallelWorldForReadout.h"
 
 #include "G4Box.hh"
+#include "G4Tubs.hh"
 #include "G4LogicalVolume.hh"
 #include "G4Region.hh"
 #include "G4PVPlacement.hh"
@@ -9,6 +10,7 @@
 #include "G4NistManager.hh"
 #include "G4PVReplica.hh"
 #include "G4Box.hh"
+#include "G4VisAttributes.hh"
 
 #include "DetectorConstruction.hh"
 #include "CalorimeterSD.h"
@@ -44,14 +46,16 @@ void ParallelWorldForReadout::Construct()
             << dynamic_cast<G4Box*>(ghostLogicalVolume->GetSolid())->GetYHalfLength () << " x "
             << dynamic_cast<G4Box*>(ghostLogicalVolume->GetSolid())->GetZHalfLength () << std::endl;
 
-  auto fCalorSizeYZ = massDetector->GetCalorSizeYZ();
+  auto fCalorRadius = massDetector->GetCalorRadius();
   auto fCalorThickness = massDetector->GetCalorThickness();
   auto fNbOfLayers = massDetector->GetNbOfLayers();
   auto fLayerThickness = fCalorThickness / fNbOfLayers;
-  auto fNbOfCells = massDetector->GetNbOfCells();
+  auto fNbOfCells = massDetector->GetNbOfRhoCells();
+  auto fNbOfPhiCells = massDetector->GetNbOfPhiCells();
 
-  auto fSolidCalor = new G4Box("Calorimeter",fCalorSizeYZ/2,fCalorSizeYZ/2,
-                       fCalorThickness/2);
+  G4double full2Pi = 2.* M_PI * rad;
+
+  auto fSolidCalor = new G4Tubs("Calorimeter",0,fCalorRadius, fCalorThickness/2, 0, full2Pi);
 
   fLogicCalor = new G4LogicalVolume(fSolidCalor,
                                          air,
@@ -73,7 +77,7 @@ void ParallelWorldForReadout::Construct()
   // Layers
   //
 
-  auto fSolidLayer = new G4Box("Layer",fCalorSizeYZ/2,fCalorSizeYZ/2,fLayerThickness/2);
+  auto fSolidLayer = new G4Tubs("Layer",0,fCalorRadius,fLayerThickness/2, 0,  full2Pi);
 
   auto fLogicLayer = new G4LogicalVolume(fSolidLayer,
                                    air,
@@ -95,22 +99,22 @@ void ParallelWorldForReadout::Construct()
                                    0);
 
   //
-  // Cells along Y = row
+  // Cells along Y = row (in radial = phi)
   //
 
-  auto fSolidRow = new G4Box("Row",fCalorSizeYZ/2,fCalorSizeYZ/fNbOfCells/2,
-                       fLayerThickness/2);
+  G4double cellPhi = full2Pi / fNbOfPhiCells;
+  auto fSolidRow = new G4Tubs("Row",0, fCalorRadius, fLayerThickness/2, 0, cellPhi);
 
   auto fLogicRow = new G4LogicalVolume(fSolidRow,
                                    air,
                                    "Row");
-  if (fNbOfCells > 1)
+  if (fNbOfPhiCells > 1)
     auto fPhysiRow = new G4PVReplica("Row",
                                 fLogicRow,
                                 fLogicLayer,
-                                 kYAxis,
-                                 fNbOfCells,
-                                 fCalorSizeYZ/fNbOfCells);
+                                 kPhi,
+                                 fNbOfPhiCells,
+                                 cellPhi);
   else
     auto fPhysiRow = new G4PVPlacement(0,
                                    G4ThreeVector(),
@@ -121,11 +125,11 @@ void ParallelWorldForReadout::Construct()
                                    0);
 
   //
-  // Cells along Z = single cell
+  // Cells along X = single cell (in Radial = slice in radius)
   //
+  /// No volume can be placed inside a radial replication
 
-  auto fSolidCell = new G4Box("Cell", fCalorSizeYZ/fNbOfCells/2,fCalorSizeYZ/fNbOfCells/2,
-                       fLayerThickness/2);
+  auto fSolidCell = new G4Tubs("Cell", 0,fCalorRadius/fNbOfCells,fLayerThickness/2, 0, cellPhi);
 
   fLogicCell = new G4LogicalVolume(fSolidCell,
                                    air,
@@ -134,9 +138,9 @@ void ParallelWorldForReadout::Construct()
     auto fPhysiCell = new G4PVReplica("Cell",
                                 fLogicCell,
                                 fLogicRow,
-                                 kXAxis,
+                                 kRho,
                                  fNbOfCells,
-                                 fCalorSizeYZ/fNbOfCells);
+                                 fCalorRadius/fNbOfCells);
   else
     auto fPhysiCell = new G4PVPlacement(0,
                                    G4ThreeVector(),
@@ -145,24 +149,29 @@ void ParallelWorldForReadout::Construct()
                                    fLogicRow,
                                    false,
                                    0);
+  G4Colour col1(0.7, 0.1, 0.1);
+  G4Colour col2(0.1, 0.1, 0.7);
+  G4VisAttributes* vis1= new G4VisAttributes(col1);
+  G4VisAttributes* vis2= new G4VisAttributes(col2);
+  fLogicRow->SetVisAttributes(vis1);
+  fLogicCell->SetVisAttributes(vis2);
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
 void ParallelWorldForReadout::ConstructSD()
 {
-  auto fCalorSizeYZ = massDetector->GetCalorSizeYZ();
+  auto fCalorRadius = massDetector->GetCalorRadius();
   auto fCalorThickness = massDetector->GetCalorThickness();
   auto fNbOfLayers = massDetector->GetNbOfLayers();
   auto fLayerThickness = fCalorThickness / fNbOfLayers;
-  auto fNbOfCells = massDetector->GetNbOfCells();
+  auto fNbOfRhoCells = massDetector->GetNbOfRhoCells();
+  auto fNbOfPhiCells = massDetector->GetNbOfPhiCells();
 
   std::string caloSDname = "ECal";
-  std::cout << " Construct SD " << " num cells = " << fNbOfCells << "   num layers = " << fNbOfLayers <<
-    " transverse size = " << fCalorSizeYZ <<  " layer thickness = " <<  fLayerThickness << std::endl;
-  test::CalorimeterSD* caloSD = new test::CalorimeterSD(caloSDname,fNbOfCells,fNbOfLayers,
-                                                        G4ThreeVector(fCalorSizeYZ/2,fCalorSizeYZ/2,0),
-                                                        G4ThreeVector(fCalorSizeYZ/fNbOfCells, fCalorSizeYZ/fNbOfCells, fLayerThickness),
+  std::cout << " Construct SD " << " num cells (rho,phi) = " << fNbOfRhoCells << ", " << fNbOfPhiCells << "   num layers = " << fNbOfLayers <<
+    " transverse size = " << fCalorRadius <<  " layer thickness = " <<  fLayerThickness << std::endl;
+  test::CalorimeterSD* caloSD = new test::CalorimeterSD(caloSDname,fNbOfRhoCells,fNbOfPhiCells,fNbOfLayers,
                                                         0,1,2);
   G4SDManager::GetSDMpointer()->AddNewDetector(caloSD);
   SetSensitiveDetector(fLogicCell, caloSD);

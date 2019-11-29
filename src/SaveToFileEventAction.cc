@@ -17,11 +17,12 @@ SaveToFileEventAction::SaveToFileEventAction()
 : G4UserEventAction(),
   fDetector(nullptr),
   fHID(-1),
-  fCellNoXY(25),
+  fCellNoRho(25),
+  fCellNoPhi(25),
   fCellNoZ(25),
   fCalEdep{ std::vector<G4double>(25*25*25, 0.)},
-  fCalX{ std::vector<G4int>(25*25*25, 0)},
-  fCalY{ std::vector<G4int>(25*25*25, 0)},
+  fCalRho{ std::vector<G4int>(25*25*25, 0)},
+  fCalPhi{ std::vector<G4int>(25*25*25, 0)},
   fCalZ{ std::vector<G4int>(25*25*25, 0)},
   fGflashParams{ std::vector<G4double>(10, 0.)},
   fTimer()
@@ -29,31 +30,17 @@ SaveToFileEventAction::SaveToFileEventAction()
   G4RunManager::GetRunManager()->SetPrintProgress(1000);
 }
 
-SaveToFileEventAction::SaveToFileEventAction(G4int aCellNo)
+SaveToFileEventAction::SaveToFileEventAction(G4int aCellNoRho, G4int aCellNoPhi, G4int aCellNoZ)
   : G4UserEventAction(),
     fDetector(nullptr),
     fHID(-1),
-    fCellNoXY(aCellNo),
-    fCellNoZ(aCellNo),
-    fCalEdep{ std::vector<G4double>(aCellNo*aCellNo*aCellNo, 0.)},
-  fCalX{ std::vector<G4int>(aCellNo*aCellNo*aCellNo, 0)},
-  fCalY{ std::vector<G4int>(aCellNo*aCellNo*aCellNo, 0)},
-  fCalZ{ std::vector<G4int>(aCellNo*aCellNo*aCellNo, 0)},
-  fGflashParams{ std::vector<G4double>(10, 0.)},
-  fTimer()
-{
-  G4RunManager::GetRunManager()->SetPrintProgress(1000);
-}
-SaveToFileEventAction::SaveToFileEventAction(G4int aCellNoXY, G4int aCellNoZ)
-  : G4UserEventAction(),
-    fDetector(nullptr),
-    fHID(-1),
-    fCellNoXY(aCellNoXY),
+    fCellNoRho(aCellNoRho),
+    fCellNoPhi(aCellNoPhi),
     fCellNoZ(aCellNoZ),
-    fCalEdep{ std::vector<G4double>(aCellNoXY*aCellNoXY*aCellNoZ, 0.)},
-  fCalX{ std::vector<G4int>(aCellNoXY*aCellNoXY*aCellNoZ, 0)},
-  fCalY{ std::vector<G4int>(aCellNoXY*aCellNoXY*aCellNoZ, 0)},
-  fCalZ{ std::vector<G4int>(aCellNoXY*aCellNoXY*aCellNoZ, 0)},
+    fCalEdep{ std::vector<G4double>(aCellNoRho*aCellNoPhi*aCellNoZ, 0.)},
+  fCalRho{ std::vector<G4int>(aCellNoRho*aCellNoPhi*aCellNoZ, 0)},
+  fCalPhi{ std::vector<G4int>(aCellNoRho*aCellNoPhi*aCellNoZ, 0)},
+  fCalZ{ std::vector<G4int>(aCellNoRho*aCellNoPhi*aCellNoZ, 0)},
   fGflashParams{ std::vector<G4double>(10, 0.)},
   fTimer()
 {
@@ -66,12 +53,13 @@ SaveToFileEventAction::SaveToFileEventAction(const DetectorConstruction* aDetect
   fGflashParams{ std::vector<G4double>(10, 0.)},
   fTimer()
 {
-  fCellNoXY = aDetector->GetNbOfCells();
+  fCellNoRho = aDetector->GetNbOfRhoCells();
+  fCellNoPhi = aDetector->GetNbOfPhiCells();
   fCellNoZ = aDetector->GetNbOfLayers();
-  fCalEdep.reserve(fCellNoXY*fCellNoXY*fCellNoZ);
-  fCalX.reserve(fCellNoXY*fCellNoXY*fCellNoZ);
-  fCalY.reserve(fCellNoXY*fCellNoXY*fCellNoZ);
-  fCalZ.reserve(fCellNoXY*fCellNoXY*fCellNoZ);
+  fCalEdep.reserve(fCellNoRho*fCellNoPhi*fCellNoZ);
+  fCalRho.reserve(fCellNoRho*fCellNoPhi*fCellNoZ);
+  fCalPhi.reserve(fCellNoRho*fCellNoPhi*fCellNoZ);
+  fCalZ.reserve(fCellNoRho*fCellNoPhi*fCellNoZ);
   G4RunManager::GetRunManager()->SetPrintProgress(1000);
 }
 
@@ -116,27 +104,27 @@ void SaveToFileEventAction::EndOfEventAction(const G4Event* event)
       ->GetPrimaryVertex()->GetPrimary(0)->GetTotalEnergy();
     G4int numNonZeroThresholdCells = 0;
 
-    fCalEdep.resize(fCellNoXY*fCellNoXY*fCellNoZ);
-    fCalX.resize(fCellNoXY*fCellNoXY*fCellNoZ);
-    fCalY.resize(fCellNoXY*fCellNoXY*fCellNoZ);
-    fCalZ.resize(fCellNoXY*fCellNoXY*fCellNoZ);
-    for (G4int ix=0;ix<fCellNoXY;ix++)
-      for (G4int iy=0;iy<fCellNoXY;iy++)
+    fCalEdep.resize(fCellNoRho*fCellNoPhi*fCellNoZ);
+    fCalRho.resize(fCellNoRho*fCellNoPhi*fCellNoZ);
+    fCalPhi.resize(fCellNoRho*fCellNoPhi*fCellNoZ);
+    fCalZ.resize(fCellNoRho*fCellNoPhi*fCellNoZ);
+    for (G4int iphi=0;iphi<fCellNoPhi;iphi++)
+      for (G4int irho=0;irho<fCellNoRho;irho++)
         for (G4int iz=0;iz<fCellNoZ;iz++) {
-            hitId = fCellNoXY*fCellNoZ*ix+fCellNoZ*iy+iz;
+            hitId = fCellNoRho*fCellNoZ*iphi+fCellNoZ*irho+iz;
             test::CalorimeterHit* hit = (*hcHC)[hitId];
             G4double eDep = hit->GetEdep();
             if (eDep > 0.0005) { // e > 0.5 keV
                 fCalEdep[numNonZeroThresholdCells] = eDep;
-                fCalX[numNonZeroThresholdCells] = ix;
-                fCalY[numNonZeroThresholdCells] = iy;
+                fCalRho[numNonZeroThresholdCells] = irho;
+                fCalPhi[numNonZeroThresholdCells] = iphi;
                 fCalZ[numNonZeroThresholdCells] = iz;
                 numNonZeroThresholdCells++;
             }
           }
     fCalEdep.resize(numNonZeroThresholdCells);
-    fCalX.resize(numNonZeroThresholdCells);
-    fCalY.resize(numNonZeroThresholdCells);
+    fCalRho.resize(numNonZeroThresholdCells);
+    fCalPhi.resize(numNonZeroThresholdCells);
     fCalZ.resize(numNonZeroThresholdCells);
 
     G4AnalysisManager* man = G4AnalysisManager::Instance();
@@ -154,6 +142,7 @@ void SaveToFileEventAction::UpdateParameters() {
   if (fDetector == nullptr) {
     return;
   }
-  fCellNoXY = fDetector->GetNbOfCells();
+  fCellNoRho = fDetector->GetNbOfRhoCells();
+  fCellNoPhi = fDetector->GetNbOfPhiCells();
   fCellNoZ = fDetector->GetNbOfLayers();
 }

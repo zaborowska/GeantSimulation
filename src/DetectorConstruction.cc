@@ -4,9 +4,11 @@
 #include "G4NistManager.hh"
 #include "G4Material.hh"
 #include "G4Box.hh"
+#include "G4Tubs.hh"
 #include "G4LogicalVolume.hh"
 #include "G4PVPlacement.hh"
 #include "G4PVReplica.hh"
+#include "G4VisAttributes.hh"
 
 #include "G4GeometryManager.hh"
 #include "G4SDManager.hh"
@@ -26,8 +28,6 @@ DetectorConstruction::DetectorConstruction()
  :G4VUserDetectorConstruction(),
   fWorldMaterial(nullptr),fSolidWorld(nullptr),fLogicWorld(nullptr),
   fPhysiWorld(nullptr),fSolidCalor(nullptr),fLogicCalor(nullptr),
-  fPhysiRow(nullptr),fSolidRow(nullptr),fLogicRow(nullptr),
-  fPhysiCell(nullptr),fSolidCell(nullptr),fLogicCell(nullptr),
   fPhysiCalor(nullptr),fSolidLayer(nullptr),fLogicLayer(nullptr),
   fPhysiLayer(nullptr),fDetectorMessenger(nullptr),
   fParametersFileName("")
@@ -35,25 +35,17 @@ DetectorConstruction::DetectorConstruction()
   fDetectorMessenger= new DetectorMessenger(this);
 
   // default parameter values of the calorimeter
-  fNbOfAbsor = 4;
-  fAbsorThickness[0] = 1.9*mm;
-  fAbsorThickness[1] = 0.5*mm;
-  fAbsorThickness[2] = 1.9*mm;
-  fAbsorThickness[3] = 0.5*mm;
-  fNbOfLayers        = 25;
-  fNbOfCells         = 25;
-  fCalorSizeYZ       = 5*mm * fNbOfCells;
+  fNbOfAbsor = 1;
+  fAbsorThickness[0] = 100*mm;
+  fNbOfLayers        = 5;
+  fNbOfRhoCells         = 5;
+  fNbOfPhiCells         = 1;
+  fCalorRadius       = 50*mm * fNbOfRhoCells;
 
   // materials
   SetWorldMaterial("G4_Galactic");
-  SetAbsorMaterial(0,"G4_W");
-  SetAbsorMaterial(1,"G4_Si");
-  SetAbsorMaterial(2,"G4_W");
-  SetAbsorMaterial(3,"G4_Si");
-  SetAbsorSensitive(0,false);
-  SetAbsorSensitive(1,true);
-  SetAbsorSensitive(2,false);
-  SetAbsorSensitive(3,true);
+  SetAbsorMaterial(0,"G4_PbWO4");
+  SetAbsorSensitive(0,true);
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -73,8 +65,8 @@ void DetectorConstruction::ComputeCalorParameters()
     fLayerThickness += fAbsorThickness[iAbs];
   }
   fCalorThickness = fNbOfLayers*fLayerThickness;
-  fWorldSizeX = 2*fCalorThickness;
-  fWorldSizeYZ = 1.2*fCalorSizeYZ;
+  fWorldSizeZ = 2.2*fCalorThickness;
+  fWorldSizeTransverse = 2.2*fCalorRadius;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -85,7 +77,7 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
   ComputeCalorParameters();
 
   fSolidWorld = new G4Box("World",                                //its name
-                   fWorldSizeYZ/2,fWorldSizeYZ/2,fWorldSizeX/2);  //its size
+                   fWorldSizeTransverse/2,fWorldSizeTransverse/2,fWorldSizeZ/2);  //its size
 
   fLogicWorld = new G4LogicalVolume(fSolidWorld,            //its solid
                                    fWorldMaterial,        //its material
@@ -99,8 +91,8 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
                                  false,                   //no boolean operation
                                  99);                      //copy number
 
-  fSolidCalor = new G4Box("Calorimeter",fCalorSizeYZ/2,fCalorSizeYZ/2,
-                       fCalorThickness/2);
+  G4double full2Pi = 2.* M_PI * rad;
+  fSolidCalor = new G4Tubs("Calorimeter",0,fCalorRadius, fCalorThickness/2, 0, full2Pi);
 
   fLogicCalor = new G4LogicalVolume(fSolidCalor,
                                          fWorldMaterial,
@@ -118,7 +110,7 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
   // Layers
   //
 
-  fSolidLayer = new G4Box("Layer",fCalorSizeYZ/2,fCalorSizeYZ/2,fLayerThickness/2);
+  fSolidLayer = new G4Tubs("Layer",0,fCalorRadius,fLayerThickness/2, 0,  full2Pi);
 
   fLogicLayer = new G4LogicalVolume(fSolidLayer,
                                    fWorldMaterial,
@@ -143,8 +135,8 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
   //
   G4double xfront = -0.5*fLayerThickness;
   for (G4int k=0; k<fNbOfAbsor; ++k) {
-    fSolidAbsor[k] = new G4Box("Absorber",                //its name
-                               fCalorSizeYZ/2,fCalorSizeYZ/2,fAbsorThickness[k]/2);
+    fSolidAbsor[k] = new G4Tubs("Absorber",                //its name
+                                0,fCalorRadius,fAbsorThickness[k]/2,0,full2Pi);
 
     fLogicAbsor[k] = new G4LogicalVolume(fSolidAbsor[k],    //its solid
                                         fAbsorMaterial[k], //its material
@@ -160,6 +152,11 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
                          false,
                          k+50);                                //copy number
   }
+
+  // visualisation settings
+  fLogicWorld->SetVisAttributes(G4VisAttributes::Invisible);
+  fLogicCalor->SetVisAttributes(G4VisAttributes::Invisible);
+  fLogicLayer->SetVisAttributes(G4VisAttributes::Invisible);
 
   PrintCalorParameters();
 
@@ -213,16 +210,30 @@ void DetectorConstruction::SetNbOfLayers(G4int ival)
   fNbOfLayers = ival;
 }
 
-void DetectorConstruction::SetNbOfCells(G4int ival)
+void DetectorConstruction::SetNbOfRhoCells(G4int ival)
 {
   // set the number of cells
   //
   if (ival < 1)
-    { G4cout << "\n --->warning from SetfNbOfCells: "
+    { G4cout << "\n --->warning from SetfNbOfRhoCells: "
              << ival << " must be at least 1. Command refused" << G4endl;
       return;
     }
-  fNbOfCells = ival;
+  fNbOfRhoCells = ival;
+}
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
+
+void DetectorConstruction::SetNbOfPhiCells(G4int ival)
+{
+  // set the number of cells
+  //
+  if (ival < 1)
+    { G4cout << "\n --->warning from SetfNbOfPhiCells: "
+             << ival << " must be at least 1. Command refused" << G4endl;
+      return;
+    }
+  fNbOfPhiCells = ival;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
@@ -290,16 +301,16 @@ void DetectorConstruction::SetAbsorSensitive(G4int ival,G4bool val)
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-void DetectorConstruction::SetCalorSizeYZ(G4double val)
+void DetectorConstruction::SetCalorRadius(G4double val)
 {
   // change the transverse size
   //
   if (val <= DBL_MIN)
-    { G4cout << "\n --->warning from SetfCalorSizeYZ: thickness "
+    { G4cout << "\n --->warning from SetfCalorRadius: thickness "
              << val  << " out of range. Command refused" << G4endl;
       return;
     }
-  fCalorSizeYZ = val;
+  fCalorRadius = val;
 }
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

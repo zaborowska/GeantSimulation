@@ -16,41 +16,34 @@ namespace test {
 G4ThreadLocal G4Allocator<CalorimeterHit>* CalorimeterHitAllocator;
 
 CalorimeterHit::CalorimeterHit()
-  : G4VHit(), fxID(-1), fyID(-1), fzID(-1), fEdep(0.), fPos(0), fXYsize(0),fZsize(0) {}
+  : G4VHit(), fRhoID(-1), fPhiID(-1), fzID(-1), fEdep(0.), fPos(0) {}
 
-CalorimeterHit::CalorimeterHit(G4int iX,G4int iY,G4int iZ)
-: G4VHit(), fxID(iX), fyID(iY), fzID(iZ), fEdep(0.), fPos(0), fXYsize(0),fZsize(0) {}
-
-CalorimeterHit::CalorimeterHit(G4double aSizeXY, G4double aSizeZ)
-: G4VHit(), fxID(-1), fyID(-1), fzID(-1), fEdep(0.), fPos(0), fXYsize(aSizeXY),fZsize(aSizeZ) {}
+CalorimeterHit::CalorimeterHit(G4int iRho,G4int iPhi,G4int iZ)
+: G4VHit(), fRhoID(iRho), fPhiID(iPhi), fzID(iZ), fEdep(0.), fPos(0) {}
 
 CalorimeterHit::~CalorimeterHit() {}
 
 CalorimeterHit::CalorimeterHit(const CalorimeterHit &right) : G4VHit() {
-    fxID = right.fxID;
-    fyID = right.fyID;
+    fRhoID = right.fRhoID;
+    fPhiID = right.fPhiID;
     fzID = right.fzID;
     fEdep = right.fEdep;
     fPos = right.fPos;
     fRot = right.fRot;
-    fXYsize = right.fXYsize;
-    fZsize = right.fZsize;
 }
 
 const CalorimeterHit& CalorimeterHit::operator=(const CalorimeterHit &right) {
-    fxID = right.fxID;
-    fyID = right.fyID;
+    fRhoID = right.fRhoID;
+    fPhiID = right.fPhiID;
     fzID = right.fzID;
     fEdep = right.fEdep;
     fPos = right.fPos;
     fRot = right.fRot;
-    fXYsize = right.fXYsize;
-    fZsize = right.fZsize;
     return *this;
 }
 
 int CalorimeterHit::operator==(const CalorimeterHit &right) const {
-    return (fxID==right.fxID&&fyID==right.fyID&&fzID==right.fzID);
+    return (fRhoID==right.fRhoID&&fPhiID==right.fPhiID&&fzID==right.fzID);
 }
 
 void CalorimeterHit::Draw() {
@@ -58,12 +51,11 @@ void CalorimeterHit::Draw() {
     if (pVVisManager&&(fEdep>0.))
     {
       G4Transform3D trans(fRot,fPos);
-      std::cout<<"drawing point at: "<<fPos<<" colour " << fEdep << " with size " << fXYsize/2. << " , " << fXYsize/2. <<" , " << fZsize/2. <<std::endl;
         G4VisAttributes attribs;
         G4Colour colour(fEdep, 0.,0.);
         attribs.SetColour(colour);
         attribs.SetForceSolid(true);
-        G4Box box("dummy",fXYsize/2.,fXYsize/2.,fZsize/2.);
+        G4Box box("dummy",1*mm*fEdep/GeV,1*mm*fEdep/GeV,1*mm*fEdep/GeV);
         pVVisManager->Draw(box,attribs,trans);
     }
 }
@@ -76,10 +68,10 @@ const std::map<G4String,G4AttDef>* CalorimeterHit::GetAttDefs() const {
     if (isNew) {
         (*store)["HitType"]
           = G4AttDef("HitType","Hit Type","Physics","","G4String");
-        (*store)["X"]
-          = G4AttDef("X","x ID","Physics","","G4int");
-        (*store)["Y"]
-          = G4AttDef("Y","y ID","Physics","","G4int");
+        (*store)["Rho"]
+          = G4AttDef("Rho","rho ID","Physics","","G4int");
+        (*store)["Phi"]
+          = G4AttDef("Phi","phi ID","Physics","","G4int");
         (*store)["Z"]
           = G4AttDef("Z","z ID","Physics","","G4int");
         (*store)["Energy"]
@@ -97,11 +89,11 @@ std::vector<G4AttValue>* CalorimeterHit::CreateAttValues() const {
     values
       ->push_back(G4AttValue("HitType","HadCalorimeterHit",""));
     values
-      ->push_back(G4AttValue("x",G4UIcommand::ConvertToString(fxID), ""));
+      ->push_back(G4AttValue("Rho",G4UIcommand::ConvertToString(fRhoID), ""));
     values
-      ->push_back(G4AttValue("y",G4UIcommand::ConvertToString(fyID), ""));
+      ->push_back(G4AttValue("Phi",G4UIcommand::ConvertToString(fPhiID), ""));
     values
-      ->push_back(G4AttValue("y",G4UIcommand::ConvertToString(fzID), ""));
+      ->push_back(G4AttValue("Z",G4UIcommand::ConvertToString(fzID), ""));
     values
       ->push_back(G4AttValue("Energy",G4BestUnit(fEdep,"Energy"),""));
     values
@@ -112,7 +104,7 @@ std::vector<G4AttValue>* CalorimeterHit::CreateAttValues() const {
 void CalorimeterHit::Print() {
     //G4cout << "  Cell[" << fxID << ", " << fyID << ", " << fzID << "] "
           // << fEdep/MeV << " (MeV) " << fPos/cm << " cm"<<G4endl;
-           std::cout << "  Cell[" << fxID << ", " << fyID << ", " << fzID << "] "
+           std::cout << "  Cell[" << fRhoID << ", " << fPhiID << ", " << fzID << "] "
            << fEdep/MeV << " (MeV) " << fPos/cm << " cm"<< std::endl;
 }
 }
