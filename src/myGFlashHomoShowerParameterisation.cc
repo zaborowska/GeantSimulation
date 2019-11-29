@@ -151,8 +151,16 @@ void myGFlashHomoShowerParameterisation::SetMaterial(G4Material *mat)
   std::cout << " rho = " << density << std::endl;
   X0  = material->GetRadlen(); 
   std::cout << " X0 = " << X0 << std::endl;
-  Ec      = 2.66 * std::pow((X0 * Z / A),1.1); 
-  std::cout << " Ec = 2.66 * " << (X0 * Z / A) << " **1.1 =  2.66 * " << std::pow((X0 * Z / A),1.1) << " = " << Ec << std::endl;
+  // temporary solution to the approximate formula for EC:
+  // for tested materials use PDG values listed belew.
+  // TODO: Remove y dependency and use E instead
+  // Parametrisation is anyway geometry-dependent now
+  if ( mat->GetName().compareTo("G4_PbWO4") == 0) {
+    Ec =  9.64;
+  } else {
+    Ec = 2.66 * std::pow((X0 * Z / A),1.1);
+  }
+  std::cout << " Ec = " << Ec << std::endl;
   G4double Es = 21*MeV;
   Rm = X0*Es/Ec;
   std::cout << " RM = " << X0 << " * " << Es << " / " << Ec << " = " << Rm << std::endl;
