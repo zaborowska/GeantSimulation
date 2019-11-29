@@ -59,7 +59,7 @@ myGFlashShowerModel::myGFlashShowerModel(G4String modelName,
     PBound(0), Parameterisation(0), HMaker(0)
 {
   FlagParamType           = 0;
-  FlagParticleContainment = 1;  
+  FlagParticleContainment = 1;
   StepInX0 = 0.1;
   Messenger       = new myGFlashShowerModelMessenger(this);
 }
@@ -69,9 +69,9 @@ myGFlashShowerModel::myGFlashShowerModel(G4String modelName)
     PBound(0), Parameterisation(0), HMaker(0)
 {
   FlagParamType           =1;
-  FlagParticleContainment = 1;  
-  StepInX0 = 0.1; 
-  Messenger       = new myGFlashShowerModelMessenger(this); 
+  FlagParticleContainment = 1;
+  StepInX0 = 0.1;
+  Messenger       = new myGFlashShowerModelMessenger(this);
 }
 
 myGFlashShowerModel::~myGFlashShowerModel()
@@ -82,9 +82,9 @@ myGFlashShowerModel::~myGFlashShowerModel()
 G4bool
 myGFlashShowerModel::IsApplicable(const G4ParticleDefinition& particleType)
 {
-  return 
+  return
   &particleType == G4Electron::ElectronDefinition() ||
-  &particleType == G4Positron::PositronDefinition(); 
+  &particleType == G4Positron::PositronDefinition();
 }
 
 /**********************************************************************/
@@ -95,11 +95,11 @@ G4bool myGFlashShowerModel::ModelTrigger(const G4FastTrack & fastTrack )
 
 {
   G4bool select = false;
-  if(FlagParamType != 0)                  
+  if(FlagParamType != 0)
   {
-    G4double  ParticleEnergy = fastTrack.GetPrimaryTrack()->GetKineticEnergy(); 
+    G4double  ParticleEnergy = fastTrack.GetPrimaryTrack()->GetKineticEnergy();
     G4ParticleDefinition &ParticleType =
-      *(fastTrack.GetPrimaryTrack()->GetDefinition()); 
+      *(fastTrack.GetPrimaryTrack()->GetDefinition());
     if(ParticleEnergy > PBound->GetMinEneToParametrise(ParticleType) &&
        ParticleEnergy < PBound->GetMaxEneToParametrise(ParticleType) )
     {
@@ -111,27 +111,27 @@ G4bool myGFlashShowerModel::ModelTrigger(const G4FastTrack & fastTrack )
     }
   }
 
-  return select; 
+  return select;
 }
 
 
 G4bool
 myGFlashShowerModel::CheckParticleDefAndContainment(const G4FastTrack& fastTrack)
-{  
+{
   G4bool filter=false;
   G4ParticleDefinition * ParticleType =
-    fastTrack.GetPrimaryTrack()->GetDefinition(); 
-  
-  if(  ParticleType == G4Electron::ElectronDefinition() || 
+    fastTrack.GetPrimaryTrack()->GetDefinition();
+
+  if(  ParticleType == G4Electron::ElectronDefinition() ||
     ParticleType == G4Positron::PositronDefinition() )
   {
     filter=true;
-    if(FlagParticleContainment == 1)  
+    if(FlagParticleContainment == 1)
     {
-      filter=CheckContainment(fastTrack); 
+      filter=CheckContainment(fastTrack);
     }
   }
-  return filter;  
+  return filter;
 }
 
 G4bool myGFlashShowerModel::CheckContainment(const G4FastTrack& fastTrack)
@@ -141,17 +141,17 @@ G4bool myGFlashShowerModel::CheckContainment(const G4FastTrack& fastTrack)
   G4ThreeVector DirectionShower=fastTrack.GetPrimaryTrackLocalDirection();
   G4ThreeVector InitialPositionShower=fastTrack.GetPrimaryTrackLocalPosition();
 
-  G4ThreeVector OrthoShower, CrossShower; 
-  // Returns orthogonal vector 
+  G4ThreeVector OrthoShower, CrossShower;
+  // Returns orthogonal vector
   OrthoShower = DirectionShower.orthogonal();
   // Shower in direction perpendicular to OrthoShower and DirectionShower
   CrossShower = DirectionShower.cross(OrthoShower);
-  
+
   G4double  R     = Parameterisation->GetAveR90();
   G4double  Z     = Parameterisation->GetAveT90();
   G4int CosPhi[4] = {1,0,-1,0};
   G4int SinPhi[4] = {0,1,0,-1};
-  
+
   G4ThreeVector Position;
   G4int NlateralInside=0;
   // pointer to solid we're in
@@ -159,15 +159,15 @@ G4bool myGFlashShowerModel::CheckContainment(const G4FastTrack& fastTrack)
   for(int i=0; i<4 ;i++)
   {
     // polar coordinates
-    Position = InitialPositionShower       + 
+    Position = InitialPositionShower       +
     Z*DirectionShower           +
     R*CosPhi[i]*OrthoShower     +
     R*SinPhi[i]*CrossShower     ;
-    
-    if(SolidCalo->Inside(Position) != kOutside) 
+
+    if(SolidCalo->Inside(Position) != kOutside)
       NlateralInside++;
   }
-  
+
   // choose to parameterise or flag when all inetc...
   if(NlateralInside==4) filter=true;
   // std::cout << " points =   " <<NlateralInside << std::endl;
@@ -180,9 +180,9 @@ myGFlashShowerModel::DoIt(const G4FastTrack& fastTrack, G4FastStep& fastStep)
 {
   // parametrise electrons
   if(fastTrack.GetPrimaryTrack()->GetDefinition()
-     == G4Electron::ElectronDefinition() || 
+     == G4Electron::ElectronDefinition() ||
      fastTrack.GetPrimaryTrack()->GetDefinition()
-     == G4Positron::PositronDefinition() ) 
+     == G4Positron::PositronDefinition() )
   ElectronDoIt(fastTrack,fastStep);
 }
 
@@ -191,76 +191,76 @@ myGFlashShowerModel::ElectronDoIt(const G4FastTrack& fastTrack,
                                       G4FastStep&  fastStep)
 {
   // std::cout<<"--- ElectronDoit --- "<<std::endl;
-  
+
   fastStep.KillPrimaryTrack();
   fastStep.SetPrimaryTrackPathLength(0.0);
   fastStep.SetTotalEnergyDeposited(fastTrack.GetPrimaryTrack()->
                                    GetKineticEnergy());
-  
+
   //-----------------------------
-  // Get track parameters 
-  //-----------------------------  
+  // Get track parameters
+  //-----------------------------
   //E,vect{p} and t,vec(x)
   G4double Energy = fastTrack.GetPrimaryTrack()->GetKineticEnergy();
-  
+
   // axis of the shower, in global reference frame:
   G4ThreeVector DirectionShower =
     fastTrack.GetPrimaryTrack()->GetMomentumDirection();
   G4ThreeVector OrthoShower, CrossShower;
   OrthoShower = DirectionShower.orthogonal();
   CrossShower = DirectionShower.cross(OrthoShower);
-  
+
   //--------------------------------
   ///Generate longitudinal profile
   //--------------------------------
   Parameterisation->GenerateLongitudinalProfile(Energy);
     // performance iteration @@@@@@@
-  
+
   ///Initialisation of long. loop variables
   G4VSolid *SolidCalo = fastTrack.GetEnvelopeSolid();
   G4ThreeVector pos   = fastTrack.GetPrimaryTrackLocalPosition();
   G4ThreeVector dir   = fastTrack.GetPrimaryTrackLocalDirection();
-  G4double Bound      = SolidCalo->DistanceToOut(pos,dir); 
-  
-  G4double Dz       = 0.00;     
+  G4double Bound      = SolidCalo->DistanceToOut(pos,dir);
+
+  G4double Dz       = 0.00;
   G4double ZEndStep = 0.00;
-  
+
   G4double EnergyNow        = Energy;
-  G4double EneIntegral      = 0.00;   
-  G4double LastEneIntegral  = 0.00;   
+  G4double EneIntegral      = 0.00;
+  G4double LastEneIntegral  = 0.00;
   G4double DEne             = 0.00;
-  
-  G4double NspIntegral      = 0.00;   
-  G4double LastNspIntegral  = 0.00;   
+
+  G4double NspIntegral      = 0.00;
+  G4double LastNspIntegral  = 0.00;
   G4double DNsp             = 0.00;
-  
+
   // starting point of the shower:
   G4ThreeVector PositionShower  = fastTrack.GetPrimaryTrack()->GetPosition();
-  G4ThreeVector NewPositionShower    = PositionShower;   
+  G4ThreeVector NewPositionShower    = PositionShower;
   G4double      StepLenght           = 0.00;
-  
+
   G4int NSpotDeposited =0;
-  
+
   //--------------------------
   /// Begin Longitudinal Loop
   //-------------------------
-  
+
   do
-  {  
+  {
     //determine step size=min(1Xo,next boundary)
     G4double stepLength = StepInX0*Parameterisation->GetX0();
     if(Bound < stepLength)
-    { 
+    {
       Dz    = Bound;
       Bound = 0.00;
     }
     else
-    { 
+    {
       Dz    = stepLength;
       Bound = Bound-Dz;
     }
     ZEndStep=ZEndStep+Dz;
-    
+
     // Determine Energy Release in Step
     if(EnergyNow > EnergyStop)
     {
@@ -275,13 +275,13 @@ myGFlashShowerModel::ElectronDoIt(const G4FastTrack& fastTrack,
     }
     // end of the shower
     else
-    {    
+    {
       DEne = EnergyNow;
       DNsp = std::max(1., std::floor( (1.- NspIntegral)
                                      *Parameterisation->GetNspot() ));
-    } 
+    }
     EnergyNow  = EnergyNow - DEne;
-    
+
     // Apply sampling fluctuation - only in sampling calorimeters
     //
     GFlashSamplingShowerParameterisation* sp =
@@ -293,17 +293,17 @@ myGFlashShowerModel::ElectronDoIt(const G4FastTrack& fastTrack,
     }
 
     //move particle in the middle of the step
-    StepLenght        = StepLenght + Dz/2.00;  
-    NewPositionShower = NewPositionShower + 
+    StepLenght        = StepLenght + Dz/2.00;
+    NewPositionShower = NewPositionShower +
     StepLenght*DirectionShower;
     StepLenght        = Dz/2.00;
-    
+
     //generate spots & hits:
     for (int i = 0; i < DNsp; i++)
-    { 
+    {
       NSpotDeposited++;
-      GFlashEnergySpot Spot;      
-      
+      GFlashEnergySpot Spot;
+
       //Spot energy: the same for all spots
       Spot.SetEnergy( DEne / DNsp );
       G4double PhiSpot = Parameterisation->GeneratePhi(); // phi of spot
@@ -312,22 +312,22 @@ myGFlashShowerModel::ElectronDoIt(const G4FastTrack& fastTrack,
 
       // check reference-> may be need to introduce rot matrix @@@
       // Position: equally spaced in z
-      
+
       G4ThreeVector SpotPosition = NewPositionShower  +
             Dz/DNsp*DirectionShower*(i+1/2.-DNsp/2.)  +
-            RSpot*std::cos(PhiSpot)*OrthoShower       +  
-            RSpot*std::sin(PhiSpot)*CrossShower;      
+            RSpot*std::cos(PhiSpot)*OrthoShower       +
+            RSpot*std::sin(PhiSpot)*CrossShower;
       Spot.SetPosition(SpotPosition);
-      
-      //Generate Hits of this spot      
+
+      //Generate Hits of this spot
       HMaker->make(&Spot, &fastTrack);
     }
   }
-  while(EnergyNow > 0.0 && Bound> 0.0);     
-  
+  while(EnergyNow > 0.0 && Bound> 0.0);
+
   //---------------
   /// End Loop
-  //--------------- 
+  //---------------
 }
 
 /*
@@ -335,28 +335,28 @@ myGFlashShowerModel::ElectronDoIt(const G4FastTrack& fastTrack,
 void
 myGFlashShowerModel::GammaDoIt(const G4FastTrack& fastTrack,
                                    G4FastStep&  fastStep)
-{ 
-  
+{
+
   if( fastTrack.GetPrimaryTrack()->GetKineticEnergy() > EnergyStop )
     return;
-  
-  //deposita in uno spot unico l'energia 
-  //con andamento exp decrescente. 
-  
+
+  //deposita in uno spot unico l'energia
+  //con andamento exp decrescente.
+
   // Kill the particle to be parametrised
   fastStep.KillPrimaryTrack();
   fastStep.SetPrimaryTrackPathLength(0.0);
   fastStep.SetTotalEnergyDeposited(fastTrack.GetPrimaryTrack()
                                    ->GetKineticEnergy());
   // other settings????
-  feSpotList.clear(); 
-  
+  feSpotList.clear();
+
   //-----------------------------
-  // Get track parameters 
+  // Get track parameters
   //-----------------------------
 
   // E,vect{p} and t,vec(x)
-  G4double Energy = 
+  G4double Energy =
     fastTrack.GetPrimaryTrack()->GetKineticEnergy();
   // axis of the shower, in global reference frame:
   G4ThreeVector DirectionShower =
@@ -364,23 +364,23 @@ myGFlashShowerModel::GammaDoIt(const G4FastTrack& fastTrack,
   // starting point of the shower:
   G4ThreeVector PositionShower =
     fastTrack.GetPrimaryTrack()->GetPosition();
-  
+
   //G4double DEneSampling = Parameterisation->ApplySampling(Energy,Energy);
-  //if(DEneSampling <= 0.00) DEneSampling=Energy;  
-  
+  //if(DEneSampling <= 0.00) DEneSampling=Energy;
+
   if(Energy > 0.0)
   {
-    G4double dist = Parameterisation->GenerateExponential(Energy);      
-    
+    G4double dist = Parameterisation->GenerateExponential(Energy);
+
     GFlashEnergySpot Spot;
     Spot.SetEnergy( Energy );
-    G4ThreeVector SpotPosition = PositionShower + dist*DirectionShower;  
+    G4ThreeVector SpotPosition = PositionShower + dist*DirectionShower;
     Spot.SetPosition(SpotPosition);
-    
+
     // Record the Spot:
     feSpotList.push_back(Spot);
-    
-    //Generate Hits of this spot      
+
+    //Generate Hits of this spot
     HMaker->make(Spot);
   }
 }
