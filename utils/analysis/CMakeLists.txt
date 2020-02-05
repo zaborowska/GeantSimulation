@@ -19,4 +19,3 @@ foreach (tool ${tools})
   install(TARGETS ${tool}Dictionary DESTINATION lib)
   install(FILES ${CMAKE_CURRENT_BINARY_DIR}/libG_${tool}_rdict.pcm DESTINATION lib)
 endforeach (tool ${tools})
-

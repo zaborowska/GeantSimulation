@@ -49,7 +49,7 @@ void createHistograms(const std::string& aInput, const std::string& aOutput, dou
   if (include_simtime) {
     auto time_histo =  d.Histo1D("SimTime");
     uint time_mean = 0;
-    for(uint iBin = 1; iBin < time_histo->GetNbinsX(); ++iBin) {
+    for(int iBin = 1; iBin < time_histo->GetNbinsX(); ++iBin) {
       if (time_histo->GetBinContent(iBin) > time_histo->GetBinContent(time_mean)) {
         time_mean = iBin;
       }

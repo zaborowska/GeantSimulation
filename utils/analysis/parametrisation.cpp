@@ -26,7 +26,7 @@ void parametrisation(const std::string& aInput, const std::string& aOutput, doub
   TFile f(aInput.c_str(), "READ");
 
   // Set initial parameters
-  const uint netSizeR = numCellsR; // 200 bins of width 0.98mm = 0.1RM (RM = 19.6mm)
+  const uint netSizeR = numCellsR; // 200 bins of width 0.98mm = 0.05RM (RM = 19.6mm)
   const uint rebinR = rebinTransverse;
   const uint netSizeZ = numCellsZ; // 60 bins of width 4.45mm = 0.5X0 (X0=8.9mm)
   const double cellSizeMmR = cellSizeRinMM;
@@ -38,13 +38,13 @@ void parametrisation(const std::string& aInput, const std::string& aOutput, doub
   const double rId2r = cellSizeMmR / RM;
   const double zId2t = cellSizeMmZ / X0;
 
-  std::cout << "\n\n\n max lengths = R z : " << maxLengthR << "\t" << maxLengthZ << "\t" <<
-    " conversion factors : " << rId2r << "\t" << zId2t << std::endl << std::endl << std::endl;
+  std::cout << "\n\n\n max lengths = R z : " << maxLengthR << "\t" << maxLengthZ << "\n" <<
+    " size = R z : " << netSizeR << "\t" << netSizeZ << "\n" <<
+    " conversion factors : " << rId2r << "\t" << zId2t << std::endl <<
+    " rebin factors : " << rebinR << "\t" << 1 << std::endl << std::endl << std::endl;
   //
-  double minEnergy = 0;
   double maxEnergy = 0;
   const double scaleFactorProfile = 10.; // to shorten the axis in some cases (otherwise most entries in the very beginning only)
-  const double netMidCellR = floor (netSizeR / 2);
 
   // Check if flat energy spectrum or single-energy simulation is analysed
   ROOT::RDataFrame d("events", &f, {"EnergyMC","SimTime"});
@@ -52,7 +52,6 @@ void parametrisation(const std::string& aInput, const std::string& aOutput, doub
   double energySpan = mc_histo->GetXaxis()->GetXmax() - mc_histo->GetXaxis()->GetXmin();
   if (energySpan < 1e3) {
     maxEnergy = mc_histo->GetMean() / 1.e3; // unit converted to GeV
-    minEnergy = maxEnergy;
     std::cout << std::endl << "Detected single-energy simulation, particle energy: " << maxEnergy << " GeV." << std::endl << std::endl;
   } else {
     // chose only bin of a flat spectrum
@@ -89,7 +88,7 @@ void parametrisation(const std::string& aInput, const std::string& aOutput, doub
   if (include_simtime) {
     auto time_histo =  d.Histo1D("SimTime");
     uint time_mean = 0;
-    for(uint iBin = 1; iBin < time_histo->GetNbinsX(); ++iBin) {
+    for(int iBin = 1; iBin < time_histo->GetNbinsX(); ++iBin) {
       if (time_histo->GetBinContent(iBin) > time_histo->GetBinContent(time_mean)) {
         time_mean = iBin;
       }
@@ -429,6 +428,6 @@ int main(int argc, char** argv){
   const double X0 = 8.903; // mm
   const double RM = 19.59; // mm
   const double EC = 9.64; // MeV
-  parametrisation(argv[1], outputName, X0, RM, EC);
+  parametrisation(argv[1], outputName, X0, RM, EC, 200, 60, 0.98, 4.45, 1);
   return 0;
 }
