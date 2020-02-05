@@ -65,14 +65,6 @@ class myGFlashHitMaker : public GFlashHitMaker
     G4Navigator *fpNavigator;
     G4bool fNaviSetup;
   G4bool fUseSDOfEnvelopeWorld;
-  
-  private:
-
-    myGFlashHitMaker(const myGFlashHitMaker & ) {}
-    myGFlashHitMaker & operator = (const myGFlashHitMaker & )
-    {
-      return *this;
-    }
 };
 #endif
 

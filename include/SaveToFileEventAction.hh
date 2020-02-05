@@ -36,8 +36,8 @@ private:
   std::vector<G4int> fCalRho;
   std::vector<G4int> fCalPhi;
   std::vector<G4int> fCalZ;
-  G4Timer fTimer;
   std::vector<G4double> fGflashParams;
+  G4Timer fTimer;
 };
 
 #endif
