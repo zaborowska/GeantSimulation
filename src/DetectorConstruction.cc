@@ -141,6 +141,7 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
     fLogicAbsor[k] = new G4LogicalVolume(fSolidAbsor[k],    //its solid
                                         fAbsorMaterial[k], //its material
                                         fAbsorMaterial[k]->GetName());
+    fLogicAbsor[k]->SetVisAttributes(G4Colour (0.5, 0.5, 0.5, 0.2));
 
     G4double xcenter = xfront+0.5*fAbsorThickness[k];
     xfront += fAbsorThickness[k];
