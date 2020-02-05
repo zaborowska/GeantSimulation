@@ -33,6 +33,7 @@ class CalorimeterHit : public G4VHit {
 public:
     CalorimeterHit();
     CalorimeterHit(G4int iRho,G4int iPhi,G4int iZ);
+    CalorimeterHit(G4int iRho,G4int iPhi,G4int iZ, G4LogicalVolume* logVol);
     CalorimeterHit(const CalorimeterHit &right);
     virtual ~CalorimeterHit();
 
@@ -66,6 +67,11 @@ public:
     void SetRot(G4RotationMatrix rmat) { fRot = rmat; }
     G4RotationMatrix GetRot() const { return fRot; }
 
+    void SetColour(G4int col) { fColour = col; }
+    G4int GetColour() const { return fColour; }
+
+    inline const G4LogicalVolume * GetLogV() { return fLogV; }
+    inline void SetLogV(G4LogicalVolume* aLogV) { fLogV=aLogV; }
 public:
     G4int fRhoID;
     G4int fPhiID;
@@ -73,6 +79,9 @@ public:
     G4double fEdep;
     G4ThreeVector fPos;
     G4RotationMatrix fRot;
+    G4LogicalVolume* fLogV;
+    // to draw hits: if debugKillProcess kills particle, change to 1 (different colour)
+    G4int fColour;
 };
 
 typedef G4THitsCollection<CalorimeterHit> CalorimeterHitsCollection;

@@ -111,11 +111,11 @@ G4bool CalorimeterSD::ProcessHits(G4Step* step, G4TouchableHistory*)
     hit->SetRhoId(rhoNo);
     hit->SetPhiId(phiNo);
     hit->SetZid(zNo);
+    hit->SetLogV(touchable->GetVolume(frhoDetectorTouchableDepth)->GetLogicalVolume());
     G4int depth = touchable->GetHistory()->GetDepth();
-    G4AffineTransform transform = touchable->GetHistory()->GetTransform(depth);
-    transform.Invert();
-
+    G4AffineTransform transform = touchable->GetHistory()->GetTopTransform();
     hit->SetRot(transform.NetRotation());
+    transform.Invert();
     hit->SetPos(transform.NetTranslation());
 
   }
