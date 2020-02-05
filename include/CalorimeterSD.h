@@ -36,7 +36,9 @@ public:
   virtual G4bool ProcessHits(G4GFlashSpot*aSpot,G4TouchableHistory*);
 private:
   CalorimeterHitsCollection* fHitsCollection;
+  CalorimeterHitsCollection* fDebugHitsCollection;
   G4int fHCID;
+  G4int fDebugHCID;
   G4int fCellNoRho;
   G4int fCellNoPhi;
   G4int fCellNoZ;

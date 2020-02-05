@@ -14,6 +14,7 @@
 #include "G4VisManager.hh"
 #include "G4VisExecutive.hh"
 #include "myG4FastSimulationPhysics.hh"
+#include "DebugKillPhysics.h"
 
 int main(int argc, char** argv)
 {
@@ -45,6 +46,9 @@ int main(int argc, char** argv)
    fastSimulationPhysics->ActivateFastSimulation("e+", parallelWorldName);
    physicsList->RegisterPhysics( fastSimulationPhysics );
    // FASTSIM
+
+   auto killPhysics = new DebugKillPhysics();
+   physicsList->RegisterPhysics( killPhysics );
 
    runManager->SetUserInitialization(physicsList);
    G4HadronicProcessStore::Instance()->SetVerbose(0);

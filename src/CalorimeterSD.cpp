@@ -38,6 +38,7 @@ CalorimeterSD::CalorimeterSD(G4String name): G4VSensitiveDetector(name),
   fphiDetectorTouchableDepth(1),
   fzDetectorTouchableDepth(3){
   collectionName.insert("ECalorimeterColl");
+  collectionName.insert("debugKilled");
 }
 
 CalorimeterSD::CalorimeterSD(G4String name, G4int aCellNoInAxisRho, G4int aCellNoInAxisPhi, G4int aCellNoInAxisZ): G4VSensitiveDetector(name),
@@ -52,6 +53,7 @@ CalorimeterSD::CalorimeterSD(G4String name, G4int aCellNoInAxisRho, G4int aCellN
   fzDetectorTouchableDepth(3) {
 
   collectionName.insert("ECalorimeterColl");
+  collectionName.insert("debugKilled");
 }
 CalorimeterSD::CalorimeterSD(G4String name, G4int aCellNoInAxisRho, G4int aCellNoInAxisPhi, G4int aCellNoInAxisZ,
                              G4int aXdetector, G4int aYdetector, G4int aZdetector ):
@@ -67,6 +69,7 @@ CalorimeterSD::CalorimeterSD(G4String name, G4int aCellNoInAxisRho, G4int aCellN
   fzDetectorTouchableDepth(aZdetector)  {
 
   collectionName.insert("ECalorimeterColl");
+  collectionName.insert("debugKilled");
 }
 
 CalorimeterSD::~CalorimeterSD() {
@@ -87,6 +90,12 @@ void CalorimeterSD::Initialize(G4HCofThisEvent* hce) {
         CalorimeterHit* hit = new CalorimeterHit();
         fHitsCollection->insert(hit);
       }
+
+  fDebugHitsCollection = new CalorimeterHitsCollection(SensitiveDetectorName,collectionName[1]);
+  if (fDebugHCID<0) {
+    fDebugHCID = G4SDManager::GetSDMpointer()->GetCollectionID(fDebugHitsCollection);
+  }
+  hce->AddHitsCollection(fDebugHCID,fDebugHitsCollection);
 }
 
 G4bool CalorimeterSD::ProcessHits(G4Step* step, G4TouchableHistory*)
@@ -120,8 +129,17 @@ G4bool CalorimeterSD::ProcessHits(G4Step* step, G4TouchableHistory*)
 
   }
   hit->AddEdep(edep);
-  // std::cout << "Hit: energy " << edep << " x " << xNo << " y " << yNo << " z " << zNo 
-  //           << std::endl;
+
+  if (step->GetPostStepPoint()->GetProcessDefinedStep() != nullptr) {
+    if (step->GetPostStepPoint()->GetProcessDefinedStep()->GetProcessName().compareTo("debugKill") == 0) {
+      std::cout << " NEW DEBUG HIT " << std::endl;
+      std::cout << "Hit: energy " << edep << " pos " << step->GetPreStepPoint()->GetPosition()
+                << std::endl;
+      CalorimeterHit* debughit = hit;
+      debughit->SetColour(1);
+      fDebugHitsCollection->insert(debughit);
+    }
+  }
   return true;
 }
 
