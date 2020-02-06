@@ -17,6 +17,10 @@ public:
   virtual G4double AtRestGetPhysicalInteractionLength(const G4Track&, G4ForceCondition*) final { return -1; };
   virtual G4VParticleChange* PostStepDoIt(const G4Track&, const G4Step&) final;
   virtual G4double PostStepGetPhysicalInteractionLength(const G4Track& aTrack, G4double, G4ForceCondition* aCondition) final {
+    if (!fActivated) {
+      *aCondition = InActivated;
+      return DBL_MAX;
+    }
     *aCondition = Forced;
     double energy = aTrack.GetTotalEnergy();
     if (energy <= fEnergyThreshold ) {
@@ -33,8 +37,11 @@ public:
   };
   inline void SetEnergyThreshold(G4double aEnergy) {fEnergyThreshold = aEnergy;};
   inline G4double GetEnergyThreshold() const {return fEnergyThreshold;};
+  inline void SetActivated(G4bool aActivated) {fActivated = aActivated;};
+  inline G4double GetActivated() const {return fActivated;};
 private:
   G4double fEnergyThreshold;
+  G4bool fActivated;
   DebugKillProcessMessenger* fMessenger;
 };
 

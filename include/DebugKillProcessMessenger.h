@@ -6,6 +6,7 @@
 
 class DebugKillProcess;
 class G4UIcmdWithADoubleAndUnit;
+class G4UIcmdWithABool;
 
 class DebugKillProcessMessenger: public G4UImessenger
 {
@@ -16,6 +17,7 @@ class DebugKillProcessMessenger: public G4UImessenger
   private:
     DebugKillProcess* fDebugKillProcess;
     G4UIcmdWithADoubleAndUnit* fEnergyThresholdCmd;
+    G4UIcmdWithABool* fActivateCmd;
 };
 
 #endif

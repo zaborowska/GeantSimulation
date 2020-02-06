@@ -3,6 +3,7 @@
 
 DebugKillProcess::DebugKillProcess() : G4VProcess("debugKill", fUserDefined) {
   fEnergyThreshold = 1; // default threshold to kill: 1 MeV
+  fActivated = false; // by default switched off
   fMessenger = new DebugKillProcessMessenger(this);
 }
 
