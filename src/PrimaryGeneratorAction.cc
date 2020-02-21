@@ -10,6 +10,7 @@
 #include "G4ParticleDefinition.hh"
 #include "G4SystemOfUnits.hh"
 #include "Randomize.hh"
+#include <filesystem>
 
 PrimaryGeneratorAction::PrimaryGeneratorAction()
 : G4VUserPrimaryGeneratorAction(),
@@ -38,6 +39,12 @@ PrimaryGeneratorAction::~PrimaryGeneratorAction()
 
 void PrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
 {
+  std::string fileName = "random/event_"+std::to_string(anEvent->GetEventID())+".rndm.stat";
+  if (std::filesystem::exists(fileName)) {
+    CLHEP::HepRandom::getTheEngine()->restoreStatus (fileName.c_str());
+  } else {
+    CLHEP::HepRandom::getTheEngine()->saveStatus (fileName.c_str());
+  }
   if (!fSingleEnergy) {
     G4double u = G4UniformRand();
     fParticleGun->SetParticleEnergy((1. + (u * 499.)) * GeV); // get random number from 1 to 500 GeV
