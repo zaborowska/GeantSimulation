@@ -39,11 +39,11 @@ void h52root(const std::string& aInput, const std::string& aOutput, const std::s
   H5::DataSpace dataspace_cells = dataset_cells.getSpace();
   int rank_cells = dataspace_cells.getSimpleExtentNdims();
   assert(rank_cells == rank);
-  hsize_t dim_cells[rank_cells];
+  hsize_t* dim_cells = new hsize_t[rank_cells];
   dataspace_cells.getSimpleExtentDims(dim_cells);
   assert(dim_cells[1] == netSize && dim_cells[2] == netSize && dim_cells[3] == netSize);
-  hsize_t  offset_cells[rank_cells];
-  hsize_t  h5Dim_cells[rank_cells];
+  hsize_t*  offset_cells = new hsize_t[rank_cells];
+  hsize_t*  h5Dim_cells = new hsize_t[rank_cells];
   h5Dim_cells[0]  = storeMax;
   h5Dim_cells[1]  = dim_cells[1];
   h5Dim_cells[2]  = dim_cells[2];
@@ -59,11 +59,11 @@ void h52root(const std::string& aInput, const std::string& aOutput, const std::s
     H5::DataSpace dataspace_particles = dataset_particles.getSpace();
     int rank_particles = dataspace_particles.getSimpleExtentNdims();
     assert(rank_particles == 1);
-    hsize_t dim_particles[rank_particles];
+    hsize_t* dim_particles = new hsize_t[rank_particles];
     dataspace_particles.getSimpleExtentDims(dim_particles);
     assert(dim_cells[0] == dim_particles[0]);
-    hsize_t  offset_particles[rank_particles];
-    hsize_t  h5Dim_particles[rank_particles];
+    hsize_t* offset_particles = new hsize_t[rank_particles];
+    hsize_t* h5Dim_particles = new hsize_t[rank_particles];
     h5Dim_particles[0]  = storeMax;
     H5::DataSpace memspace_particles(rank_particles, h5Dim_particles);
 

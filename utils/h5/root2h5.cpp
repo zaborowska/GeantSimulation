@@ -19,7 +19,7 @@ void root2h5(const std::string& aInput, const std::string& aOutput) {
   std::cout << "Get number of events: " << storeMax * numFiles << std::endl;
 
   std::cout << "Created dataset " << std::endl;
-  int iE, i, j, k;
+  uint iE, i, j, k;
   float particles[storeMax];
   float data[storeMax][netSize][netSize][netSize];
   std::cout << "Created array " << std::endl;
