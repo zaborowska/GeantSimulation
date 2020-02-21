@@ -126,15 +126,12 @@ G4bool CalorimeterSD::ProcessHits(G4Step* step, G4TouchableHistory*)
     hit->SetRot(transform.NetRotation());
     transform.Invert();
     hit->SetPos(transform.NetTranslation());
-
+    hit->SetTime(step->GetTrack()->GetGlobalTime());
   }
   hit->AddEdep(edep);
 
   if (step->GetPostStepPoint()->GetProcessDefinedStep() != nullptr) {
     if (step->GetPostStepPoint()->GetProcessDefinedStep()->GetProcessName().compareTo("debugKill") == 0) {
-      std::cout << " NEW DEBUG HIT " << std::endl;
-      std::cout << "Hit: energy " << edep << " pos " << step->GetPreStepPoint()->GetPosition()
-                << std::endl;
       CalorimeterHit* debughit = hit;
       debughit->SetColour(1);
       fDebugHitsCollection->insert(debughit);
