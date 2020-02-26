@@ -56,6 +56,10 @@ public:
   const G4VPhysicalVolume* GetAbsorber(G4int i)   {return fPhysiAbsor[i];};
   inline const G4String GetParametersFileName() const {return fParametersFileName;};
   inline void SetParametersFileName(const G4String& aFileName) {fParametersFileName = aFileName;};
+#ifdef RICHVIS
+  inline const G4String GetHitDrawMode() const {return fHitDrawMode;};
+  inline void SetHitDrawMode(const G4String& aMode) {fHitDrawMode = aMode;};
+#endif
 
 private:
 
@@ -96,6 +100,10 @@ private:
   G4Cache<G4GlobalMagFieldMessenger*> fFieldMessenger;
 
   G4String fParametersFileName;
+
+#ifdef RICHVIS
+  G4String fHitDrawMode;
+#endif
 
 private:
 

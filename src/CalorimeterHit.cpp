@@ -17,13 +17,25 @@ namespace test {
 G4ThreadLocal G4Allocator<CalorimeterHit>* CalorimeterHitAllocator;
 
 CalorimeterHit::CalorimeterHit()
-  : G4VHit(), fRhoID(-1), fPhiID(-1), fzID(-1), fEdep(0.), fTime(0.), fPos(0), fLogV(nullptr), fColour(0) {}
+  : G4VHit(), fRhoID(-1), fPhiID(-1), fzID(-1), fEdep(0.)
+#ifdef RICHVIS
+  , fTime(0.), fPos(0,0,0), fRot(), fLogV(nullptr), fColour(0)
+#endif
+{}
 
 CalorimeterHit::CalorimeterHit(G4int iRho,G4int iPhi,G4int iZ)
-: G4VHit(), fRhoID(iRho), fPhiID(iPhi), fzID(iZ), fEdep(0.), fTime(0.), fPos(0), fLogV(nullptr), fColour(0) {}
+  : G4VHit(), fRhoID(iRho), fPhiID(iPhi), fzID(iZ), fEdep(0.)
+#ifdef RICHVIS
+  , fTime(0.), fPos(0,0,0), fRot(), fLogV(nullptr), fColour(0)
+#endif
+{}
 
 CalorimeterHit::CalorimeterHit(G4int iRho,G4int iPhi,G4int iZ, G4LogicalVolume* aLogV)
-: G4VHit(), fRhoID(iRho), fPhiID(iPhi), fzID(iZ), fEdep(0.), fTime(0.), fPos(0), fLogV(aLogV), fColour(0)  {}
+  : G4VHit(), fRhoID(iRho), fPhiID(iPhi), fzID(iZ), fEdep(0.)
+#ifdef RICHVIS
+  , fTime(0.), fPos(0,0,0), fRot(), fLogV(aLogV), fColour(0)
+#endif
+{}
 
 CalorimeterHit::~CalorimeterHit() {}
 
@@ -32,11 +44,13 @@ CalorimeterHit::CalorimeterHit(const CalorimeterHit &right) : G4VHit() {
     fPhiID = right.fPhiID;
     fzID = right.fzID;
     fEdep = right.fEdep;
+#ifdef RICHVIS
     fTime = right.fTime;
     fPos = right.fPos;
     fRot = right.fRot;
-    fColour = right.fColour;
     fLogV = right.fLogV;
+    fColour = right.fColour;
+#endif
 }
 
 const CalorimeterHit& CalorimeterHit::operator=(const CalorimeterHit &right) {
@@ -44,11 +58,13 @@ const CalorimeterHit& CalorimeterHit::operator=(const CalorimeterHit &right) {
     fPhiID = right.fPhiID;
     fzID = right.fzID;
     fEdep = right.fEdep;
+#ifdef RICHVIS
     fTime = right.fTime;
     fPos = right.fPos;
     fRot = right.fRot;
-    fColour = right.fColour;
     fLogV = right.fLogV;
+    fColour = right.fColour;
+#endif
     return *this;
 }
 
@@ -57,6 +73,7 @@ int CalorimeterHit::operator==(const CalorimeterHit &right) const {
 }
 
 void CalorimeterHit::Draw() {
+#ifdef RICHVIS
   G4VVisManager* pVVisManager = G4VVisManager::GetConcreteInstance();
   if(! (fEdep > 0) ) return;
   if (! pVVisManager->FilterHit(*this)) return;
@@ -87,55 +104,63 @@ void CalorimeterHit::Draw() {
     attribs.SetForceSolid(true);
     pVVisManager->Draw(solid,attribs,trans);
   }
+#endif
 }
 
 const std::map<G4String,G4AttDef>* CalorimeterHit::GetAttDefs() const {
-    G4bool isNew;
-    std::map<G4String,G4AttDef>* store
+  G4bool isNew;
+  std::map<G4String,G4AttDef>* store
     = G4AttDefStore::GetInstance("CalorimeterHit",isNew);
-    if (isNew) {
-        (*store)["HitType"]
-          = G4AttDef("HitType","Hit Type","Physics","","G4String");
-        (*store)["Rho"]
-          = G4AttDef("Rho","rho ID","Physics","","G4int");
-        (*store)["Phi"]
-          = G4AttDef("Phi","phi ID","Physics","","G4int");
-        (*store)["Z"]
-          = G4AttDef("Z","z ID","Physics","","G4int");
-        (*store)["Energy"]
-          = G4AttDef("Energy","Energy Deposited","Physics","G4BestUnit",
-                     "G4double");
-        (*store)["Time"]
-          = G4AttDef("Time","Time","Physics","G4BestUnit",
-                     "G4double");
-        (*store)["Pos"]
-          = G4AttDef("Pos", "Position", "Physics","G4BestUnit",
-                     "G4ThreeVector");
-    }
-    return store;
+#ifdef RICHVIS
+  if (isNew) {
+    (*store)["HitType"]
+      = G4AttDef("HitType","Hit Type","Physics","","G4String");
+    (*store)["Rho"]
+      = G4AttDef("Rho","rho ID","Physics","","G4int");
+    (*store)["Phi"]
+      = G4AttDef("Phi","phi ID","Physics","","G4int");
+    (*store)["Z"]
+      = G4AttDef("Z","z ID","Physics","","G4int");
+    (*store)["Energy"]
+      = G4AttDef("Energy","Energy Deposited","Physics","G4BestUnit",
+                 "G4double");
+    (*store)["Time"]
+      = G4AttDef("Time","Time","Physics","G4BestUnit",
+                 "G4double");
+    (*store)["Pos"]
+      = G4AttDef("Pos", "Position", "Physics","G4BestUnit",
+                 "G4ThreeVector");
+  }
+#endif
+  return store;
 }
 
 std::vector<G4AttValue>* CalorimeterHit::CreateAttValues() const {
-    std::vector<G4AttValue>* values = new std::vector<G4AttValue>;
-    values
-      ->push_back(G4AttValue("HitType","HadCalorimeterHit",""));
-    values
-      ->push_back(G4AttValue("Rho",fRhoID, ""));
-    values
-      ->push_back(G4AttValue("Phi",fPhiID, ""));
-    values
-      ->push_back(G4AttValue("Z",fzID, ""));
-    values
-      ->push_back(G4AttValue("Energy",G4BestUnit(fEdep,"Energy"),""));
-    values
-      ->push_back(G4AttValue("Time",G4BestUnit(fTime,"Time"),""));
-    values
-      ->push_back(G4AttValue("Pos",G4BestUnit(fPos,"Length"),""));
-    return values;
+  std::vector<G4AttValue>* values = new std::vector<G4AttValue>;
+#ifdef RICHVIS
+  values
+    ->push_back(G4AttValue("HitType","HadCalorimeterHit",""));
+  values
+    ->push_back(G4AttValue("Rho",fRhoID, ""));
+  values
+    ->push_back(G4AttValue("Phi",fPhiID, ""));
+  values
+    ->push_back(G4AttValue("Z",fzID, ""));
+  values
+    ->push_back(G4AttValue("Energy",G4BestUnit(fEdep,"Energy"),""));
+  values
+    ->push_back(G4AttValue("Time",G4BestUnit(fTime,"Time"),""));
+  values
+    ->push_back(G4AttValue("Pos",G4BestUnit(fPos,"Length"),""));
+#endif
+  return values;
 }
 
 void CalorimeterHit::Print() {
-  std::cout << "  Cell[" << fRhoID << ", " << fPhiID << ", " << fzID << "] "
-            << fEdep/MeV << " (MeV) " << fPos/cm << " cm  " << fTime << " ns"<< std::endl;
+  std::cout << "  Cell[" << fRhoID << ", " << fPhiID << ", " << fzID << "] " << fEdep/MeV << " (MeV) "
+#ifdef RICHVIS
+            << fPos/cm << " cm  " << fTime << " ns"
+#endif
+            << std::endl;
 }
 }

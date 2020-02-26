@@ -34,6 +34,7 @@ public:
   virtual G4bool ProcessHits(G4Step*aStep,G4TouchableHistory*ROhist);
 // fastsim
   virtual G4bool ProcessHits(G4GFlashSpot*aSpot,G4TouchableHistory*);
+
 private:
   CalorimeterHitsCollection* fHitsCollection;
   CalorimeterHitsCollection* fDebugHitsCollection;

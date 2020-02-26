@@ -61,6 +61,7 @@ public:
     void AddEdep(G4double de) { fEdep += de; }
     G4double GetEdep() const { return fEdep; }
 
+#ifdef RICHVIS
     void SetTime(G4double time) { fTime = time; }
     G4double GetTime() const { return fTime; }
 
@@ -70,22 +71,26 @@ public:
     void SetRot(G4RotationMatrix rmat) { fRot = rmat; }
     G4RotationMatrix GetRot() const { return fRot; }
 
-    void SetColour(G4int col) { fColour = col; }
-    G4int GetColour() const { return fColour; }
-
     inline const G4LogicalVolume * GetLogV() { return fLogV; }
     inline void SetLogV(G4LogicalVolume* aLogV) { fLogV=aLogV; }
+
+    void SetColour(G4int col) { fColour = col; }
+    G4int GetColour() const { return fColour; }
+#endif
+
 public:
     G4int fRhoID;
     G4int fPhiID;
     G4int fzID;
     G4double fEdep;
+#ifdef RICHVIS
     G4double fTime;
     G4ThreeVector fPos;
     G4RotationMatrix fRot;
     G4LogicalVolume* fLogV;
     // to draw hits: if debugKillProcess kills particle, change to 1 (different colour)
     G4int fColour;
+#endif
 };
 
 typedef G4THitsCollection<CalorimeterHit> CalorimeterHitsCollection;

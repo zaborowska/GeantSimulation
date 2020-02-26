@@ -123,6 +123,7 @@ G4bool CalorimeterSD::ProcessHits(G4Step* step, G4TouchableHistory*)
     hit->SetRhoId(rhoNo);
     hit->SetPhiId(phiNo);
     hit->SetZid(zNo);
+#ifdef RICHVIS
     hit->SetLogV(touchable->GetVolume(frhoDetectorTouchableDepth)->GetLogicalVolume());
     G4int depth = touchable->GetHistory()->GetDepth();
     G4AffineTransform transform = touchable->GetHistory()->GetTopTransform();
@@ -130,13 +131,16 @@ G4bool CalorimeterSD::ProcessHits(G4Step* step, G4TouchableHistory*)
     transform.Invert();
     hit->SetPos(transform.NetTranslation());
     hit->SetTime(step->GetTrack()->GetGlobalTime());
+#endif
   }
   hit->AddEdep(edep);
 
   if (step->GetPostStepPoint()->GetProcessDefinedStep() != nullptr) {
     if (step->GetPostStepPoint()->GetProcessDefinedStep()->GetProcessName().compareTo("debugKill") == 0) {
-      CalorimeterHit* debughit = hit;
+      CalorimeterHit* debughit = new CalorimeterHit(*hit);
+#ifdef RICHVIS
       debughit->SetColour(1);
+#endif
       fDebugHitsCollection->insert(debughit);
     }
   }

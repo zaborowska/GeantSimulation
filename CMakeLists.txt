@@ -18,6 +18,13 @@ else()
   find_package(Geant4 REQUIRED)
 endif()
 message(STATUS "Found Geant: ${Geant4_INCLUDE_DIR}")
+#----------------------------------------------------------------------------
+
+option(RICHVIS "Enter rich visualization mode" OFF)
+if (RICHVIS)
+  add_definitions(-DRICHVIS)
+  message("Compile with additional features for richer visualisation")
+endif()
 
 #----------------------------------------------------------------------------
 # Setup Geant4 include directories and compile definitions
