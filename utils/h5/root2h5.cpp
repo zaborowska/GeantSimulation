@@ -31,8 +31,8 @@ void root2h5(const std::string& aInput, const std::string& aOutput) {
   TTreeReader eventsReader("events",&f);
   TTreeReaderValue<double> energyMC(eventsReader, "EnergyMC");
   TTreeReaderValue<std::vector<double>> energyCellV(eventsReader, "EnergyCell");
-  TTreeReaderValue<std::vector<int>> xCellV(eventsReader, "xCell");
-  TTreeReaderValue<std::vector<int>> yCellV(eventsReader, "yCell");
+  TTreeReaderValue<std::vector<int>> xCellV(eventsReader, "rhoCell");
+  TTreeReaderValue<std::vector<int>> yCellV(eventsReader, "phiCell");
   TTreeReaderValue<std::vector<int>> zCellV(eventsReader, "zCell");
   double sum = 0;
 

@@ -15,7 +15,7 @@ void createHistograms(const std::string& aInput, const std::string& aOutput, dou
   TFile f(aInput.c_str(), "READ");
 
   // Set initial parameters
-  const int netSize = 25;
+  const int netSize = 24;
   const double cellSizeMm = 10.;
   const double scaleFactorProfile = 10.;
   const int netMidCell = floor (netSize / 2);
@@ -67,7 +67,7 @@ void createHistograms(const std::string& aInput, const std::string& aOutput, dou
     simType->GetXaxis()->SetBinLabel(2,"GFlash");
     simType->GetXaxis()->SetBinLabel(3,"ML");
   }
-  auto mesh = new TH3F("mesh", "mesh", netSize, -0.5, netSize - 0.5, netSize, -0.5, netSize - 0.5, netSize, -0.5, netSize - 0.5);
+  auto mesh = new TH3F("mesh", "mesh", netSize, -0.5, netSize-0.5, netSize, -1*floor(netSize/2)-0.5, floor(netSize/2) - 0.5, netSize, -1*floor(netSize/2)-0.5, floor(netSize/2) - 0.5);
   mesh->SetTitle(";z;x;y");
   auto enMC = new TH1F("enMC", "MC energy (GeV);E_{MC} (GeV); Normalised entries", 1000, 0, floor(1.2 * maxEnergy));
   auto enTotal = new TH1F("enTotal", "total deposited energy (GeV);E_{dep} (GeV); Normalised entries", 1000, 0, floor(1.2 * maxEnergy));
@@ -88,14 +88,14 @@ void createHistograms(const std::string& aInput, const std::string& aOutput, dou
   TTreeReader eventsReader("events",&f);
   TTreeReaderValue<double> energyMC(eventsReader, "EnergyMC");
   TTreeReaderArray<double> energyCellV(eventsReader, "EnergyCell");
-  TTreeReaderArray<int> xCellV(eventsReader, "xCell");
-  TTreeReaderArray<int> yCellV(eventsReader, "yCell");
+  TTreeReaderArray<int> rhoCellV(eventsReader, "rhoCell");
+  TTreeReaderArray<int> phiCellV(eventsReader, "phiCell");
   TTreeReaderArray<int> zCellV(eventsReader, "zCell");
 
   uint iterEvents = 0;
   // retireved from input
   size_t eventSize = 0;
-  uint xCell = 0, yCell = 0, zCell = 0;
+  uint rhoCell = 0, phiCell = 0, zCell = 0;
   double eCell = 0;
   double energyMCinGeV = 0;
   // calculated
@@ -115,18 +115,18 @@ void createHistograms(const std::string& aInput, const std::string& aOutput, dou
     rFirstMoment = 0;
     for (uint iEntry = 0; iEntry < eventSize; ++iEntry) {
       // get data (missing: angle at entrance)
-      xCell = xCellV[iEntry];
-      yCell = yCellV[iEntry];
+      rhoCell = rhoCellV[iEntry];
+      phiCell = phiCellV[iEntry];
       zCell = zCellV[iEntry];
       eCell = energyCellV[iEntry] * aCellUnitToMeV;
       eCellFraction = eCell / *energyMC;
       // make calculations
-      tDistance = zCell; // assumption: particle enters calorimeter perpendiculary
-      rDistance = sqrt( (xCell - netMidCell) * (xCell - netMidCell) + (yCell - netMidCell) * (yCell - netMidCell));
-      tFirstMoment += eCell * (tDistance + 0.5) * cellSizeMm;
+      tDistance = zCell + 0.5; // assumption: particle enters calorimeter perpendiculary
+      rDistance = rhoCell;
+      tFirstMoment += eCell * tDistance * cellSizeMm;
       rFirstMoment += eCell * rDistance * cellSizeMm;
       // fill histograms
-      mesh->Fill(zCell, xCell, yCell, eCell);
+      mesh->Fill(tDistance, rhoCell * sin(phiCell), rhoCell * cos(phiCell), eCell);
       enCell->Fill(eCell);
       enLayers->Fill(eCell, tDistance);
       longProfile->Fill(tDistance, eCell);
@@ -142,14 +142,14 @@ void createHistograms(const std::string& aInput, const std::string& aOutput, dou
     rSecondMoment = 0;
     for (uint iEntry = 0; iEntry < eventSize; ++iEntry) {
       // get data (missing: angle at entrance)
-      xCell = xCellV[iEntry];
-      yCell = yCellV[iEntry];
+      rhoCell = rhoCellV[iEntry];
+      phiCell = phiCellV[iEntry];
       zCell = zCellV[iEntry];
       eCell = energyCellV[iEntry] * aCellUnitToMeV;
       // make calculations
-      tDistance = zCell; // assumption: particle enters calorimeter perpendiculary
-      rDistance = sqrt( (xCell - netMidCell) * (xCell - netMidCell) + (yCell - netMidCell) * (yCell - netMidCell));
-      tSecondMoment += eCell * pow((tDistance + 0.5) * cellSizeMm - tFirstMoment, 2);
+      tDistance = zCell + 0.5; // assumption: particle enters calorimeter perpendiculary
+      rDistance = rhoCell;
+      tSecondMoment += eCell * pow(tDistance * cellSizeMm - tFirstMoment, 2);
       rSecondMoment += eCell * pow(rDistance * cellSizeMm - rFirstMoment, 2);
     }
     tSecondMoment /= sumEnergyDeposited;
