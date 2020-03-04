@@ -47,7 +47,7 @@ void PrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
   }
   if (!fSingleEnergy) {
     G4double u = G4UniformRand();
-    fParticleGun->SetParticleEnergy((1. + (u * 499.)) * GeV); // get random number from 1 to 500 GeV
+    fParticleGun->SetParticleEnergy((10. + (u * 90.)) * GeV); // get random number from 10 to 100 GeV
   }
   fParticleGun->GeneratePrimaryVertex(anEvent);
 }
