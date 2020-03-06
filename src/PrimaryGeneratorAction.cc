@@ -39,12 +39,14 @@ PrimaryGeneratorAction::~PrimaryGeneratorAction()
 
 void PrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
 {
+#ifdef RICHVIS
   std::string fileName = "random/event_"+std::to_string(anEvent->GetEventID())+".rndm.stat";
   if (std::filesystem::exists(fileName)) {
     CLHEP::HepRandom::getTheEngine()->restoreStatus (fileName.c_str());
   } else {
     CLHEP::HepRandom::getTheEngine()->saveStatus (fileName.c_str());
   }
+#endif
   if (!fSingleEnergy) {
     G4double u = G4UniformRand();
     fParticleGun->SetParticleEnergy((10. + (u * 90.)) * GeV); // get random number from 10 to 100 GeV

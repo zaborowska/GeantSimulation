@@ -15,6 +15,8 @@
 #include "G4VisExecutive.hh"
 #include "myG4FastSimulationPhysics.hh"
 #include "DebugKillPhysics.h"
+#include "Randomize.hh"
+#include "time.h"
 
 int main(int argc, char** argv)
 {
@@ -23,6 +25,13 @@ int main(int argc, char** argv)
   if ( argc == 1 ) {
     ui = new G4UIExecutive(argc, argv);
   }
+
+  //choose the Random engine
+  CLHEP::HepRandom::setTheEngine(new CLHEP::RanecuEngine());
+  //set random seed with system time
+  G4long seed = time(NULL);
+  CLHEP::HepRandom::setTheSeed(seed);
+
 #ifdef G4MULTITHREADED
    G4MTRunManager* runManager = new G4MTRunManager;
    runManager->SetNumberOfThreads(4);
