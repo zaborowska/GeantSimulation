@@ -47,8 +47,10 @@ void root2h5(const std::string& aInput, const std::string& aOutput) {
   hsize_t h5Dim_particles_max[1] = {storeMax * numFiles};
   H5::DSetCreatPropList h5cparms_cells;
   h5cparms_cells.setChunk( 4, h5Dim_cells );
+  h5cparms_cells.setDeflate(6);
   H5::DSetCreatPropList h5cparms_particles;
   h5cparms_particles.setChunk( 1, h5Dim_particles );
+  h5cparms_particles.setDeflate(6);
   H5::H5File h5OutFile( h5OutputName, H5F_ACC_TRUNC );
   H5::IntType datatype( H5::PredType::NATIVE_FLOAT );
   H5::DataSpace dataspace_cells( rank, h5Dim_cells_current, h5Dim_cells_max );
@@ -121,7 +123,7 @@ int main(int argc, char** argv){
   std::string outputName = "";
   if (argc < 3) {
     outputName = inputName.substr(inputName.find_last_of("/") + 1,
-                                  inputName.find(".root") - inputName.find_last_of("/") - 1) + ".h5" ;
+                                  inputName.find(".root") - inputName.find_last_of("/") - 1) + "_compressed.h5" ;
     std::cout << "Using default output path: \"./" << outputName << "\"" << std::endl;
   } else {
     outputName = argv[2];
