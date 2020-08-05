@@ -58,4 +58,5 @@ target_link_libraries(sampleSimulation ${Geant4_LIBRARIES} ${ROOT_LIBRARIES})
 #
 install(TARGETS sampleSimulation DESTINATION bin)
 
-add_subdirectory(utils)
+add_subdirectory(utils/analysis)
+add_subdirectory(utils/h5)
