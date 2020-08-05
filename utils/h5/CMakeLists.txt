@@ -5,12 +5,7 @@ if(HDF5_FOUND)
   include_directories (${HDF5_INCLUDE_DIR}
                        ${ROOT_INCLUDE_DIRS}
                        ${PROJECT_BINARY_DIR})
-  include("${ROOT_DIR}/modules/RootNewMacros.cmake")
-
-  # TOFIX properly solve linking issue
-  string(REGEX MATCH ".[(A-z)|(a-z)|(0-9)|/.-]*libhdf5_cpp.so" LIBDIRWITHLIB ${HDF5_LIBRARIES})
-  string(FIND ${LIBDIRWITHLIB} "libhdf5_cpp.so" LIBPOSITION)
-  string(SUBSTRING ${LIBDIRWITHLIB} 0 ${LIBPOSITION} LIBDIR)
+  include("${ROOT_DIR}/RootMacros.cmake")
 
   set (tools
     h52root

@@ -2,7 +2,7 @@ cmake_minimum_required (VERSION 3.2.2)
 project (sampleSimulation_utils_analysis)
 
 include_directories (${PROJECT_BINARY_DIR})
-include("${ROOT_DIR}/modules/RootNewMacros.cmake")
+include("${ROOT_DIR}/RootMacros.cmake")
 
 set (tools
   createHistograms
