@@ -6,12 +6,13 @@
 #include "H5DataSet.h"
 #include "root2h5.h"
 
-void root2h5(const std::string& aInput, const std::string& aOutput) {
+void root2h5(const std::string& aInput, const std::string& aOutput, int aNumCells = 24, bool aUseCartesian = false) {
   TFile f(aInput.c_str(), "READ");
   if (f.IsZombie()) {
     return;
   }
-  const hsize_t netSize = 25;
+  // TODO Fix hardcoded size
+  const hsize_t netSize = 24; //aNumCells;
   const int rank = 4;
   const hsize_t numEvents = static_cast<TTree*>(f.Get("events"))->GetEntries();
   const hsize_t storeMax = 100;
@@ -21,6 +22,8 @@ void root2h5(const std::string& aInput, const std::string& aOutput) {
   std::cout << "Created dataset " << std::endl;
   uint iE, i, j, k;
   float particles[storeMax];
+  // TODO Fix hardcoded size
+  //float *data = new float[storeMax * netSize * netSize * netSize];
   float data[storeMax][netSize][netSize][netSize];
   std::cout << "Created array " << std::endl;
 
@@ -31,8 +34,14 @@ void root2h5(const std::string& aInput, const std::string& aOutput) {
   TTreeReader eventsReader("events",&f);
   TTreeReaderValue<double> energyMC(eventsReader, "EnergyMC");
   TTreeReaderValue<std::vector<double>> energyCellV(eventsReader, "EnergyCell");
-  TTreeReaderValue<std::vector<int>> xCellV(eventsReader, "rhoCell");
-  TTreeReaderValue<std::vector<int>> yCellV(eventsReader, "phiCell");
+  std::string name1stAxis = "rhoCell";
+  std::string name2ndAxis = "phiCell";
+  if (aUseCartesian) {
+    name1stAxis = "xCell";
+    name2ndAxis = "yCell";
+  }
+  TTreeReaderValue<std::vector<int>> xCellV(eventsReader, name1stAxis.c_str());
+  TTreeReaderValue<std::vector<int>> yCellV(eventsReader, name2ndAxis.c_str());
   TTreeReaderValue<std::vector<int>> zCellV(eventsReader, "zCell");
   double sum = 0;
 
@@ -64,7 +73,9 @@ void root2h5(const std::string& aInput, const std::string& aOutput) {
     for (j = 0; j < netSize; j++) {
       for (i = 0; i < netSize; i++) {
         for (k = 0; k < netSize; k++) {
-          data[iEvent][j][i][k] = 0;
+          // TODO Fix hardcoded size
+          // data[iEvent + storeMax * j + storeMax * netSize * i + storeMax * netSize * netSize * k] = 0;
+          data[iEvent][i][j][k] = 0;
         }
       }
     }
@@ -75,6 +86,8 @@ void root2h5(const std::string& aInput, const std::string& aOutput) {
       eCell = energyCellV->at(iEntry);
       sum += eCell;
       if(xCell < netSize && yCell < netSize && zCell < netSize ) {
+        // TODO Fix hardcoded size
+        // data[iEvent + storeMax * xCell + storeMax * netSize * yCell + storeMax * netSize * netSize * zCell] = eCell;
         data[iEvent][xCell][yCell][zCell] = eCell;
       } else {
         std::cout << " ERROR, attempting to acces [" << xCell << "][" << yCell << "][" << zCell << std::endl;
@@ -82,7 +95,7 @@ void root2h5(const std::string& aInput, const std::string& aOutput) {
       }
     }
     if ( sum > *energyMC ) {
-      std::cout << " ERROR, unphysical sum of cells: " << sum << " > " << *energyMC << std::endl;
+      std::cout << " ERROR, unphysical sum of energy in cells: " << sum << " > MC value = " << *energyMC << std::endl;
       return;
     }
     iEvent++;
@@ -121,14 +134,34 @@ int main(int argc, char** argv){
   }
   std::string inputName = argv[1];
   std::string outputName = "";
+  int numCells = -1;
+  bool useCartesian = false;
   if (argc < 3) {
     outputName = inputName.substr(inputName.find_last_of("/") + 1,
-                                  inputName.find(".root") - inputName.find_last_of("/") - 1) + "_compressed.h5" ;
+                                  inputName.find(".root") - inputName.find_last_of("/") - 1) + ".h5" ;
     std::cout << "Using default output path: \"./" << outputName << "\"" << std::endl;
   } else {
     outputName = argv[2];
   }
-  root2h5(inputName, outputName);
+  if (argc < 4) {
+    numCells = 24;
+    std::cout << "Using default number of cells (in each dimension): " << numCells << std::endl;
+  } else {
+    numCells = std::stoi(argv[3]);
+    std::cout << "Number of cells (in each dimension): " << numCells << std::endl;
+  }
+  if (argc < 5) {
+    useCartesian = false;
+    std::cout << "Using default cylindrical coordinates."<< std::endl;
+  } else {
+    useCartesian = std::stoi(argv[4]);
+    if(useCartesian)
+      std::cout << "Use Cartesian coordinates." << std::endl;
+    else
+      std::cout << "Use cylindrical coordinates." << std::endl;
+  }
+
+  root2h5(inputName, outputName, numCells, useCartesian);
 
 
   return 0;

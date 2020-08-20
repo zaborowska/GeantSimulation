@@ -6,17 +6,21 @@
 #include "H5DataSet.h"
 #include "h52root.h"
 
-void h52root(const std::string& aInput, const std::string& aOutput, const std::string& aDatasetCells = "ECAL", const std::string& aDatasetEnergy = "", int aEnergyMC = 100) {
+void h52root(const std::string& aInput, const std::string& aOutput, const std::string& aDatasetCells = "events_cells", const std::string& aDatasetEnergy = "", int aEnergyMC = 0, int aNumCells = 24, bool aUseCartesian = false, double aEnergyThreshold = 0) {
   std::cout << "Print settings:\n input name: " << aInput << "\n output name: " << aOutput
-            << "\n dataset with cells: " << aDatasetCells << "\n dataset with MC energy: " << aDatasetEnergy << "\n MC energy: " << aEnergyMC << std::endl;
+            << "\n dataset with cells: " << aDatasetCells;
+  if (! aEnergyMC == 0) std::cout << "\n dataset with MC energy: " << aDatasetEnergy << std::endl;
+  else std::cout << "\n MC particle energy: " << aEnergyMC << " MeV." << std::endl;
   TFile f(aOutput.c_str(), "RECREATE");
 
-  const hsize_t netSize = 25;
+  // TODO Fix hardcoded size
+  const hsize_t netSize = 24;
   const int rank = 4;
   const hsize_t storeMax = 100;
-  const double energyThresholdToSave = 0.1;
+  const double energyThresholdToSave = aEnergyThreshold;
 
   float particles[storeMax];
+  // TODO Fix hardcoded size
   float data[storeMax][netSize][netSize][netSize];
 
   TTree* events = new TTree("events", "events");
@@ -27,8 +31,14 @@ void h52root(const std::string& aInput, const std::string& aOutput, const std::s
   std::vector<int> read_zCellV;
   events->Branch("EnergyMC",&read_energyMC);
   events->Branch("EnergyCell",&read_energyCellV);
-  events->Branch("xCell",&read_xCellV);
-  events->Branch("yCell",&read_yCellV);
+  std::string name1stAxis = "rhoCell";
+  std::string name2ndAxis = "phiCell";
+  if (aUseCartesian) {
+    name1stAxis = "xCell";
+    name2ndAxis = "yCell";
+  }
+  events->Branch(name1stAxis.c_str(),&read_xCellV);
+  events->Branch(name2ndAxis.c_str(),&read_yCellV);
   events->Branch("zCell",&read_zCellV);
 
   uint iEvent = 0, i = 0, j = 0, k = 0;
@@ -53,7 +63,7 @@ void h52root(const std::string& aInput, const std::string& aOutput, const std::s
   offset_cells[3]  = 0;
   H5::DataSpace memspace_cells(rank_cells, h5Dim_cells);
 
-  if (aEnergyMC == 0) {
+  if ( aEnergyMC == 0) {
     const H5std_string h5DataName_particles( aDatasetEnergy );
     H5::DataSet dataset_particles = h5InFile.openDataSet( h5DataName_particles);
     H5::DataSpace dataspace_particles = dataset_particles.getSpace();
@@ -83,10 +93,12 @@ void h52root(const std::string& aInput, const std::string& aOutput, const std::s
         for (i = 0; i < netSize; i++) {
           for (j = 0; j < netSize; j++) {
             for (k = 0; k < netSize; k++) {
+              // TODO Fix hardcoded size
               if(data[iEvent][i][j][k] > energyThresholdToSave) {
                 read_xCellV.push_back(i);
                 read_yCellV.push_back(j);
                 read_zCellV.push_back(k);
+                // TODO Fix hardcoded size
                 read_energyCellV.push_back(data[iEvent][i][j][k]);
               }
             }
@@ -109,10 +121,12 @@ void h52root(const std::string& aInput, const std::string& aOutput, const std::s
         for (i = 0; i < netSize; i++) {
           for (j = 0; j < netSize; j++) {
             for (k = 0; k < netSize; k++) {
+              // TODO Fix hardcoded size
               if(data[iEvent][i][j][k] > energyThresholdToSave) {
                 read_xCellV.push_back(i);
                 read_yCellV.push_back(j);
                 read_zCellV.push_back(k);
+                // TODO Fix hardcoded size
                 read_energyCellV.push_back(data[iEvent][i][j][k]);
               }
             }
@@ -134,37 +148,63 @@ int main(int argc, char** argv){
   }
   std::string inputName = argv[1];
   std::string outputName = "";
-  std::string datasetCellsName = "ECAL";
-  std::string datasetEnergyName = "";
-  int energyMC = 100;
+  std::string datasetCellsName = "events_cells";
+  std::string datasetEnergyName = "events_particles";
+  int energyMC = 0;
+  int numCells = 24;
+  bool useCartesian = false;
+  double energyCutoff = 0;
   if (argc < 3) {
     outputName = inputName.substr(inputName.find_last_of("/") + 1,
                                   inputName.find(".h5") - inputName.find_last_of("/") - 1) + ".root" ;
     std::cout << "Using default output path: \"./" << outputName << "\"" << std::endl;
-    std::cout << "Using default cells dataset name: \"./" << datasetCellsName << "\"" << std::endl;
-    if (energyMC) {
-      std::cout << "Using default energy value: \"./" << energyMC << "\"" << std::endl;
-      datasetEnergyName = "";
-    } else {
-      std::cout << "Using default energy dataset name: \"./" << datasetEnergyName << "\"" << std::endl;
-      energyMC = 0;
-    }
-  } else if (argc == 6) {
+  } else {
     outputName = argv[2];
-    datasetCellsName = argv[3];
-    datasetEnergyName = argv[4];
-    energyMC = atoi(argv[5]);
     std::cout << "Using output path: \"./" << outputName << "\"" << std::endl;
-    std::cout << "Using cells dataset name: \"./" << datasetCellsName << "\"" << std::endl;
-    if (energyMC) {
-      std::cout << "Using energy value: \"./" << energyMC << "\"" << std::endl;
-      std::cout << "Defined name for energy dataset: \"./" << datasetEnergyName << "\" is not unused." << std::endl;
-      datasetEnergyName = "";
+  }
+  if (argc < 4) {
+    std::cout << "Using default cells dataset name: " << datasetCellsName << std::endl;
+  } else {
+    datasetCellsName = argv[3];
+    std::cout << "Using cells dataset name: " << datasetCellsName << std::endl;
+  }
+  if (argc < 5) {
+    std::cout << "Using default single energy value for MC particle energy (MeV): " << energyMC << std::endl;
+  } else {
+    energyMC = std::stoi(argv[4]);
+    if (argc < 6 || energyMC > 0) {
+      std::cout << "Using single energy value for MC particle energy (MeV): " << energyMC << std::endl;
     } else {
-      std::cout << "Using energy dataset name: \"./" << datasetEnergyName << "\"" << std::endl;
-      energyMC = 0;
+      datasetEnergyName = argv[5];
+      std::cout << "Using dataset for MC particle energy: " << datasetEnergyName << std::endl;
     }
   }
-  h52root(inputName, outputName, datasetCellsName, datasetEnergyName, energyMC);
+  if (argc < 7) {
+    numCells = 24;
+    std::cout << "Using default number of cells (in each dimension): " << numCells << std::endl;
+  } else {
+    numCells = std::stoi(argv[6]);
+    std::cout << "Using number of cells (in each dimension): " << numCells << std::endl;
+  }
+  if (argc < 8) {
+    useCartesian = false;
+    std::cout << "Using default cylindrical coordinates."<< std::endl;
+  } else {
+    useCartesian = std::stoi(argv[7]);
+    if(useCartesian)
+      std::cout << "Using Cartesian coordinates." << std::endl;
+    else
+      std::cout << "Using cylindrical coordinates." << std::endl;
+  }
+  if (argc < 9) {
+    std::cout << "Saving by default all cell energy values (no threshold)."<< std::endl;
+  } else {
+    energyCutoff = std::stod(argv[8]);
+    if (energyCutoff > 0)
+      std::cout << "Saving cell energy only if above " << energyCutoff << " MeV." << std::endl;
+    else
+      std::cout << "Saving all cell energy values (no threshold)." << std::endl;
+  }
+  h52root(inputName, outputName, datasetCellsName, datasetEnergyName, energyMC, numCells, useCartesian, energyCutoff);
   return 0;
 }

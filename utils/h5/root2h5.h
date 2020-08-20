@@ -4,6 +4,6 @@
 #include <iostream>
 #include <string>
 
-void root2h5(const std::string& aInput, const std::string& aOutput);
+void root2h5(const std::string& aInput, const std::string& aOutput, int numCells, bool useCartesian);
 
 #endif
