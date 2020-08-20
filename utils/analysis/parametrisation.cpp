@@ -130,7 +130,7 @@ void parametrisation(const std::string& aInput, const std::string& aOutput, doub
   auto longProfileRhoLogAlphaLogT = new TGraph();
   longProfileRhoLogAlphaLogT->SetName("longProfileRhoLogAlphaLogT");
   longProfileRhoLogAlphaLogT->SetTitle("longitudinal profile fit correlation - log alpha and log T;log(#alpha);log(T_{max});Entries");
-  auto transProfile = new TH1F("transProfile", "transverse profile;r (R_{M});#LTE#GT (MeV)", netMidCellR / rebinR, 0, maxLengthR);
+  auto transProfile = new TH1F("transProfile", "transverse profile;r (R_{M});#LTE#GT (MeV)", netSizeR / rebinR, 0, maxLengthR);
   auto enFractionCell = new TH1F("enFractionCell", "cell energy fraction distribution;E_{cell}/E_{MC}; Normalised entries", 100, 0, 0);
 //  enFractionCell->SetBit(TH1::kCanRebin);
   auto longFirstMoment = new TH1F("longFirstMoment", "longitudinal first moment;#LT#lambda#GT (mm);Normalised entries", 100, 0, 0); //netSizeZ*cellSizeMmZ, 0, netSizeZ * cellSizeMmZ);
@@ -141,7 +141,7 @@ void parametrisation(const std::string& aInput, const std::string& aOutput, doub
   auto enLayers = new TH2F("enLayers", "energy distribution per layer;E_{cell} (MeV); t (X_{0}); Entries", 1000, 0, 0, netSizeZ, 0, maxLengthZ);
   auto logEnLayers = new TH2F("logEnLayers", "energy distribution per layer;log(E_{cell} (MeV)); t (X_{0}); Entries", 1000, 0, 0, netSizeZ, 0, maxLengthZ);
   auto enFractionLayers = new TH2F("enFractionLayers", "energy fraction distribution per layer;E_{cell}/E_{MC}; t (X_{0}); Entries", 1000, 0, 0, netSizeZ, 0, maxLengthZ);
-  auto transProfileLayers = new TH2F("transProfileLayers", "transverse profile per layer ;r (R_{M}); layer;#LTE#GT (MeV)", (netMidCellR*2+1) / rebinR, -maxLengthR, maxLengthR, netSizeZ, 0, maxLengthZ);
+  auto transProfileLayers = new TH2F("transProfileLayers", "transverse profile per layer ;r (R_{M}); layer;#LTE#GT (MeV)", netSizeR / rebinR, 0, maxLengthR, netSizeZ, 0, maxLengthZ);
   auto transXProfileLayers = new TH2F("transXProfileLayers", "transverse X profile per layer ;x (R_{M}); layer;#LTE#GT (MeV)", netSizeR, 0, 2*maxLengthR, netSizeZ, 0, maxLengthZ);
   auto transYProfileLayers = new TH2F("transYProfileLayers", "transverse Y profile per layer ;y (R_{M}); layer;#LTE#GT (MeV)", netSizeR, 0, 2*maxLengthR, netSizeZ, 0, maxLengthZ);
   // validation plots (from G4 GFlash)
@@ -196,14 +196,10 @@ void parametrisation(const std::string& aInput, const std::string& aOutput, doub
       // make calculations
       tDistance = zCell + 0.5; // assumption: particle enters calorimeter perpendiculary
       int signX = 1;
-      if (rhoCell < netMidCellR) {
-        signX = -1;
-      }
-      rDistance = signX * sqrt( (rhoCell - netMidCellR) * (rhoCell - netMidCellR) + (phiCell - netMidCellR) * (phiCell - netMidCellR));
       tFirstMoment += eCell * tDistance * cellSizeMmZ;
       rFirstMoment += eCell * rDistance * cellSizeMmR;
       // fill histograms
-      mesh->Fill(tDistance*zId2t, (rhoCell - netMidCellR) * rId2r, (phiCell-netMidCellR) * rId2r, eCell);
+      mesh->Fill(tDistance*zId2t, (rhoCell) * rId2r, (phiCell) * rId2r, eCell);
       enCell->Fill(eCell);
       logEnCell->Fill(log(eCell));
       enLayers->Fill(eCell, tDistance*zId2t);
@@ -231,7 +227,7 @@ void parametrisation(const std::string& aInput, const std::string& aOutput, doub
       eCell = energyCellV[iEntry];
       // make calculations
       tDistance = zCell+0.5; // assumption: particle enters calorimeter perpendiculary
-      rDistance = sqrt( (rhoCell - netMidCellR) * (rhoCell - netMidCellR) + (phiCell - netMidCellR) * (phiCell - netMidCellR));
+      rDistance = rhoCell;
       tSecondMoment += eCell * pow(tDistance * cellSizeMmZ - tFirstMoment, 2);
       rSecondMoment += eCell * pow(rDistance * cellSizeMmR - rFirstMoment, 2);
     }
