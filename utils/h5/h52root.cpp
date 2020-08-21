@@ -6,10 +6,10 @@
 #include "H5DataSet.h"
 #include "h52root.h"
 
-void h52root(const std::string& aInput, const std::string& aOutput, const std::string& aDatasetCells = "events_cells", const std::string& aDatasetEnergy = "", int aEnergyMC = 0, int aNumCells = 24, bool aUseCartesian = false, double aEnergyThreshold = 0) {
+void h52root(const std::string& aInput, const std::string& aOutput, const std::string& aDatasetCells = "events_cells", const std::string& aDatasetEnergy = "events_particles", int aEnergyMC = 0, int aNumCells = 24, bool aUseCartesian = false, double aEnergyThreshold = 0) {
   std::cout << "Print settings:\n input name: " << aInput << "\n output name: " << aOutput
             << "\n dataset with cells: " << aDatasetCells;
-  if (! aEnergyMC == 0) std::cout << "\n dataset with MC energy: " << aDatasetEnergy << std::endl;
+  if (aEnergyMC == 0) std::cout << "\n dataset with MC energy: " << aDatasetEnergy << std::endl;
   else std::cout << "\n MC particle energy: " << aEnergyMC << " MeV." << std::endl;
   TFile f(aOutput.c_str(), "RECREATE");
 
@@ -54,7 +54,10 @@ void h52root(const std::string& aInput, const std::string& aOutput, const std::s
   assert(dim_cells[1] == netSize && dim_cells[2] == netSize && dim_cells[3] == netSize);
   hsize_t*  offset_cells = new hsize_t[rank_cells];
   hsize_t*  h5Dim_cells = new hsize_t[rank_cells];
-  h5Dim_cells[0]  = storeMax;
+  hsize_t nonconstStoreMax = storeMax;
+  // for small datasets (<storeMax events) use number of events
+  if (dim_cells[0] < storeMax) nonconstStoreMax = dim_cells[0];
+  h5Dim_cells[0]  = nonconstStoreMax;
   h5Dim_cells[1]  = dim_cells[1];
   h5Dim_cells[2]  = dim_cells[2];
   h5Dim_cells[3]  = dim_cells[3];
@@ -74,17 +77,17 @@ void h52root(const std::string& aInput, const std::string& aOutput, const std::s
     assert(dim_cells[0] == dim_particles[0]);
     hsize_t* offset_particles = new hsize_t[rank_particles];
     hsize_t* h5Dim_particles = new hsize_t[rank_particles];
-    h5Dim_particles[0]  = storeMax;
+    h5Dim_particles[0]  = nonconstStoreMax;
     H5::DataSpace memspace_particles(rank_particles, h5Dim_particles);
 
-    for (uint iSlab = 0; iSlab < dim_particles[0]/storeMax; ++iSlab) {
-      offset_cells[0] = iSlab * storeMax;
+    for (uint iSlab = 0; iSlab < float(dim_particles[0])/float(nonconstStoreMax); ++iSlab) {
+      offset_cells[0] = iSlab * nonconstStoreMax;
       dataspace_cells.selectHyperslab( H5S_SELECT_SET, h5Dim_cells, offset_cells );
       dataset_cells.read( data, H5::PredType::NATIVE_FLOAT, memspace_cells, dataspace_cells );
-      offset_particles[0] = iSlab * storeMax;
+      offset_particles[0] = iSlab * nonconstStoreMax;
       dataspace_particles.selectHyperslab( H5S_SELECT_SET, h5Dim_particles, offset_particles );
       dataset_particles.read( particles, H5::PredType::NATIVE_FLOAT, memspace_particles, dataspace_particles );
-      for (iEvent = 0; iEvent < storeMax; iEvent++) {
+      for (iEvent = 0; iEvent < nonconstStoreMax; iEvent++) {
         read_xCellV.clear();
         read_yCellV.clear();
         read_zCellV.clear();
@@ -108,11 +111,11 @@ void h52root(const std::string& aInput, const std::string& aOutput, const std::s
       }
     }
   } else {
-    for (uint iSlab = 0; iSlab < dim_cells[0]/storeMax; ++iSlab) {
-      offset_cells[0] = iSlab * storeMax;
+    for (uint iSlab = 0; iSlab < dim_cells[0]/nonconstStoreMax; ++iSlab) {
+      offset_cells[0] = iSlab * nonconstStoreMax;
       dataspace_cells.selectHyperslab( H5S_SELECT_SET, h5Dim_cells, offset_cells );
       dataset_cells.read( data, H5::PredType::NATIVE_FLOAT, memspace_cells, dataspace_cells );
-      for (iEvent = 0; iEvent < storeMax; iEvent++) {
+      for (iEvent = 0; iEvent < nonconstStoreMax; iEvent++) {
         read_xCellV.clear();
         read_yCellV.clear();
         read_zCellV.clear();
@@ -169,7 +172,7 @@ int main(int argc, char** argv){
     std::cout << "Using cells dataset name: " << datasetCellsName << std::endl;
   }
   if (argc < 5) {
-    std::cout << "Using default single energy value for MC particle energy (MeV): " << energyMC << std::endl;
+    std::cout << "Using dataset for MC particle energy: " << datasetEnergyName << std::endl;
   } else {
     energyMC = std::stoi(argv[4]);
     if (argc < 6 || energyMC > 0) {
