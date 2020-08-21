@@ -11,7 +11,7 @@
 #include "ROOT/RDataFrame.hxx"
 #include "createHistograms.h"
 
-void createHistograms(const std::string& aInput, const std::string& aOutput, double aMinEnergyMC = 1, double aMaxEnergyMC = 500, float aCellUnitToMeV = 1.) {
+void createHistograms(const std::string& aInput, const std::string& aOutput) {
   TFile f(aInput.c_str(), "READ");
 
   // Set initial parameters
@@ -19,24 +19,23 @@ void createHistograms(const std::string& aInput, const std::string& aOutput, dou
   const double cellSizeMm = 10.;
   const double scaleFactorProfile = 10.;
   const int netMidCell = floor (netSize / 2);
-  double minEnergy = aMinEnergyMC;
-  double maxEnergy = aMaxEnergyMC;
-  bool eventSelection = false; // true if not all events are used for analysis
+  double minEnergy = 0;
+  double maxEnergy = 0;
 
   // Check if flat energy spectrum or single-energy simulation is analysed
   ROOT::RDataFrame d("events", &f, {"EnergyMC","SimTime"});
   auto mc_histo =  d.Histo1D("EnergyMC");
   double energySpan = mc_histo->GetXaxis()->GetXmax() - mc_histo->GetXaxis()->GetXmin();
   if (energySpan < 1e3) {
-    maxEnergy = mc_histo->GetMean() / 1.e3; // unit converted to GeV
+    maxEnergy = mc_histo->GetMean();
     minEnergy = maxEnergy;
-    std::cout << std::endl << "Detected single-energy simulation, particle energy: " << maxEnergy << " GeV." << std::endl << std::endl;
+    std::cout << std::endl << "Detected single-energy simulation, particle energy: " << maxEnergy * 1.e-3 << " GeV." << std::endl << std::endl;
   } else {
-    // chose only bin of a flat spectrum
-    eventSelection = true;
-    std::cout << std::endl << "Flat energy spectrum simulation, choosing particles with energy within: " << minEnergy << " GeV and " << maxEnergy << " GeV." << std::endl << std::endl;
+    minEnergy = mc_histo->GetXaxis()->GetXmin();
+    maxEnergy = mc_histo->GetXaxis()->GetXmax();
+    std::cout << std::endl << "Flat energy spectrum simulation, energy range (from histogram): " << minEnergy * 1.e-3 << " GeV and " << maxEnergy * 1.e-3 << " GeV." << std::endl << std::endl;
   }
-  // check if SimTime exists in ROOT file
+  // check if SimTime and SimType exist in ROOT file
   bool include_simtime = false, include_simtype = false;
   auto col_names = d.GetColumnNames();
   if (std::find(col_names.begin(), col_names.end(), "SimTime") != col_names.end()) {
@@ -67,13 +66,13 @@ void createHistograms(const std::string& aInput, const std::string& aOutput, dou
     simType->GetXaxis()->SetBinLabel(2,"GFlash");
     simType->GetXaxis()->SetBinLabel(3,"ML");
   }
-  auto mesh = new TH3F("mesh", "mesh", netSize, -0.5, netSize-0.5, netSize, -1*floor(netSize/2)-0.5, floor(netSize/2) - 0.5, netSize, -1*floor(netSize/2)-0.5, floor(netSize/2) - 0.5);
+  auto mesh = new TH3F("mesh", "Energy deposited in all events", netSize, -0.5, netSize-0.5, netSize, -1*floor(netSize/2)-0.5, floor(netSize/2) - 0.5, netSize, -1*floor(netSize/2)-0.5, floor(netSize/2) - 0.5);
   mesh->SetTitle(";z;x;y");
-  auto enMC = new TH1F("enMC", "MC energy (GeV);E_{MC} (GeV); Normalised entries", 1000, 0, floor(1.2 * maxEnergy));
-  auto enTotal = new TH1F("enTotal", "total deposited energy (GeV);E_{dep} (GeV); Normalised entries", 1000, 0, floor(1.2 * maxEnergy));
-  auto enFractionTotal = new TH1F("enFractionTotal", "fraction of deposited energy;E_{dep} /  E_{MC}; Normalised entries", 1000, 0, 1);
-  auto numCells = new TH1F("numCells", "number of cells per event;## cells; Normalised entries", 100, 0, pow(netSize,3) );
-  auto enCell = new TH1F("enCell", "cell energy distribution;E_{cell} (MeV); Normalised entries", 1000, 0, floor(1.2 * maxEnergy));
+  auto enMC = new TH1F("enMC", "MC energy (GeV);E_{MC} (GeV); Normalised entries", 512, 0.8 * minEnergy * 1.e-3, 1.2 * maxEnergy * 1.e-3);
+  auto enTotal = new TH1F("enTotal", "total deposited energy (GeV);E_{dep} (GeV); Normalised entries", 512, 0.8 * minEnergy * 1.e-3, 1.2 * maxEnergy * 1.e-3);
+  auto enFractionTotal = new TH1F("enFractionTotal", "fraction of deposited energy;E_{dep} /  E_{MC}; Normalised entries", 1024, 0, 1);
+  auto numCells = new TH1F("numCells", "number of cells per event;## cells; Normalised entries", 128, 0, pow(netSize,3) );
+  auto enCell = new TH1F("enCell", "cell energy distribution;E_{cell} (MeV); Normalised entries", 1024, 0, maxEnergy);
   auto longProfile = new TH1F("longProfile", "longitudinal profilee;t (layer);#LTE#GT (MeV)", netSize, -0.5, netSize - 0.5);
   auto transProfile = new TH1F("transProfile", "transverse profile;r (layer);#LTE#GT (MeV)", netMidCell, - 0.5, netMidCell - 0.5);
   auto enFractionCell = new TH1F("enFractionCell", "cell energy fraction distribution;E_{cell}/E_{MC}; Normalised entries", 1000, 0, 1);
@@ -103,12 +102,6 @@ void createHistograms(const std::string& aInput, const std::string& aOutput, dou
   double rDistance = 0, eCellFraction = 0, sumEnergyDeposited = 0;
   double tFirstMoment = 0, tSecondMoment = 0, rFirstMoment = 0, rSecondMoment = 0;
   while(eventsReader.Next()){
-    energyMCinGeV = *(energyMC) / 1.e3;
-    if (eventSelection) {
-      if (energyMCinGeV < minEnergy || energyMCinGeV > maxEnergy) {
-        continue;
-      }
-    }
     sumEnergyDeposited = 0;
     eventSize = energyCellV.GetSize();
     tFirstMoment = 0;
@@ -118,10 +111,10 @@ void createHistograms(const std::string& aInput, const std::string& aOutput, dou
       rhoCell = rhoCellV[iEntry];
       phiCell = phiCellV[iEntry];
       zCell = zCellV[iEntry];
-      eCell = energyCellV[iEntry] * aCellUnitToMeV;
+      eCell = energyCellV[iEntry];
       eCellFraction = eCell / *energyMC;
       // make calculations
-      tDistance = zCell + 0.5; // assumption: particle enters calorimeter perpendiculary
+      tDistance = zCell + 0.5; // assumption: particle enters calorimeter perpendiculary (or z axis is defined by longitudinal axis)
       rDistance = rhoCell;
       tFirstMoment += eCell * tDistance * cellSizeMm;
       rFirstMoment += eCell * rDistance * cellSizeMm;
@@ -145,7 +138,7 @@ void createHistograms(const std::string& aInput, const std::string& aOutput, dou
       rhoCell = rhoCellV[iEntry];
       phiCell = phiCellV[iEntry];
       zCell = zCellV[iEntry];
-      eCell = energyCellV[iEntry] * aCellUnitToMeV;
+      eCell = energyCellV[iEntry];
       // make calculations
       tDistance = zCell + 0.5; // assumption: particle enters calorimeter perpendiculary
       rDistance = rhoCell;
@@ -154,9 +147,9 @@ void createHistograms(const std::string& aInput, const std::string& aOutput, dou
     }
     tSecondMoment /= sumEnergyDeposited;
     rSecondMoment /= sumEnergyDeposited;
-    enMC->Fill( energyMCinGeV );  // convert to GeV
-    enTotal->Fill(sumEnergyDeposited / 1.e3);  // convert to GeV
-    enFractionTotal->Fill(sumEnergyDeposited / (*energyMC));  // convert to GeV
+    enMC->Fill( *energyMC * 1.e-3 );  // convert to GeV
+    enTotal->Fill(sumEnergyDeposited * 1.e-3);  // convert to GeV
+    enFractionTotal->Fill(sumEnergyDeposited / (*energyMC));
     numCells->Fill(eventSize);
     longFirstMoment->Fill(tFirstMoment);
     longSecondMoment->Fill(tSecondMoment);

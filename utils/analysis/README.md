@@ -1,14 +1,33 @@
 # Analysis tool
 
+Default units:
+- energy: MeV
+- length: mm
+- time: s
+
 ## 1. Analyse showers
 
-Create control histograms for shower map (if stored in h5 file first [translate it](../h5/README.md#h5---root)).
+Create control histograms for shower (if stored in h5 file first [translate it](../h5/README.md#h5---root)).
 
-Input: ROOT file that is the output of G4 simulation
+Currently, analysis assumes cylindrical coordinates (to be extended) and that z axis is defined by the shower longitudinal axis.
 
-Output: ROOT file with histograms
+###Input
 
-Executable `createHistograms` is created together with ROOT dictionary `libCreateHistogramsDict.so`. To create histograms:
+ROOT file that is the output of G4 simulation. It contains `TTree` "events" with branches:
+
+  - `EnergyMC` (`double`)
+  - `EnergyCell` (`std::vector<double>`)
+  - `rhoCell` (`std::vector<double>`)
+  - `phiCell` (`std::vector<double>`)
+  - `zCell` (`std::vector<double>`)
+
+###Output
+
+ROOT file with histograms.
+
+### How to run
+
+Executable `createHistograms` is created together with ROOT dictionary `libCreateHistogramsDict.so` (for use in python). To create histograms:
 
 ```
 ${PROJECT_DIR}/install/bin/createHistograms <INPUT_FILE> [<OUTPUT_FILE> optional]
