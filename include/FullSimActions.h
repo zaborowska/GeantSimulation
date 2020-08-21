@@ -3,8 +3,6 @@
 
 #include "G4VUserActionInitialization.hh"
 
-#include "TFile.h"
-
 class DetectorConstruction;
 
 /** @class FullSimActions SimG4Full/SimG4Full/FullSimActions.h FullSimActions.h

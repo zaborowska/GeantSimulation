@@ -2,7 +2,6 @@
 #include "PrimaryGeneratorAction.hh"
 #include "SaveToFileEventAction.hh"
 #include "RunAction.hh"
-#include "TThread.h"
 #include "Randomize.hh"
 #include "DetectorConstruction.hh"
 #include <ctime>
