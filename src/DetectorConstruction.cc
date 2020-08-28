@@ -18,8 +18,6 @@
 #include "G4UnitsTable.hh"
 #include "G4PhysicalConstants.hh"
 
-#include "CalorimeterSD.h"
-
 #include <iomanip>
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
