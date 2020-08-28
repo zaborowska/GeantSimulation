@@ -54,10 +54,10 @@ def prepare_graph(graph, name, title, colour = 9, markerStyle = 21, factor = 1):
 def get_gaus(histo):
     binWithMax = 1
     contentBinWithMax = 0
-    for iBin in range(1,histo.GetNbinsX()):
+    for iBin in range(1,histo.GetNbinsX()+1):
         if histo.GetBinContent(iBin) > histo.GetBinContent(binWithMax):
             binWithMax = iBin
-    myfunPre = ROOT.TF1("firstGaus","gaus", histo.GetBinCenter(binWithMax - 5), histo.GetBinCenter(binWithMax + 5))
+    myfunPre = ROOT.TF1("firstGaus","gaus", histo.GetBinCenter(binWithMax - 3), histo.GetBinCenter(binWithMax + 3))
     resultPre = histo.Fit(myfunPre, "SQNR")
     myfun = ROOT.TF1("finalGaus", "gaus", resultPre.Get().Parameter(1) - 2. * resultPre.Get().Parameter(2),
                      resultPre.Get().Parameter(1) + 2. * resultPre.Get().Parameter(2) )
