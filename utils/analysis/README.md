@@ -11,7 +11,7 @@ Create control histograms for shower (if stored in h5 file first [translate it](
 
 Currently, analysis assumes cylindrical coordinates (to be extended) and that z axis is defined by the shower longitudinal axis.
 
-###Input
+### Input
 
 ROOT file that is the output of G4 simulation. It contains `TTree` "events" with branches:
 
@@ -21,7 +21,7 @@ ROOT file that is the output of G4 simulation. It contains `TTree` "events" with
   - `phiCell` (`std::vector<double>`)
   - `zCell` (`std::vector<double>`)
 
-###Output
+### Output
 
 ROOT file with histograms.
 

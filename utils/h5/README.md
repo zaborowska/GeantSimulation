@@ -25,7 +25,7 @@ ${PROJECT_DIR}/install/bin/root2h5 <INPUT_FILE> [<OUTPUT_FILE> optional] [<NUM_C
 where:
  - <OUTPUT_FILE> overwrites the default output name (input file name with the extension changed from `.root` to `.h5`)
  - <NUM_CELLS> sets number of cells in R x Phi x Z (or X x Y x Z for Cartesian coordinates). By default equal to 24.
- - <CARTESIAN> 0/1 flag specyfing if Cartesian coordinates should be used insted of cylindrical (default) ones.
+ - <CARTESIAN> 0/1 flag specifying if Cartesian coordinates should be used instead of cylindrical (default) ones.
 
 or
 
@@ -44,7 +44,7 @@ optional arguments:
   --useCartesian, -c    If Cartesian coordinates are used instead of cylindrical
 
 ```
-Output names are created by changinging the input file extension from `.root` to '.h5'.
+Output names are created by changing the input file extension from `.root` to `.h5`.
 
 
 ## H5 to ROOT conversion
@@ -61,7 +61,7 @@ where:
  - <ENERGY_PARTICLE> sets the single MC particle energy values, to be used for all events (default: 0). If set to larger than 0, name of <DATASET_PARTICLE> is ignored.
  - <DATASET_PARTICLE> specifies the name of the dataset containing N values of MC particle energies, where N is the number of events (default: "events_particles").
  - <NUM_CELLS> sets number of cells in R x Phi x Z (or X x Y x Z for Cartesian coordinates). By default equal to 24.
- - <CARTESIAN> 0/1 flag specyfing if Cartesian coordinates should be used insted of cylindrical (default) ones.
+ - <CARTESIAN> 0/1 flag specifying if Cartesian coordinates should be used instead of cylindrical (default) ones.
 
 or
 
