@@ -93,13 +93,16 @@ void CalorimeterHit::Draw() {
     G4double r=0, g=0, b=0;
     switch(fColour) {
     case 0:
-      r = 1;
+      r = fColour>0.5 ? 1 : 0;
+      b = fColour<0.5 ? 1 : 0;
       break;
     case 1:
-      b = 1;
+      g = 1;
       break;
     }
-    G4Colour colour(r, g, b );
+    r *= fEdep;
+    b *= fEdep;
+    G4Colour colour(r, g, b);
     attribs.SetColour(colour);
     attribs.SetForceSolid(true);
     pVVisManager->Draw(solid,attribs,trans);
