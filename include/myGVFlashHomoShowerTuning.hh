@@ -75,6 +75,7 @@ class myGVFlashHomoShowerTuning
     virtual G4double ParAveT2(){ return fParAveT2;} // t2
     virtual G4double ParAveA1(){ return fParAveA1;  } // a1
     virtual G4double ParAveA2(){ return fParAveA2; } // a2
+    virtual G4double ParAveA3(){ return fParAveA3;  } // a3
   
     virtual G4double ParSigLogT1(){ return fParSigLogT1;} // t1
     virtual G4double ParSigLogT2(){ return fParSigLogT2;} // t2
@@ -107,7 +108,7 @@ class myGVFlashHomoShowerTuning
     virtual G4double ParRT3(){ return 0.645;   } // k2
     virtual G4double ParRT4(){ return -2.59;   } // k3
     virtual G4double ParRT5(){ return 0.3585;  } // t5
-    virtual G4double ParRT6(){ return 0.0412;  } // t6
+    virtual G4double ParRT6(){ return 0.0421;  } // t6
       // Rt (t/T)= k1*(std::exp(k3*(t/T-k2))+std::exp(k4*(t/T-k2)))
       // k1 = t1+t2*Z
       // k4 = t5+t6*ln(E/GeV)
@@ -149,6 +150,7 @@ private:
   float fParAveT2 = 1; // t2
   float fParAveA1 = 0.81;   // a1
   float fParAveA2 = 0.458;  // a2
+  float fParAveA3 = 2.26;
 
   float fParSigLogT1 = -1.4; // t1
   float fParSigLogT2 = 1.26; // t2

@@ -72,7 +72,7 @@ myGFlashHomoShowerParameterisation(G4Material * aMat,
   ParAveT2    = thePar->ParAveT2();
   ParAveA1    = thePar->ParAveA1();   // ln a (0.81 + (0.458)ln y)
   ParAveA2    = thePar->ParAveA2();
-  ParAveA3    = 0;
+  ParAveA3    = thePar->ParAveA3();
 
   // Variance of shower max
   ParSigLogT1 = thePar->ParSigLogT1();     // Sigma T1 (-1.4 + 1.26 ln y)**-1 
@@ -155,14 +155,16 @@ void myGFlashHomoShowerParameterisation::SetMaterial(G4Material *mat)
   // for tested materials use PDG values listed belew.
   // TODO: Remove y dependency and use E instead
   // Parametrisation is anyway geometry-dependent now
-  if ( mat->GetName().compareTo("G4_PbWO4") == 0) {
+
+/*  if ( mat->GetName().compareTo("G4_PbWO4") == 0) {
     Ec =  9.64;
     Rm = 19.59;
   } else {
+    */
     Ec = 2.66 * std::pow((X0 * Z / A),1.1);
     G4double Es = 21*MeV;
     Rm = X0*Es/Ec;
-  }
+/*  }*/
   std::cout << " Ec = " << Ec << std::endl;
   std::cout << " RM = " << Rm << std::endl;
   // PrintMaterial();
@@ -193,7 +195,7 @@ myGFlashHomoShowerParameterisation::ComputeLongitudinalParameters(G4double y)
 {
   AveLogTmaxh  = std::log(ParAveT1 + ParAveT2*std::log(y));
     //ok  <ln T hom>
-  AveLogAlphah = std::log(ParAveA1 + ParAveA2*std::log(y));
+  AveLogAlphah = std::log(ParAveA1 + (ParAveA2+ParAveA3/Z)*std::log(y));
     //ok  <ln alpha hom> 
 
   SigmaLogTmaxh  = 1.00/( ParSigLogT1 + ParSigLogT2*std::log(y)) ;

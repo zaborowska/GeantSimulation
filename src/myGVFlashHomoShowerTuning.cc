@@ -35,6 +35,7 @@ void myGVFlashHomoShowerTuning::readParameters(const G4String& aName) {
   fParAveT2 = parameters[1];
   fParAveA1 = parameters[2];
   fParAveA2 = parameters[3];
+  fParAveA3 = 0;
 
   fParSigLogT1 = parameters[4];
   fParSigLogT2 = parameters[5];
