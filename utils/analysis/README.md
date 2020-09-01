@@ -30,12 +30,13 @@ ROOT file with histograms.
 Executable `createHistograms` is created together with ROOT dictionary `libCreateHistogramsDict.so` (for use in python). To create histograms:
 
 ```
-${PROJECT_DIR}/install/bin/createHistograms <INPUT_FILE> [<OUTPUT_FILE> optional]
+`git rev-parse --show-toplevel`/install/bin/createHistograms <INPUT_FILE> [<OUTPUT_FILE> optional]
 ```
 
 or
 
 ```
+export PROJECT_DIR=`git rev-parse --show-toplevel`
 LD_LIBRARY_PATH=$LD_LIBRARY_PATH:${PROJECT_DIR}/install/lib/ python ${PROJECT_DIR}/utils/analysis/createHistograms.py <LIST_OF_INPUT_FILES>
 ```
 
@@ -49,7 +50,7 @@ TODO: Allow also for flat energy spectrum to be combined
 
 
 ```
-python ${PROJECT_DIR}/utils/analysis/combine.py <LIST_OF_INPUT_FILES> [-o <OUTPUT_FILE> optional] [--visual optional]
+python `git rev-parse --show-toplevel`/utils/analysis/combine.py <LIST_OF_INPUT_FILES> [-o <OUTPUT_FILE> optional] [--visual optional]
 
 
 positional arguments:
@@ -68,7 +69,7 @@ Compare different samples, full/fast simulation, etc.
 
 
 ```
-python  ${PROJECT_DIR}/utils/analysis/compare.py <LIST_OF_INPUT_FILES> [-o <OUTPUT_FILE> optional]
+python  `git rev-parse --show-toplevel`/utils/analysis/compare.py <LIST_OF_INPUT_FILES> [-o <OUTPUT_FILE> optional]
 
 positional arguments:
   inputs                Name of the input files.

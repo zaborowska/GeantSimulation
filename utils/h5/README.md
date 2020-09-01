@@ -19,7 +19,7 @@ Default name of the output file is created by changing the extension to `.h5` (f
 ### To run
 
 ```
-${PROJECT_DIR}/install/bin/root2h5 <INPUT_FILE> [<OUTPUT_FILE> optional] [<NUM_CELLS> optional] [<CARTESIAN(0/1)> optional]
+`git rev-parse --show-toplevel`/install/bin/root2h5 <INPUT_FILE> [<OUTPUT_FILE> optional] [<NUM_CELLS> optional] [<CARTESIAN(0/1)> optional]
 ```
 
 where:
@@ -30,6 +30,7 @@ where:
 or
 
 ```
+export PROJECT_DIR=`git rev-parse --show-toplevel`
 LD_LIBRARY_PATH=$LD_LIBRARY_PATH:${PROJECT_DIR}/install/lib/ python ${PROJECT_DIR}/utils/h5/root2h5.py [--numCells NUMCELLS] [--useCartesian] inputs [inputs ...]
 ```
 
@@ -52,7 +53,7 @@ Output names are created by changing the input file extension from `.root` to `.
 Executable `h52root` is created together with ROOT dictionary `libH52RootDict.so`. To translate `.h5` file:
 
 ```
-${PROJECT_DIR}/install/bin/h52root <INPUT_FILE> [<OUTPUT_FILE> optional] [<DATASET_CELLS> optional] [<DATASET_PARTICLE> optional] [<ENERGY_PARTICLE> optional] [<NUM_CELLS> optional] [<CARTESIAN(0/1)> optional]
+`git rev-parse --show-toplevel`/install/bin/h52root <INPUT_FILE> [<OUTPUT_FILE> optional] [<DATASET_CELLS> optional] [<DATASET_PARTICLE> optional] [<ENERGY_PARTICLE> optional] [<NUM_CELLS> optional] [<CARTESIAN(0/1)> optional]
 ```
 
 where:
@@ -66,6 +67,7 @@ where:
 or
 
 ```
+export PROJECT_DIR=`git rev-parse --show-toplevel`
 LD_LIBRARY_PATH=$LD_LIBRARY_PATH:${PROJECT_DIR}/install/lib/ python ${PROJECT_DIR}/utils/h5/h52root.py [--datasetCellsName DATASETCELLSNAME] [--datasetEnergyName DATASETENERGYNAME | --energy ENERGY] [--numCells NUMCELLS] [--useCartesian] inputs [inputs ...]
 ```
 
