@@ -28,28 +28,30 @@
 #include "G4ProcessManager.hh"
 #include "G4FastSimulationManagerProcess.hh"
 
-void myG4FastSimulationHelper::ActivateFastSimulation(G4ProcessManager* pmanager)
-{
-  G4FastSimulationManagerProcess* fastSimProcess = new G4FastSimulationManagerProcess("fastSimProcess_massGeom");
-  // -- For the mass geometry case, the G4FastSimulationManagerProcess
-  // -- is a PostStep process, and ordering does not matter:
-  pmanager-> AddDiscreteProcess(fastSimProcess);
-  // even though the parametrisation happens in the mass geometry, it is possible
-  // that parallel world exists (with parallel world physics). In that case
-  // make sure fast simulation is the first process to be checked before checking
-  // the parallel world for sensitive detectors
-  pmanager->SetProcessOrderingToLast(fastSimProcess, idxPostStep);
-}
-
 void myG4FastSimulationHelper::ActivateFastSimulation(G4ProcessManager* pmanager, G4String parallelGeometryName )
 {
-  G4FastSimulationManagerProcess* fastSimProcess = new G4FastSimulationManagerProcess("fastSimProcess_parallelGeom",
-										      parallelGeometryName);
-  // -- For the parallel geometry case, the G4FastSimulationManagerProcess
+  G4FastSimulationManagerProcess* fastSimProcess;
+  if ( parallelGeometryName.empty() ) {
+    fastSimProcess = new G4FastSimulationManagerProcess("fastSimProcess_massGeom");
+    // -- For the parametrisation envelope belonging to the mass geometry case, the G4FastSimulationManagerProcess
+    // -- is a PostStep process, and ordering does not matter:
+    pmanager-> AddDiscreteProcess(fastSimProcess);
+  }
+  else {
+    fastSimProcess = new G4FastSimulationManagerProcess("fastSimProcess_parallelGeom",parallelGeometryName);
+  // -- For the parallel geometry case, the G4FastSimulationManagerProcessz
   // -- is an Along+PostStep process, and ordering matters:
   pmanager->AddProcess(fastSimProcess);
   pmanager->SetProcessOrdering(fastSimProcess, idxAlongStep, 1);
-  // registered as the process with highest order so it is invoked as the first one
-  // and it is exclusively forced (and the only one executed)
+  }
+  // If the parallel world
+  // exists (with parallel world physics), e.g. for the sensitive detector.
+  // In that case make sure fast simulation is the first process to be checked by the steppping manager
+  // (highest ordering) so that user can kill the particle and/or deposit energy, ignoring other processes.
+  // Otherwise the parallel world physics (which is a StronglyFroced process) will invoke a PostStepDoIt
+  // on the same step, leading to e.g. duplicated energy deposits.
+
+  // Register as the process with highest ordering so it is checked as the first one,
+  // and since it is exclusively forced no other process will be considered (to be invoked).
   pmanager->SetProcessOrderingToLast(fastSimProcess, idxPostStep);
 }
