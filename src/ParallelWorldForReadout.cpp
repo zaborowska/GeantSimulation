@@ -11,6 +11,7 @@
 #include "G4PVReplica.hh"
 #include "G4Box.hh"
 #include "G4VisAttributes.hh"
+#include "G4UnitsTable.hh"
 
 #include "DetectorConstruction.hh"
 #include "CalorimeterSD.h"
@@ -23,7 +24,7 @@
 #include "GFlashSamplingShowerParameterisation.hh"
 #include "G4FastSimulationManager.hh"
 #include "myGFlashShowerModel.hh"
-#include "myGFlashHitMaker.hh"
+#include "GFlashHitMaker.hh"
 #include "GFlashParticleBounds.hh"
 #include "G4Region.hh"
 #include "G4RegionStore.hh"
@@ -170,7 +171,7 @@ void ParallelWorldForReadout::ConstructSD()
 
   std::string caloSDname = "ECal";
   std::cout << " Construct SD " << " num cells (rho,phi) = " << fNbOfRhoCells << ", " << fNbOfPhiCells << "   num layers = " << fNbOfLayers <<
-    " transverse size = " << fCalorRadius <<  " layer thickness = " <<  fLayerThickness << std::endl;
+    " total transverse size = " << G4BestUnit(fCalorRadius,"Length") <<  " layer thickness = " <<  G4BestUnit(fLayerThickness,"Length") << std::endl;
   test::CalorimeterSD* caloSD = new test::CalorimeterSD(caloSDname,fNbOfRhoCells,fNbOfPhiCells,fNbOfLayers,
                                                         0,1,2);
   G4SDManager::GetSDMpointer()->AddNewDetector(caloSD);

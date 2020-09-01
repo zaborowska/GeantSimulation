@@ -13,7 +13,7 @@
 #include "G4UIExecutive.hh"
 #include "G4VisManager.hh"
 #include "G4VisExecutive.hh"
-#include "myG4FastSimulationPhysics.hh"
+#include "G4FastSimulationPhysics.hh"
 #include "DebugKillPhysics.h"
 #include "Randomize.hh"
 #include "time.h"
@@ -49,7 +49,7 @@ int main(int argc, char** argv)
    physicsList->RegisterPhysics(new G4ParallelWorldPhysics(parallelWorldName));
 
    // FASTSIM
-   auto fastSimulationPhysics = new myG4FastSimulationPhysics();
+   auto fastSimulationPhysics = new G4FastSimulationPhysics();
    fastSimulationPhysics->BeVerbose();
    fastSimulationPhysics->ActivateFastSimulation("e-", parallelWorldName);
    fastSimulationPhysics->ActivateFastSimulation("e+", parallelWorldName);
