@@ -37,7 +37,7 @@ int main(int argc, char** argv)
    runManager->SetNumberOfThreads(4);
 #else
    G4RunManager* runManager = new G4RunManager;
-#endif
+ #endif
    G4String parallelWorldName = "readoutWorld";
 
    DetectorConstruction* detector = new DetectorConstruction();

@@ -17,9 +17,9 @@ FullSimActions::~FullSimActions() {}
 
 void FullSimActions::BuildForMaster() const
 {
-  // if merging of files enabled
-  // SaveToFileEventAction* eventAction = new SaveToFileEventAction;
-  // SetUserAction(new RunAction(eventAction));
+  // for merging of files enabled
+  SaveToFileEventAction* eventAction = new SaveToFileEventAction;
+  SetUserAction(new RunAction(eventAction));
 }
 
 void FullSimActions::Build() const {

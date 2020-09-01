@@ -103,6 +103,12 @@ void SaveToFileEventAction::EndOfEventAction(const G4Event* event)
     primary_energy = G4EventManager::GetEventManager()->GetConstCurrentEvent()
       ->GetPrimaryVertex()->GetPrimary(0)->GetTotalEnergy();
     G4int numNonZeroThresholdCells = 0;
+    G4AnalysisManager* man = G4AnalysisManager::Instance();
+
+    // histograms
+    G4double totalEnergy = 0;
+    G4double tDistance = 0, rDistance = 0;
+    double tFirstMoment = 0, tSecondMoment = 0, rFirstMoment = 0, rSecondMoment = 0;
 
     fCalEdep.resize(fCellNoRho*fCellNoPhi*fCellNoZ);
     fCalRho.resize(fCellNoRho*fCellNoPhi*fCellNoZ);
@@ -114,20 +120,34 @@ void SaveToFileEventAction::EndOfEventAction(const G4Event* event)
             hitId = fCellNoRho*fCellNoZ*iphi+fCellNoZ*irho+iz;
             test::CalorimeterHit* hit = (*hcHC)[hitId];
             G4double eDep = hit->GetEdep();
+    totalEnergy += eDep;
             if (eDep > 0.0005) { // e > 0.5 keV
                 fCalEdep[numNonZeroThresholdCells] = eDep;
                 fCalRho[numNonZeroThresholdCells] = irho;
                 fCalPhi[numNonZeroThresholdCells] = iphi;
                 fCalZ[numNonZeroThresholdCells] = iz;
                 numNonZeroThresholdCells++;
+    man->FillH1(2, iz, eDep);
+    man->FillH1(3, irho, eDep);
+    tDistance = iz; // assumption: particle enters calorimeter perpendiculary
+    rDistance = irho; //TODO calculate entrance to detector and start of shower: (pos - posStart).rho()
+    tFirstMoment += eDep * tDistance;
+    rFirstMoment += eDep * rDistance;
             }
           }
+    tFirstMoment /= totalEnergy;
+    rFirstMoment /= totalEnergy;
+  man->FillH1(0, primary_energy);
+  man->FillH1(1, totalEnergy);
+  man->FillH1(4, fTimer.GetRealElapsed());
+  man->FillH1(5, totalEnergy / primary_energy);
+  man->FillH1(6, tFirstMoment);
+  man->FillH1(7, rFirstMoment);
     fCalEdep.resize(numNonZeroThresholdCells);
     fCalRho.resize(numNonZeroThresholdCells);
     fCalPhi.resize(numNonZeroThresholdCells);
     fCalZ.resize(numNonZeroThresholdCells);
 
-    G4AnalysisManager* man = G4AnalysisManager::Instance();
     man->FillNtupleDColumn(0, primary_energy);
 
     EventInformation* eventInformation = dynamic_cast<EventInformation*>(event->GetUserInformation());
@@ -137,6 +157,25 @@ void SaveToFileEventAction::EndOfEventAction(const G4Event* event)
     fGflashParams = eventInformation->GetGflashParams();
 
     man->AddNtupleRow();
+
+    // second loop over hits to calculate for histograms the second moments
+for (G4int iphi=0;iphi<fCellNoPhi;iphi++)
+      for (G4int irho=0;irho<fCellNoRho;irho++)
+        for (G4int iz=0;iz<fCellNoZ;iz++) {
+            hitId = fCellNoRho*fCellNoZ*iphi+fCellNoZ*irho+iz;
+            test::CalorimeterHit* hit = (*hcHC)[hitId];
+            G4double eDep = hit->GetEdep();
+            if (eDep > 0.0005) {
+              tDistance = iz; // assumption: particle enters calorimeter perpendiculary
+    rDistance = irho; //TODO calculate entrance to detector and start of shower: (pos - posStart).rho()
+      tSecondMoment += eDep * pow(tDistance  - tFirstMoment, 2);
+      rSecondMoment += eDep * pow(rDistance  - rFirstMoment, 2);
+            }
+          }
+    tSecondMoment /= totalEnergy;
+    rSecondMoment /= totalEnergy;
+  man->FillH1(8, tSecondMoment);
+  man->FillH1(9, rSecondMoment);
 }
 void SaveToFileEventAction::UpdateParameters() {
   if (fDetector == nullptr) {
