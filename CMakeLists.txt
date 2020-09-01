@@ -56,7 +56,7 @@ install(TARGETS sampleSimulation DESTINATION bin)
 #----------------------------------------------------------------------------
 # Find ROOT (required package only for utils)
 #
-find_package(ROOT NO_DEFAULT_PATH)
+find_package(ROOT)
 if (ROOT_FOUND)
    find_package(ROOT CONFIG REQUIRED RooFit RooFitCore)
    message(STATUS "Found ROOT: ${ROOT_DIR}, utils will be built")
