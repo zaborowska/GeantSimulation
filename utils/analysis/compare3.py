@@ -23,12 +23,13 @@ def prepare_graph(graph, name, title, colour = 9, fillcolour = 9, markerStyle = 
    graph.SetLineWidth(2)
    # set Y axis
    graph.GetYaxis().SetTitleSize(0.05)
-   graph.GetYaxis().SetTitleOffset(1.)
+   graph.GetYaxis().SetTitleOffset(0.9)
    graph.GetYaxis().SetLabelSize(0.045)
    graph.GetYaxis().SetNdivisions(504)
+   graph.GetYaxis().SetMaxDigits(4)
    # set X axis
    graph.GetXaxis().SetTitleSize(0.05)
-   graph.GetXaxis().SetTitleOffset(1.)
+   graph.GetXaxis().SetTitleOffset(1.1)
    graph.GetXaxis().SetLabelSize(0.05)
    graph.GetYaxis().SetNdivisions(506)
 
@@ -64,29 +65,28 @@ def prepare_second_graph(secondary, main, name, title, factor = 2):
    secondary.GetYaxis().SetNdivisions(506)
 
 def prepare_single_canvas(name, title):
-   c = ROOT.TCanvas(name, title, 1500, 900)
-   c.SetTopMargin(0.01)
+   c = ROOT.TCanvas(name, title, 2000, 900)
+   c.SetTopMargin(0.1)
    c.SetRightMargin(0.03)
-   c.SetLeftMargin(0.15)
+   c.SetLeftMargin(0.1)
    c.SetBottomMargin(0.15)
    ROOT.SetOwnership(c,False)
    return c
 
 def prepare_double_canvas(name, title, factor = 1):
-   c = ROOT.TCanvas(name, title, 1500, int(900 + 900 / factor))
-   pad1 = ROOT.TPad("pad1","pad1",0,0,1,factor / (1. + factor))
+   c = ROOT.TCanvas(name, title, 2000, int(900 + 900 * factor))
+   pad1 = ROOT.TPad("pad1","pad1",0, 0, 1, factor / (1. + factor))
    pad2 = ROOT.TPad("pad2","pad2",0,factor / (1. + factor),1,1)
-   print("heights:",factor / (1. + factor) )
    pad2.SetBottomMargin(0.02)
    pad2.SetRightMargin(0.03)
    pad2.SetLeftMargin(0.1)
    pad1.SetBorderMode(0)
-   pad1.SetTopMargin(0.02)
+   pad1.SetTopMargin(0.1)
    pad1.SetRightMargin(0.03)
    pad1.SetLeftMargin(0.1)
    pad1.SetBottomMargin(0.2)
    pad2.SetBorderMode(0)
-   pad2.SetGridy()
+   pad1.SetGridy()
    pad1.SetTickx(1)
    pad2.SetTickx(1)
    pad1.SetTicky(1)
@@ -108,7 +108,7 @@ def prepare_legend(legend):
    legend.SetLineColor(0)
    legend.SetLineWidth(0)
    legend.SetShadowColor(10)
-   legend.SetTextSize(0.03)
+   legend.SetTextSize(0.04)
    legend.SetTextFont(42)
    legend.Clear()
 
@@ -142,7 +142,6 @@ def graphDivide(graphNum, graphDen):
    x_vals = graphDen.GetX()
    ratio = ROOT.TGraph()
    for ix in x_vals:
-      print(ix, graphNum.Eval(ix), graphDen.Eval(ix),  graphNum.Eval(ix)/ graphDen.Eval(ix) )
       ratio.SetPoint(ratio.GetN(), ix, graphNum.Eval(ix)/ graphDen.Eval(ix))
    ROOT.SetOwnership(ratio,False)
    return ratio
@@ -188,7 +187,6 @@ def setYaxisMinMax(listOfPlots):
                plot_min = content
       elif plot.IsA().InheritsFrom("TGraph"):
          plot_max = max(plot.GetY())
-         print("current tgraph max = ",plot_max)
          # avoid minimum to be == 0
          plot_min = plot.GetYaxis().GetXmax()
          y_values = plot.GetY()
@@ -206,7 +204,6 @@ def setYaxisMinMax(listOfPlots):
       listOfPlots[0].SetMaximum(1.1*maxim)
    elif plot.IsA().InheritsFrom("TGraph"):
       listOfPlots[0].GetYaxis().SetRangeUser(0.9*minim, 1.1*maxim)
-      print("min max: ", 0.9*minim, 1.1*maxim)
 
 def setXaxisMinMax(listOfPlots):
    if len(listOfPlots) == 0:
@@ -247,6 +244,7 @@ def main(input_names, output_name, legend_names = [], legend_short_names = [], h
       warnings.filterwarnings( action='ignore', category=RuntimeWarning, message='Replacing existing TH1' )
    # division of histograms translated from graph wll result in fake 0-division warnings
    warnings.filterwarnings( action='ignore', category=RuntimeWarning, message='Number of graph points is different than histogram bins' )
+   warnings.filterwarnings( action='ignore', category=RuntimeWarning, message='Sum of squares of weights structure already created' )
 
    if not histograms:
       plot_list_all = []
@@ -261,7 +259,6 @@ def main(input_names, output_name, legend_names = [], legend_short_names = [], h
       histograms = list(set.intersection(*map(set,plot_list_all)))
 
    print("Histograms that files have in common: ", histograms)
-
    # STYLE options
    ROOT.gStyle.SetOptStat(000)
    colours = [ROOT.kBlue+1,   ROOT.kRed-4,  ROOT.kBlack,
@@ -277,7 +274,7 @@ def main(input_names, output_name, legend_names = [], legend_short_names = [], h
          up = canvas.cd()
       else:
          canvas, down, up = prepare_double_canvas("canv_"+hist_name.replace("h_","").replace("g_",""), hist_name.replace("h_","").replace("g_",""), 0.5)
-      legend = ROOT.TLegend(0.5,0.7,0.9,0.9)
+      legend = ROOT.TLegend(0.6,0.87 - 0.06 * len(in_root),0.9,0.85)
       prepare_legend(legend)
       hists = []
       ratios = []
@@ -294,7 +291,7 @@ def main(input_names, output_name, legend_names = [], legend_short_names = [], h
          # hist.SetMarkerSize(1.6)
          hists.append(hist)
          ROOT.SetOwnership(hist, False)
-         prepare_graph(hist, hist.GetName(), hist.GetTitle(), colours[iFile], colours_fill[iFile], symbols[iFile%len(symbols)], fillstyle[iFile])
+         prepare_graph(hist, hist.GetName(), hist.GetTitle(), colours[iFile%len(colours)], colours_fill[iFile%len(colours_fill)], symbols[iFile%len(symbols)], fillstyle[iFile%len(fillstyle)])
          up.cd()
          if iFile == 0:
             if hist.IsA().InheritsFrom("TGraph"):
@@ -343,34 +340,6 @@ def main(input_names, output_name, legend_names = [], legend_short_names = [], h
                   ratio.Draw("sameep")
                setYaxisMinMax([ratios[0], ratio])
          canvas.Update()
-         #    # ratio is plotted from histograms, so transform graphs:
-         #    if hist.IsA().InheritsFrom("TGraphErrors"):
-   #             hist, bin_params = graphErrors2hist(hist, bin_params)
-   #          elif hist.IsA().InheritsFrom("TGraph"):
-   #             hist, bin_params = graph2hist(hist, bin_params)
-   #          ratio = ROOT.TRatioPlot(hist, hists[0])
-   #          ratio_graph = ratio.GetCalculationOutputGraph()
-   #          copyStyle(ratio_graph, hist)
-   #          ROOT.SetOwnership(ratio, False)
-   #          ROOT.SetOwnership(ratio_graph, False)
-   #          ratios.append(ratio_graph)
-   #          if iFile == 0:
-   #             ratio.SetGraphDrawOpt("c")
-   #             ratio.SetH1DrawOpt("ep")
-   #             ratio.SetH2DrawOpt("ep")
-   #             ratio.Draw()
-   #             baseline = ratio
-   #             #setXaxisMinMax([ratios[0], ratio_graph])
-   #          else:
-   #             baseline.GetLowerPad().cd()
-   #             ratio_graph.Draw("sameep")
-   #             # setYaxisMinMax([ratios[0], ratio_graph])
-   #             baseline.GetLowerPad().Update()
-   #             baseline.GetUpperPad().cd()
-   #             hist.Draw("sameep")
-   #             setYaxisMinMax([hists[0], hist])
-   #             canvas.Update()
-   #          legend = baseline.GetUpperPad().BuildLegend()
       for hist, entryname in zip(hists, legend_names):
          if "fit" in entryname:
             legend.AddEntry(hist, entryname, "l")
@@ -380,6 +349,8 @@ def main(input_names, output_name, legend_names = [], legend_short_names = [], h
       legend.Draw()
       canvas.Update()
       os.system("mkdir -p " + output_name)
+      if noratio:
+         hist_name += "_noratio"
       canvas.SaveAs(output_name+"/"+hist_name+".pdf")
       outfile = ROOT.TFile(output_name+"/"+hist_name+".root","RECREATE")
       outfile.cd()
@@ -388,26 +359,6 @@ def main(input_names, output_name, legend_names = [], legend_short_names = [], h
          h.SetName(h.GetName()+"_"+legend_short_names[ih])
          h.Write()
       outfile.Close()
-   #    for ih, h in enumerate(hists):
-   #       h.SetName(h.GetName()+"_"+input_names[ih].replace(".root",""))
-   #       if  h.GetName().find("GeV_") != -1:
-   #          out_root_hist.cd()
-   #       else:
-   #          out_root_graph.cd()
-   #       h.Write()
-   #    for ig, g in enumerate(ratios):
-   #       g.SetName("ratio_"+hists[ig].GetName().replace("h_","g_"))
-   #       if g.GetName().find("GeV_") != -1:
-   #          out_root_hist.cd()
-   #       else:
-   #          out_root_graph.cd()
-   #       g.Write()
-   #    canvas.Update()
-   #    if canvas.GetName().find("GeV_") != -1:
-   #       out_root_hist.cd()
-   #    else:
-   #       out_root_graph.cd()
-   #    canvas.Write()
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Combine shower validation plots')
