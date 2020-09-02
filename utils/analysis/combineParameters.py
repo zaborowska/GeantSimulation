@@ -504,7 +504,7 @@ if __name__ == "__main__":
     parser.add_argument('--energies', "-e", dest='energies', type=float, nargs='+', default=[], help="assign energies to files")
     parser.add_argument('--visual', "-v", dest='visual', action='store_true', help="If plots should be also displayed.")
     parser.add_argument('--ecritical', "-ec", dest='ecritical', type=float,default=0, help="Critical energy. If defined, y=E/Ec is used instead of E.")
-    parser.add_argument('--material', "-m", required=True, type=str, help="Material to define X0, RM and Ec")
+    parser.add_argument('--material', "-m", required=True, choices=['Pb', 'W', 'PbWO4'], type=str, help="Material to define X0, RM and Ec")
     parser.add_argument('--document', "-d", action="store_true", help="If true documentation in LaTeX is generated")
     args = parser.parse_args()
     if args.material == "Pb":
