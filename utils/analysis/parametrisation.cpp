@@ -60,15 +60,20 @@ void parametrisation(const std::string& aInput, const std::string& aOutput, doub
   }
   //
   // recalculate lengths in units of Xo, RM, EC
-  const double logY = log( maxEnergy / EC );
+  const double logY = log( maxEnergy * 1.e3 / EC ); // [maxEnergy] = GeV, [EC] = MeV
   // GFlash paper values hep-ex/0001020v1
   const double gflashZ = 68.3609; // from G4 (GVFlashShowerParameterisation::Material)
-  const double gflashT = logY - 0.858;
-  const double gflashAlpha = 0.21 + (0.492 + 2.38 / gflashZ ) * logY;
-  const double gflashBeta = (gflashAlpha - 1.) / gflashT;
+  const double gflashAvgT = logY - 0.858;
+  const double gflashAvgAlpha = 0.21 + (0.492 + 2.38 / gflashZ ) * logY;
+  const double gflashAvgBeta = (gflashAvgAlpha - 1.) / gflashAvgT;
+  const double gflashFluctMeanLogT = log( logY - 0.812);
+  const double gflashFluctSigmaLogT = 1./(-1.4 + 1.26 * logY);
+  const double gflashFluctMeanLogAlpha = log(0.81 + (0.458 + 2.26 / gflashZ) * logY);
+  const double gflashFluctSigmaLogAlpha = 1. / (-0.58 + 0.86 * logY);
+  const double gflashFluctRhoLogTLogAlpha = 0.705 - 0.023 * logY;
   RooRealVar t("t","t",0, maxLengthZ) ;
-  RooRealVar gammaAlpha("alpha","alpha",gflashAlpha,0,20) ;
-  RooRealVar gammaBeta("beta","beta",1./gflashBeta,0.1,10) ; // due to different representation in RooFit
+  RooRealVar gammaAlpha("alpha","alpha",gflashAvgAlpha,0,20) ;
+  RooRealVar gammaBeta("beta","beta",1./gflashAvgBeta,0.1,10) ; // due to different representation in RooFit
   RooRealVar gammaMu("mu","mu",0) ; // different representation in RooFit, no mu in our fit
   RooGamma Gamma("gamma","gamma PDF",t, gammaAlpha, gammaBeta, gammaMu) ;
   //
@@ -194,8 +199,9 @@ void parametrisation(const std::string& aInput, const std::string& aOutput, doub
       eCell = energyCellV[iEntry];
       eCellFraction = eCell / *energyMC;
       // make calculations
-      tDistance = zCell + 0.5; // assumption: particle enters calorimeter perpendiculary
-      int signX = 1;
+      // assumption: particle enters calorimeter perpendiculary
+      tDistance = zCell + 0.5;
+      rDistance = rhoCell;
       tFirstMoment += eCell * tDistance * cellSizeMmZ;
       rFirstMoment += eCell * rDistance * cellSizeMmR;
       // fill histograms
@@ -226,7 +232,8 @@ void parametrisation(const std::string& aInput, const std::string& aOutput, doub
       zCell = zCellV[iEntry];
       eCell = energyCellV[iEntry];
       // make calculations
-      tDistance = zCell+0.5; // assumption: particle enters calorimeter perpendiculary
+      // assumption: particle enters calorimeter perpendiculary
+      tDistance = zCell+0.5;
       rDistance = rhoCell;
       tSecondMoment += eCell * pow(tDistance * cellSizeMmZ - tFirstMoment, 2);
       rSecondMoment += eCell * pow(rDistance * cellSizeMmR - rFirstMoment, 2);
@@ -340,17 +347,41 @@ transYProfileLayers->Scale(1./iterEvents);
   canvLongProfile.cd();
   frame->Draw();
   std::cout << std::endl << std::setfill('=') << std::setw(40) << '\n';
-  std::cout << "Parameters form arXiv::hep-ex/0001020:" << std::endl;
-  std::cout << "T_hom = " << gflashT << std::endl;
-  std::cout << "alpha_hom = " << gflashAlpha << std::endl;
-  std::cout << "beta_hom = " << gflashBeta << std::endl;
-  std::cout << std::setfill('=') << std::setw(40) <<  '\n' << std::endl;
-  std::cout << std::endl << std::setfill('=') << std::setw(40) << '\n';
-  std::cout << "Parameters form fit:" << std::endl;
+  std::cout << "==== AVERAGE LONGITUDINAL PROFILE  ====" << '\n';
+  std::cout  << std::setfill('=') << std::setw(40) << '\n';
+  std::cout << "Parameters from arXiv::hep-ex/0001020:" << std::endl;
+  std::cout << "T_hom = " << gflashAvgT << std::endl;
+  std::cout << "alpha_hom = " << gflashAvgAlpha << std::endl;
+  std::cout << "beta_hom = " << gflashAvgBeta << std::endl;
+  std::cout << std::setfill('=') << std::setw(40) << '\n';
+  std::cout << "Parameters from fit to data:" << std::endl;
   std::cout << "T_hom = " << ( gammaAlpha.getVal() - 1.) * gammaBeta.getVal() << " +- " <<
     gammaAlpha.getError() * gammaBeta.getVal() + gammaBeta.getError() *  ( gammaAlpha.getVal() - 1.) << std::endl;
   std::cout << "alpha_hom = " << gammaAlpha.getVal() << " +- " << gammaAlpha.getError() << std::endl;
   std::cout << "beta_hom = " << 1. / gammaBeta.getVal() << " +- " << gammaBeta.getError() / pow(gammaBeta.getVal(),2) << std::endl;
+  std::cout << std::setfill('=') << std::setw(40) <<  '\n' << std::endl;
+
+
+  auto resLogT = longProfileLogT->Fit("gaus","SQ");
+  auto resLogAlpha = longProfileLogAlpha->Fit("gaus","SQ");
+
+  std::cout << std::endl << std::setfill('=') << std::setw(40) << '\n';
+  std::cout << "=== FLUCTUATED LONGITUDINAL PROFILE ===" << '\n';
+  std::cout  << std::setfill('=') << std::setw(40) << '\n';
+  std::cout << "Parameters from arXiv::hep-ex/0001020:" << std::endl;
+  std::cout << "<ln T_hom> = " << gflashFluctMeanLogT << std::endl;
+  std::cout << "sigma(ln T_hom) = " << gflashFluctSigmaLogT << std::endl;
+  std::cout << "<ln alpha_hom> = " << gflashFluctMeanLogAlpha << std::endl;
+  std::cout << "sigma(ln alpha_hom) = " << gflashFluctSigmaLogAlpha << std::endl;
+  std::cout << "rho (ln T_hom, ln alpha_hom) = " << gflashFluctRhoLogTLogAlpha << std::endl;
+  std::cout << std::setfill('=') << std::setw(40) << '\n';
+  std::cout << "Parameters from fit to data:" << std::endl;
+  // TODO extract params from Gaussian fits to longProfileLogT etc. 
+  std::cout << "<ln T_hom> = " << resLogT->Parameter(1) << " +- " << resLogT->ParError(1) << std::endl;
+  std::cout << "sigma(ln T_hom) = " << resLogT->Parameter(2) << " +- " << resLogT->ParError(2)  << std::endl;
+  std::cout << "<ln alpha_hom> = " << resLogAlpha->Parameter(1) << " +- " << resLogAlpha->ParError(1)  << std::endl;
+  std::cout << "sigma(ln alpha_hom) = " << resLogAlpha->Parameter(2) << " +- " << resLogAlpha->ParError(2)  << std::endl;
+  std::cout << "rho (ln T_hom, ln alpha_hom) = " << longProfileRhoLogAlphaLogT->GetCorrelationFactor() << std::endl;
   std::cout << std::setfill('=') << std::setw(40) <<  '\n' << std::endl;
 
   // Store histograms
@@ -424,6 +455,6 @@ int main(int argc, char** argv){
   const double X0 = 8.903; // mm
   const double RM = 19.59; // mm
   const double EC = 9.64; // MeV
-  parametrisation(argv[1], outputName, X0, RM, EC, 200, 60, 0.98, 4.45, 1);
+  parametrisation(argv[1], outputName, X0, RM, EC, 1000, 60, 0.098, 4.45, 1);
   return 0;
 }
