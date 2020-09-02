@@ -50,37 +50,45 @@ TODO: Allow also for flat energy spectrum to be combined
 
 
 ```
-python `git rev-parse --show-toplevel`/utils/analysis/combine.py <LIST_OF_INPUT_FILES> [-o <OUTPUT_FILE> optional] [--visual optional]
+python `git rev-parse --show-toplevel`/utils/analysis/combine.py <LIST_OF_INPUT_FILES>
 
 
 positional arguments:
   inputs                name of the input files
 
 optional arguments:
+  -h, --help            show this help message and exit
   --output OUTPUT, -o OUTPUT
                         name of the output file
+  --energies ENERGIES [ENERGIES ...], -e ENERGIES [ENERGIES ...]
+                        assign energies to files
   --visual, -v          If plots should be also displayed.
+
 
 ```
 
 ## 3. Compare results
 
-Compare different samples, full/fast simulation, etc.
+Compare different samples for single energy, full/fast simulation, combined results, etc.
 
 
 ```
-python  `git rev-parse --show-toplevel`/utils/analysis/compare.py <LIST_OF_INPUT_FILES> [-o <OUTPUT_FILE> optional]
+python  `git rev-parse --show-toplevel`/utils/analysis/compare.py <LIST_OF_INPUT_FILES>
 
 positional arguments:
   inputs                Name of the input files.
 
 optional arguments:
+  -h, --help            show this help message and exit
   --output OUTPUT, -o OUTPUT
-                        Name of the output file.
+                        Name of the output directory.
   --histogramName HISTOGRAMNAME [HISTOGRAMNAME ...], -n HISTOGRAMNAME [HISTOGRAMNAME ...]
                         Name of the plots to compare (default: all).
   --visual, -v          If plots should be also displayed.
   --legend LEGEND [LEGEND ...], -l LEGEND [LEGEND ...]
                         Labels to be displayed in legend.
+  --legendShort LEGENDSHORT [LEGENDSHORT ...], -ls LEGENDSHORT [LEGENDSHORT ...]
+                        Labels to be used as names of the histograms. If empty, filenames are used..
+  --noratio, -r         Do not plot ratio, just overlap plots.
 
 ```
