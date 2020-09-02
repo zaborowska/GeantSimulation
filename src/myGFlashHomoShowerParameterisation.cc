@@ -156,17 +156,16 @@ void myGFlashHomoShowerParameterisation::SetMaterial(G4Material *mat)
   // TODO: Remove y dependency and use E instead
   // Parametrisation is anyway geometry-dependent now
 
-/*  if ( mat->GetName().compareTo("G4_PbWO4") == 0) {
+  if ( mat->GetName().compareTo("G4_PbWO4") == 0) {
     Ec =  9.64;
     Rm = 19.59;
   } else {
-    */
     Ec = 2.66 * std::pow((X0 * Z / A),1.1);
     G4double Es = 21*MeV;
     Rm = X0*Es/Ec;
-/*  }*/
-  std::cout << " Ec = " << Ec << std::endl;
-  std::cout << " RM = " << Rm << std::endl;
+  }
+  std::cout << " Ec = " << Ec << " instead of " << 2.66 * std::pow((X0 * Z / A),1.1)  << std::endl;
+  std::cout << " RM = " <<  Rm << " instead of " << X0*21./Ec << std::endl;
   // PrintMaterial();
 }
 
