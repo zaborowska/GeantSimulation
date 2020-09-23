@@ -46,6 +46,9 @@ RunAction::RunAction(SaveToFileEventAction* eventAction)
   analysisManager->CreateNtupleIColumn("SimType");
   analysisManager->CreateNtupleDColumn("SimTime");
   analysisManager->CreateNtupleDColumn("GflashParams", fEventAction->GetGflashParams());
+  analysisManager->CreateNtupleDColumn("ShowerStart_x");
+  analysisManager->CreateNtupleDColumn("ShowerStart_y");
+  analysisManager->CreateNtupleDColumn("ShowerStart_z");
   analysisManager->FinishNtuple();
 }
 

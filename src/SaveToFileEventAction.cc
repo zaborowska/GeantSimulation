@@ -155,6 +155,9 @@ void SaveToFileEventAction::EndOfEventAction(const G4Event* event)
     man->FillNtupleIColumn(5, simtype);
     man->FillNtupleDColumn(6, fTimer.GetRealElapsed());
     fGflashParams = eventInformation->GetGflashParams();
+    man->FillNtupleDColumn(8, eventInformation->GetShowerStart().x());
+    man->FillNtupleDColumn(9, eventInformation->GetShowerStart().y());
+    man->FillNtupleDColumn(10, eventInformation->GetShowerStart().z());
 
     man->AddNtupleRow();
 

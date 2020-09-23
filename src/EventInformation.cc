@@ -1,7 +1,7 @@
 #include "EventInformation.hh"
 #include "globals.hh"
 
-EventInformation::EventInformation(): fSimType(eFullSim),
+EventInformation::EventInformation(): fSimType(eFullSim), fPosition(G4ThreeVector()), fShowerStarted(false),
   fGflashParams{ std::vector<G4double>(10, 0.)} {}
 EventInformation::~EventInformation() {}
 
@@ -15,6 +15,19 @@ EventInformation::eSimType EventInformation::GetSimType() const {
 
 void EventInformation::SetGflashParams(std::vector<G4double>& aGflashParams) {
   fGflashParams = aGflashParams;
+}
+
+G4ThreeVector EventInformation::GetShowerStart() const {
+  return fPosition;
+}
+
+void EventInformation::SetShowerStart(G4ThreeVector aPosition) {
+  fPosition = aPosition;
+  fShowerStarted = true;
+}
+
+G4bool EventInformation::IfShowerStarted() const {
+  return fShowerStarted;
 }
 
 void EventInformation::Print() const {

@@ -2,6 +2,7 @@
 #include "PrimaryGeneratorAction.hh"
 #include "SaveToFileEventAction.hh"
 #include "RunAction.hh"
+#include "SteppingAction.hh"
 #include "Randomize.hh"
 #include "DetectorConstruction.hh"
 #include <ctime>
@@ -27,5 +28,6 @@ void FullSimActions::Build() const {
   auto eventAction = new SaveToFileEventAction(fDetector);
   SetUserAction(eventAction);
   SetUserAction(new RunAction(eventAction));
+  SetUserAction(new SteppingAction);
 }
 }
