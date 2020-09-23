@@ -214,12 +214,14 @@ void myGFlashHomoShowerParameterisation::GenerateEnergyProfile(G4double /* y */)
 
   // Parameters for Enenrgy Profile including correaltion and sigmas 
 
-  Tmaxh  = //4.2620915; //
-           std::exp( AveLogTmaxh  + SigmaLogTmaxh  *
-           (Correlation1h*Random1 + Correlation2h*Random2) );
-  Alphah = //7.02167;
-           std::exp( AveLogAlphah + SigmaLogAlphah *
-           (Correlation1h*Random1 - Correlation2h*Random2) );
+  // Tmaxh  = std::exp( AveLogTmaxh  + SigmaLogTmaxh  *
+  //          (Correlation1h*Random1 + Correlation2h*Random2) );
+  // Alphah = std::exp( AveLogAlphah + SigmaLogAlphah *
+  //          (Correlation1h*Random1 - Correlation2h*Random2) );
+
+  // Use Cholesky decomposition for correlations
+  Tmaxh  = std::exp( AveLogTmaxh  + SigmaLogTmaxh  * Random1);
+  Alphah = std::exp( AveLogAlphah  + SigmaLogAlphah * (Random1 * Rhoh + Random2 * sqrt(1 - pow(Rhoh,2))));
   Betah  = (Alphah-1.00)/Tmaxh;
 
   std::vector<G4double> params = { AveLogTmaxh,
@@ -231,7 +233,7 @@ void myGFlashHomoShowerParameterisation::GenerateEnergyProfile(G4double /* y */)
                                    Alphah,
                                    Betah,
                                    Random1,
-                                   Random2 };
+                                   (Rhoh * Random1 + sqrt(1 - pow(Rhoh,2)) * Random2) };
 
   EventInformation* eventInformation = dynamic_cast<EventInformation*> (G4EventManager::GetEventManager()->GetUserInformation());
   eventInformation->SetGflashParams(params);
