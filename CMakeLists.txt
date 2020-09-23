@@ -27,6 +27,12 @@ if (RICHVIS)
   message("Compile with additional features for richer visualisation")
 endif()
 
+option(REPRODUCESEEDS "Store and restore seeds for each event" OFF)
+if (REPRODUCESEEDS)
+  add_definitions(-DREPRODUCESEEDS)
+  message("Compile with storing and restoring of seeds")
+endif()
+
 #----------------------------------------------------------------------------
 # Setup Geant4 include directories and compile definitions
 #

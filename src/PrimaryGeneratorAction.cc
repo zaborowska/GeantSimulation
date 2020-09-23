@@ -39,11 +39,12 @@ PrimaryGeneratorAction::~PrimaryGeneratorAction()
 
 void PrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
 {
-#ifdef RICHVIS
+#if defined(RICHVIS) || defined(REPRODUCESEEDS)
   std::string fileName = "random/event_"+std::to_string(anEvent->GetEventID())+".rndm.stat";
   if (std::filesystem::exists(fileName)) {
     CLHEP::HepRandom::getTheEngine()->restoreStatus (fileName.c_str());
   } else {
+    std::filesystem::create_directory("random");
     CLHEP::HepRandom::getTheEngine()->saveStatus (fileName.c_str());
   }
 #endif
