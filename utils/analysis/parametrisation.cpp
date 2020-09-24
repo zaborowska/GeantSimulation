@@ -158,6 +158,12 @@ void parametrisation(const std::string& aInput, const std::string& aOutput, doub
   auto g4generatedLongProfileRhoLogAlphaLogT = new TH1F("g4generatedLongProfileRhoLogAlphaLogT", "longitudinal profile - G4 generated - correlation;#rho(log(#alpha),log(T_{max}));Entries", 100, -1, 1);
   auto g4generatedLongProfileRandom1 = new TH1F("g4generatedLongProfileRandom1", "longitudinal profile - G4 generated - random 1;random_{1};Entries", 100, -5, 5);
   auto g4generatedLongProfileRandom2 = new TH1F("g4generatedLongProfileRandom2", "longitudinal profile - G4 generated - random 2;random_{2};Entries", 100, -5, 5);
+  auto showerStartX = new TH1F("showerStartX", "First interaction within shower;x (mm); Normalised entries", 1024, 0, 0);
+  auto showerStartY = new TH1F("showerStartY", "First interaction within shower;y (mm); Normalised entries", 1024, 0, 0);
+  auto showerStartZ = new TH1F("showerStartZ", "First interaction within shower;z (mm); Normalised entries", 1024, 0, 0);
+  auto showerStartXunit = new TH1F("showerStartXunit", "First interaction within shower;x (R_{M}); Normalised entries", 1024, -0.01, 0.01);
+  auto showerStartYunit = new TH1F("showerStartYunit", "First interaction within shower;y (R_{M}); Normalised entries", 1024, -0.01, 0.01);
+  auto showerStartZunit = new TH1F("showerStartZunit", "First interaction within shower;z (X_{0}); Normalised entries", 1024, 0, 1);
 
   TTreeReader eventsReader("events",&f);
   TTreeReaderValue<double> energyMC(eventsReader, "EnergyMC");
@@ -165,6 +171,9 @@ void parametrisation(const std::string& aInput, const std::string& aOutput, doub
   TTreeReaderArray<int> rhoCellV(eventsReader, "rhoCell");
   TTreeReaderArray<int> phiCellV(eventsReader, "phiCell");
   TTreeReaderArray<int> zCellV(eventsReader, "zCell");
+  TTreeReaderValue<double> showerStartXV(eventsReader, "ShowerStart_x");
+  TTreeReaderValue<double> showerStartYV(eventsReader, "ShowerStart_y");
+  TTreeReaderValue<double> showerStartZV(eventsReader, "ShowerStart_z");
 
   uint iterEvents = 0;
   // retireved from input
@@ -240,6 +249,12 @@ void parametrisation(const std::string& aInput, const std::string& aOutput, doub
     enTotal->Fill(sumEnergyDeposited / 1.e3);  // convert to GeV
     enFractionTotal->Fill(sumEnergyDeposited / (*energyMC));  // convert to GeV
     numCells->Fill(eventSize);
+    showerStartX->Fill(*showerStartXV);
+    showerStartY->Fill(*showerStartYV);
+    showerStartZ->Fill(*showerStartZV);
+    showerStartXunit->Fill(*showerStartXV / RM);
+    showerStartYunit->Fill(*showerStartYV / RM);
+    showerStartZunit->Fill(*showerStartZV / X0);
     longFirstMoment->Fill(tFirstMoment);
     longSecondMoment->Fill(tSecondMoment);
     transFirstMoment->Fill(rFirstMoment);
@@ -285,6 +300,12 @@ void parametrisation(const std::string& aInput, const std::string& aOutput, doub
   logEnLayers->Scale(1./iterEvents);
   enFractionLayers->Scale(1./iterEvents);
   transProfileLayers->Scale(1./iterEvents);
+  showerStartX->Scale(1./iterEvents);
+  showerStartY->Scale(1./iterEvents);
+  showerStartZ->Scale(1./iterEvents);
+  showerStartXunit->Scale(1./iterEvents);
+  showerStartYunit->Scale(1./iterEvents);
+  showerStartZunit->Scale(1./iterEvents);
 
   if(include_simtime) {
     eventsReader.Restart();
@@ -409,6 +430,12 @@ void parametrisation(const std::string& aInput, const std::string& aOutput, doub
   logEnLayers->Write();
   enFractionLayers->Write();
   transProfileLayers->Write();
+  showerStartX->Write();
+  showerStartY->Write();
+  showerStartZ->Write();
+  showerStartXunit->Write();
+  showerStartYunit->Write();
+  showerStartZunit->Write();
   if(include_simtime) simTime->Write();
   if(include_simtype) simType->Write();
   if(include_generated_params) {
