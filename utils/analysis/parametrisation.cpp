@@ -207,7 +207,11 @@ void parametrisation(const std::string& aInput, const std::string& aOutput, doub
       eCellFraction = eCell / *energyMC;
       // make calculations
       // assumption: particle enters calorimeter perpendiculary
-      tDistance = zCell + 0.5;
+      // shift z by shower start position expressed in units of cell size
+      tDistance = zCell + 0.5 - (*showerStartZV / cellSizeMmZ);
+      if (tDistance < 0) {
+        tDistance = 0;
+      }
       rDistance = rhoCell;
       tFirstMoment += eCell * tDistance * cellSizeMmZ;
       rFirstMoment += eCell * rDistance * cellSizeMmR;
@@ -238,7 +242,11 @@ void parametrisation(const std::string& aInput, const std::string& aOutput, doub
       eCell = energyCellV[iEntry];
       // make calculations
       // assumption: particle enters calorimeter perpendiculary
-      tDistance = zCell+0.5;
+      // shift z by shower start position expressed in units of cell size
+      tDistance = zCell + 0.5 - (*showerStartZV / cellSizeMmZ);
+      if (tDistance < 0) {
+        tDistance = 0;
+      }
       rDistance = rhoCell;
       tSecondMoment += eCell * pow(tDistance * cellSizeMmZ - tFirstMoment, 2);
       rSecondMoment += eCell * pow(rDistance * cellSizeMmR - rFirstMoment, 2);
