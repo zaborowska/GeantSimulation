@@ -50,6 +50,7 @@ public:
   G4Material* GetAbsorMaterial(G4int i) const // return of non-const pointer for gflash to work
   {return fAbsorMaterial[i];};
   G4double GetAbsorThickness(G4int i) const {return fAbsorThickness[i];};
+  G4double GetAbsorSensitive(G4int i) const {return fIdOfSD[i];};
 
   const G4VPhysicalVolume* GetphysiWorld()        {return fPhysiWorld;};
   const G4Material*        GetWorldMaterial()     {return fWorldMaterial;};
@@ -91,6 +92,8 @@ private:
   G4Tubs*             fSolidLayer;
   G4LogicalVolume*   fLogicLayer;
   G4VPhysicalVolume* fPhysiLayer;
+
+    G4LogicalVolume*   fLogicCell;
 
   G4Tubs*             fSolidAbsor[kMaxAbsor];
   G4LogicalVolume*   fLogicAbsor[kMaxAbsor];

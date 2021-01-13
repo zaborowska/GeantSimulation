@@ -41,12 +41,12 @@ int main(int argc, char** argv)
    G4String parallelWorldName = "readoutWorld";
 
    DetectorConstruction* detector = new DetectorConstruction();
-   detector->RegisterParallelWorld(new ParallelWorldForReadout(parallelWorldName, detector));
+//   detector->RegisterParallelWorld(new ParallelWorldForReadout(parallelWorldName, detector));
    runManager->SetUserInitialization(detector);
 
    G4VModularPhysicsList* physicsList = new FTFP_BERT();
 
-   physicsList->RegisterPhysics(new G4ParallelWorldPhysics(parallelWorldName));
+/*   physicsList->RegisterPhysics(new G4ParallelWorldPhysics(parallelWorldName));
 
    // FASTSIM
    auto fastSimulationPhysics = new G4FastSimulationPhysics();
@@ -58,7 +58,7 @@ int main(int argc, char** argv)
 
    auto killPhysics = new DebugKillPhysics();
    physicsList->RegisterPhysics( killPhysics );
-
+*/
    runManager->SetUserInitialization(physicsList);
    G4HadronicProcessStore::Instance()->SetVerbose(0);
    runManager->SetUserInitialization( new sim::FullSimActions(detector) );

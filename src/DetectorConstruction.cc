@@ -12,6 +12,7 @@
 
 #include "G4GeometryManager.hh"
 #include "G4SDManager.hh"
+#include "CalorimeterSD.h"
 
 #include "G4RunManager.hh"
 #include "G4SystemOfUnits.hh"
@@ -135,10 +136,15 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
   for (G4int k=0; k<fNbOfAbsor; ++k) {
     fSolidAbsor[k] = new G4Tubs("Absorber",                //its name
                                 0,fCalorRadius,fAbsorThickness[k]/2,0,full2Pi);
-
+    if (fIdOfSD[k]) {
+    fLogicAbsor[k] = new G4LogicalVolume(fSolidAbsor[k],    //its solid
+                                        fWorldMaterial, //its material
+                                        fAbsorMaterial[k]->GetName());
+    } else {
     fLogicAbsor[k] = new G4LogicalVolume(fSolidAbsor[k],    //its solid
                                         fAbsorMaterial[k], //its material
                                         fAbsorMaterial[k]->GetName());
+    }
     fLogicAbsor[k]->SetVisAttributes(G4Colour (0.5, 0.5, 0.5, 0.2));
 
     G4double xcenter = xfront+0.5*fAbsorThickness[k];
@@ -148,8 +154,56 @@ G4VPhysicalVolume* DetectorConstruction::Construct()
                          fLogicAbsor[k],
                          fAbsorMaterial[k]->GetName(),
                          fLogicLayer,
-                         false,
-                         k+50);                                //copy number
+                                       false,
+                                       k);                                //copy number
+
+    if (fIdOfSD[k]) {
+
+      G4double cellPhi = full2Pi / fNbOfPhiCells;
+      auto fSolidRow = new G4Tubs("Row",0, fCalorRadius, fAbsorThickness[k]/2, 0, cellPhi);
+
+      auto fLogicRow = new G4LogicalVolume(fSolidRow,
+                                           fWorldMaterial,
+                                           "PhiCell");
+      if (fNbOfPhiCells > 1)
+        auto fPhysiRow = new G4PVReplica("PhiCell",
+                                         fLogicRow,
+                                         fLogicAbsor[k],
+                                         kPhi,
+                                         fNbOfPhiCells,
+                                         cellPhi);
+      else
+        auto fPhysiRow = new G4PVPlacement(0,
+                                           G4ThreeVector(),
+                                           fLogicRow,
+                                           "PhiCell",
+                                           fLogicAbsor[k],
+                                           false,
+                                           0);
+
+      /// No volume can be placed inside a radial replication
+
+      auto fSolidCell = new G4Tubs("Cell", 0,fCalorRadius/fNbOfRhoCells,fAbsorThickness[k]/2, 0, cellPhi);
+
+      fLogicCell = new G4LogicalVolume(fSolidCell,
+                                       fAbsorMaterial[k],
+                                       "Cell");
+      if (fNbOfRhoCells > 1)
+        auto fPhysiCell = new G4PVReplica("Cell",
+                                          fLogicCell,
+                                          fLogicRow,
+                                          kRho,
+                                          fNbOfRhoCells,
+                                          fCalorRadius/fNbOfRhoCells);
+      else
+        auto fPhysiCell = new G4PVPlacement(0,
+                                            G4ThreeVector(),
+                                            fLogicCell,
+                                            "Cell",
+                                            fLogicRow,
+                                            false,
+                                            0);
+    }
   }
 
   // visualisation settings
@@ -295,6 +349,15 @@ void DetectorConstruction::SetAbsorSensitive(G4int ival,G4bool val)
   //
   std::cout << "SENSITIVE ? " << ival << " = " << val << std::endl;
   fIdOfSD[ival] = val;
+  // sanity check - only one absorber can be sensitive
+  int  countSensitive = 0;
+  for(int iAbs = 0; iAbs < fNbOfAbsor; iAbs ++) {
+      if(fIdOfSD[iAbs])
+         countSensitive += 1;
+    }
+  if(countSensitive > 1)
+    G4Exception("DetectorConstruction::SetAbsorSensitive", "InvalidSetup",
+                  FatalException, ("Only one absorber can be sensitive."));
 
 }
 
@@ -319,6 +382,15 @@ void DetectorConstruction::SetCalorRadius(G4double val)
 
 void DetectorConstruction::ConstructSDandField()
 {
+  std::string caloSDname = "ECal";
+  std::cout << " Construct SD " << " num cells (rho,phi) = " << fNbOfRhoCells << ", " << fNbOfPhiCells << "   num layers = " << fNbOfLayers <<
+    " total transverse size = " << G4BestUnit(fCalorRadius,"Length") <<  " layer thickness = " <<  G4BestUnit(fLayerThickness,"Length") << std::endl;
+  test::CalorimeterSD* caloSD = new test::CalorimeterSD(caloSDname,fNbOfRhoCells,fNbOfPhiCells,fNbOfLayers,
+                                                        0,1,3);
+  G4SDManager::GetSDMpointer()->AddNewDetector(caloSD);
+  SetSensitiveDetector(fLogicCell, caloSD);
+  std::cout << " Construct SD " << std::endl;
+
   if ( fFieldMessenger.Get() == 0 ) {
     // Create global magnetic field messenger.
     // Uniform magnetic field is then created automatically if
