@@ -7,6 +7,7 @@
 class G4UIdirectory;
 class G4UIcommand;
 class G4UIcmdWithABool;
+class G4UIcmdWithADoubleAndUnit;
 class PrimaryGeneratorAction;
 
 class PrimaryGeneratorMessenger : public G4UImessenger {
@@ -21,7 +22,10 @@ private:
   PrimaryGeneratorAction* fPrimaryAction;
 
   G4UIdirectory* fDir;
+  G4UIdirectory* fDirFlat;
   G4UIcmdWithABool* fSelect;
+  G4UIcmdWithADoubleAndUnit* fEnergyMinCmd;
+  G4UIcmdWithADoubleAndUnit* fEnergyMaxCmd;
 
 };
 

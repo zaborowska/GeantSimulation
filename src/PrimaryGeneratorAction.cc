@@ -14,7 +14,10 @@
 
 PrimaryGeneratorAction::PrimaryGeneratorAction()
 : G4VUserPrimaryGeneratorAction(),
-  fParticleGun(nullptr)
+  fParticleGun(nullptr),
+  fSingleEnergy(false),
+  fFlatDistributionMin(1 * GeV),
+  fFlatDistributionMax(500 * GeV)
 {
   G4int n_particle = 1;
   fParticleGun  = new G4ParticleGun(n_particle);
@@ -50,7 +53,7 @@ void PrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
 #endif
   if (!fSingleEnergy) {
     G4double u = G4UniformRand();
-    fParticleGun->SetParticleEnergy((1. + (u * 499.)) * GeV); // get random number from 1 to 500 GeV
+    fParticleGun->SetParticleEnergy(fFlatDistributionMin + (u * (fFlatDistributionMax - fFlatDistributionMin))); // get random number from min to max
   }
   fParticleGun->GeneratePrimaryVertex(anEvent);
 }
